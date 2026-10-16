@@ -1,13 +1,12 @@
-/**
- * @format
- */
-
-import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
+import { render, screen } from '@testing-library/react-native';
 import App from '../App';
 
-test('renders correctly', async () => {
-  await ReactTestRenderer.act(() => {
-    ReactTestRenderer.create(<App />);
+describe('App base', () => {
+  test('renderiza la pantalla base con el nombre visible GFP', async () => {
+    await render(<App />);
+
+    expect(screen.getByTestId('app-base')).toBeTruthy();
+    expect(screen.getByText('GFP')).toBeTruthy();
+    expect(screen.getByText('Gestión Financiera Personal')).toBeTruthy();
   });
 });
