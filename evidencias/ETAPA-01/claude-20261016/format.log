@@ -1,0 +1,8 @@
+> npm run format:check
+
+> co.gfpsas.gestionfinanciera@0.0.1 format:check
+> prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+
+Checking formatting...
+All matched files use Prettier code style!
+< codigo de salida: 0

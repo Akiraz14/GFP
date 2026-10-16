@@ -1,0 +1,6 @@
+> npm run typecheck
+
+> co.gfpsas.gestionfinanciera@0.0.1 typecheck
+> tsc --noEmit
+
+< codigo de salida: 0

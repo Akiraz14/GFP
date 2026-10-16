@@ -1,0 +1,24 @@
+> grep de configuracion (G-05 y minSdk)
+80:    namespace "co.gfpsas.gestionfinanciera"
+82:        applicationId "co.gfpsas.gestionfinanciera"
+3:        buildToolsVersion = "37.0.0"
+4:        minSdkVersion = 29
+5:        compileSdkVersion = 37
+6:        targetSdkVersion = 36
+7:        ndkVersion = "27.1.12297006"
+2:    <string name="app_name">GFP</string>
+{
+  "name": "GFP",
+  "displayName": "GFP"
+}
+15:    "react-native": "0.87.1",
+29:    "@testing-library/react-native": "14.0.1",
+38:    "typescript": "^6.0.3"
+3:distributionUrl=https\://services.gradle.org/distributions/gradle-9.4.1-bin.zip
+> verificacion de sintaxis PowerShell 7.5.4 (Parser::ParseFile)
+Errores de sintaxis: 0
+> SHA-256 documentos fuente
+674831bed580f24478954fd3ac013e8879b5472137075ef691a13d67fee2b2eb  Propuesta_comercial-Gestión_Financiera_Personal.pdf
+c5dda44caf2426bda73355d3212d49a060b3132fc54618fd5027022f9ac2c895  RQ02v2 Historia de Usuario Gestion_Financiera_Personal_16092026_V1.docx (2).pdf
+5d73ba98791a7d45640d13c6981a78d86190cffa4a9aa4c0086427d3019c98f0  Propuesta_del_Proyecto_Gestion_Financiera_Personal_VF.md
+71a7672471ef9850c85e463280551590d37da79bbf01b155a4ed0d43d7e23497  README.md

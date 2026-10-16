@@ -1,0 +1,15 @@
+> npm test -- --ci --verbose
+
+> co.gfpsas.gestionfinanciera@0.0.1 test
+> jest --ci --verbose
+
+PASS __tests__/App.test.tsx
+  App base
+    ✓ renderiza la pantalla base con el nombre visible GFP (704 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        2.617 s
+Ran all test suites.
+< codigo de salida: 0
