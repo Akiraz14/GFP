@@ -1,0 +1,8 @@
+# Complementa app/.gitignore
+node_modules/
+*.apk
+*.aab
+*.jks
+*.keystore
+!app/android/app/debug.keystore
+.DS_Store

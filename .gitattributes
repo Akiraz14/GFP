@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jar binary
+*.keystore binary
+Propuesta_del_Proyecto_Gestion_Financiera_Personal_VF.md -text
