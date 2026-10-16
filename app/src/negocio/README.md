@@ -1,0 +1,1 @@
+# negocio — ver ../README.md
