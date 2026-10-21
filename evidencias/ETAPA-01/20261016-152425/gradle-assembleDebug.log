@@ -1,0 +1,191 @@
+﻿> C:\Users\juanz\Akiraz\Study\GFP\app\android\gradlew.bat assembleDebug
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:shared:compileKotlin
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+
+> Configure project :app
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: API 'applicationVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling applicationVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+WARNING: API 'testVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling testVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+WARNING: API 'unitTestVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling unitTestVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+
+> Configure project :react-native-safe-area-context
+WARNING: API 'libraryVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling libraryVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+
+> Task :app:generateAutolinkingNewArchitectureFiles
+> Task :app:generateAutolinkingPackageList
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:generateReactNativeEntryPoint
+> Task :react-native-safe-area-context:generateCodegenSchemaFromJavaScript
+> Task :react-native-safe-area-context:generateCodegenArtifactsFromSchema
+> Task :react-native-safe-area-context:preBuild
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResValues
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :react-native-safe-area-context:preDebugBuild
+> Task :react-native-safe-area-context:processDebugNavigationResources
+> Task :app:processDebugNavigationResources
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-safe-area-context:generateDebugBuildConfig
+> Task :react-native-safe-area-context:generateDebugResources
+> Task :react-native-safe-area-context:packageDebugResources
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :react-native-safe-area-context:javaPreCompileDebug
+> Task :react-native-safe-area-context:parseDebugLocalResources
+> Task :app:parseDebugLocalResources
+> Task :react-native-safe-area-context:mergeDebugAssets
+> Task :app:generateDebugRFile
+> Task :react-native-safe-area-context:generateDebugRFile
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:generateDebugGlobalSynthetics
+> Task :app:desugarDebugFileDependencies
+> Task :app:checkDebugDuplicateClasses
+> Task :react-native-safe-area-context:writeDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaProviderManager.kt:40:19 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:8:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:46:54 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:9:32 'class LayoutShadowNode : ReactShadowNodeImpl' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:110:61 'class NativeViewHierarchyOptimizer : Any' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+
+> Task :app:mergeExtDexDebug
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+> Task :react-native-safe-area-context:processDebugJavaRes
+> Task :react-native-safe-area-context:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:bundleLibRuntimeToDirDebug
+> Task :app:checkDebugAarMetadata
+
+> Task :app:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP/app/android/app/src/main/java/co/gfpsas/gestionfinanciera/MainActivity.kt:21:7 'constructor(activity: ReactActivity, mainComponentName: String, fabricEnabled: Boolean): DefaultReactActivityDelegate' is deprecated. Creating DefaultReactActivityDelegate with flags is deprecated.
+
+> Task :app:compileDebugNavigationResources
+> Task :app:compileDebugJavaWithJavac
+> Task :app:processDebugJavaRes
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :react-native-safe-area-context:extractDeepLinksDebug
+> Task :react-native-safe-area-context:mapDebugSourceSetPaths
+> Task :react-native-safe-area-context:compileDebugLibraryResources
+
+> Task :react-native-safe-area-context:processDebugManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+
+> Task :app:mergeDebugResources
+> Task :app:configureCMakeDebug[arm64-v8a]
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:buildCMakeDebug[arm64-v8a]
+> Task :app:configureCMakeDebug[armeabi-v7a]
+> Task :app:buildCMakeDebug[armeabi-v7a]
+> Task :app:configureCMakeDebug[x86]
+> Task :app:processDebugManifestForPackage
+> Task :app:buildCMakeDebug[x86]
+> Task :app:configureCMakeDebug[x86_64]
+> Task :app:buildCMakeDebug[x86_64]
+> Task :app:mergeDebugJniLibFolders
+> Task :react-native-safe-area-context:mergeDebugJniLibFolders
+> Task :react-native-safe-area-context:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectOnly
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :react-native-safe-area-context:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-safe-area-context:checkDebugAarMetadata
+> Task :app:mergeDebugNativeLibs
+> Task :react-native-safe-area-context:extractDebugAnnotations
+> Task :react-native-safe-area-context:extractDeepLinksForAarDebug
+> Task :react-native-safe-area-context:mergeDebugGeneratedProguardFiles
+> Task :react-native-safe-area-context:mergeDebugConsumerProguardFiles
+> Task :react-native-safe-area-context:prepareDebugArtProfile
+> Task :react-native-safe-area-context:prepareLintJarForPublish
+> Task :react-native-safe-area-context:mergeDebugJavaResource
+> Task :app:stripDebugDebugSymbols
+> Task :react-native-safe-area-context:syncDebugLibJars
+> Task :react-native-safe-area-context:bundleDebugAar
+> Task :react-native-safe-area-context:assembleDebug
+> Task :app:processDebugResources
+> Task :app:dexBuilderDebug
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+[Incubating] Problems report is available at: file:///C:/Users/juanz/Akiraz/Study/GFP/app/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 8m 25s
+93 actionable tasks: 93 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.1/userguide/configuration_cache_enabling.html
+< codigo de salida: 0

@@ -1,0 +1,13 @@
+﻿> npm.cmd test -- --ci
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 test
+npm notice run jest --ci
+PASS __tests__/App.test.tsx (5.763 s)
+  App base
+    ÔêÜ renderiza la pantalla base con el nombre visible GFP (2632 ms)
+System.Management.Automation.RemoteException
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        6.222 s
+Ran all test suites.
+< codigo de salida: 0
