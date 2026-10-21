@@ -44,12 +44,16 @@ a HU4-CA10.
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
-| ID interno | Criterio | Evidencia |
-|---|---|---|
-| E01-C1 | Proyecto React Native 0.87.x con TypeScript para Android, identificador y nombre de G-05 | Ver informe de cierre E01 |
-| E01-C2 | Estructura inicial de carpetas según C4 Nivel 3 | `app/src/README.md` |
-| E01-C3 | Herramientas de calidad configuradas (tsc, ESLint, Prettier) y sin errores | Registros de ejecución |
-| E01-C4 | Pruebas configuradas (Jest + React Native Testing Library) pasan | Registros de ejecución |
-| E01-C5 | Compilación Android (`assembleDebug`) con JDK 17 sin modificar Java global | `evidencias/ETAPA-01/` |
-| E01-C6 | APK de depuración instalado y ejecutándose en Android 10 (API 29) | `evidencias/ETAPA-01/` |
-| E01-C7 | Repositorio Git local con convenciones; documentos fuente intactos | Historial Git y hashes SHA-256 |
+| ID interno | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| E01-C1 | Proyecto React Native 0.87.x con TypeScript para Android, identificador y nombre de G-05 | Verificado | `aapt2`: `package: name='co.gfpsas.gestionfinanciera'`, `application-label:'GFP'`, `minSdkVersion:'29'` (`20261016-152425/complementarias-20261019/salida-aapt2.txt`); `claude-20261016/configuracion.txt` |
+| E01-C2 | Estructura inicial de carpetas según C4 Nivel 3 | Implementado | `app/src/README.md` |
+| E01-C3 | Herramientas de calidad configuradas (tsc, ESLint, Prettier) y sin errores | Verificado (Linux y Windows); defecto de Prettier corregido | `claude-20261016/{typecheck,lint,format}.log`; `20261016-152425/{typecheck,lint,format}.log`; `20261019-194120/{typecheck,lint}.log`. Prettier falló en `20261019-194120/format.log` por revisar archivos generados; corregido con `app/.prettierignore` y verificado en Linux (`claude-20261019/format-check.log`) y en Windows (`windows-format-check/format-check.log`, 21/10/2026, código 0) |
+| E01-C4 | Pruebas configuradas (Jest + React Native Testing Library) pasan | Verificado (Linux y Windows) | `claude-20261016/jest.log`; `20261016-152425/jest.log`; `20261019-194120/jest.log` |
+| E01-C5 | Compilación Android (`assembleDebug`) con JDK 17 sin modificar Java global | Verificado | `20261016-152425/gradle-version.log` (`Launcher JVM: 17.0.20.1`), `20261016-152425/gradle-assembleDebug.log` (`BUILD SUCCESSFUL`), `20261016-152425/entorno.txt` (`JAVA_HOME` del proceso); repetido en `20261019-194120/`. El script solo cambia variables de su propio proceso |
+| E01-C6 | APK de depuración instalado y ejecutándose en Android 10 (API 29) | Verificado | `20261016-152425/dispositivo.txt` (API 29); `20261016-152425/reanudacion/{instalar-debug.log,ui-debug.xml,captura-debug.png,logcat-debug.txt}`. Revalidación: `20261019-194120/{dispositivo-debug.txt,pid-debug.txt,ui-debug.xml,logcat-debug.txt}`. Release (complementaria): `20261016-152425/reanudacion/` (archivos `*-release*`) y `20261019-194120/{dispositivo-release.txt,reverse-release.txt,pid-release.txt,ui-release.xml,logcat-release.txt}` (API 29 registrada) |
+| E01-C7 | Repositorio Git local con convenciones; documentos fuente excluidos del repositorio por decisión del responsable | Verificado | Historial sin objetos de los documentos fuente (`git rev-list --objects --all`, 2026-10-16); decisión D-FUENTES en `decisiones.md` |
+
+Rutas relativas a `evidencias/ETAPA-01/`. El script corregido `scripts/validar-etapa.ps1`
+quedó revalidado en `20261019-194120/`. Pendiente para cerrar la Etapa 01: la aprobación
+del responsable. Ver `cierre-etapa-01.md`.
