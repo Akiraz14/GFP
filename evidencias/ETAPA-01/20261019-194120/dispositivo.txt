@@ -1,0 +1,5 @@
+﻿Dispositivo: emulator-5554
+Modelo: Android SDK built for x86
+Android: 10
+API: 29
+ABI: x86

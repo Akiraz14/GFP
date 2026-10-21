@@ -1,0 +1,19 @@
+﻿Fecha: 2026-10-19T19:41:20.8838307-05:00
+Windows: Microsoft Windows NT 10.0.26200.0
+PowerShell: 5.1.26100.9711
+JAVA_HOME (proceso): C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot
+ANDROID_HOME: C:\Users\juanz\AppData\Local\Android\Sdk
+> node -v
+v24.22.0
+< codigo de salida: 0
+> npm.cmd -v
+12.2.0
+< codigo de salida: 0
+> java -version
+openjdk version "17.0.20.1" 2026-08-18 LTS
+OpenJDK Runtime Environment Microsoft-14940689 (build 17.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM Microsoft-14940689 (build 17.0.20.1+1-LTS, mixed mode, sharing)
+< codigo de salida: 0
+> git -C C:\Users\juanz\Akiraz\Study\GFP log -1 --format=commit %H (%s)
+commit d42408aa0146099a9cd336b26bf9213391a19679 (test: evidencias de verificaci├│n ejecutadas por Claude (E01))
+< codigo de salida: 0

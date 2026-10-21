@@ -1,0 +1,41 @@
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 npx
+npm notice run react-native start --port 8081
+
+Welcome to React Native v0.87
+Starting dev server on http://localhost:8081
+
+
+                        ▒▒▓▓▓▓▒▒
+                     ▒▓▓▓▒▒░░▒▒▓▓▓▒
+                  ▒▓▓▓▓░░░▒▒▒▒░░░▓▓▓▓▒
+                 ▓▓▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▓▓
+                 ▓▓░░░░░▒▓▓▓▓▓▓▒░░░░░▓▓
+                 ▓▓░░▓▓▒░░░▒▒░░░▒▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▒▒▒▒▓▓▓▓▒░░▓▓
+                 ▓▓░░▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░▓▓
+                 ▓▓▒░░▒▒▓▓▓▓▓▓▓▓▒░░░▒▓▓
+                  ▒▓▓▓▒░░░▒▓▓▒░░░▒▓▓▓▒
+                     ▒▓▓▓▒░░░░▒▓▓▓▒
+                        ▒▒▓▓▓▓▒▒
+
+
+                Welcome to Metro v0.87.1
+              Fast - Scalable - Integrated
+
+
+ INFO  Dev server ready. Press Ctrl+C to exit.
+ INFO  Key commands available:
+
+   r  - reload app(s)
+   d  - open Dev Menu
+   j  - open DevTools
+
+ BUNDLE  ./index.js ░░░░░░░░░░░░░░░░ 0% (0/1)
+ BUNDLE  ./index.js ▓▓▓░░░░░░░░░░░░░ 18% (94/216)
+ WARN  Attempted to import the module "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+ WARN  Attempted to import the module "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+ BUNDLE  ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99% (515/517)
+ BUNDLE  ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99% (602/626)
+ BUNDLE  ./index.js 
+ BUNDLE  ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99% (633/633)
+ WARN  Attempted to import the module "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\Users\juanz\Akiraz\Study\GFP\app\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.

@@ -1,0 +1,4 @@
+﻿> npm.cmd run lint
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 lint
+npm notice run eslint .
+< codigo de salida: 0

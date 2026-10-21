@@ -1,0 +1,9 @@
+﻿Fecha: 2026-10-19T19:42:09.1588582-05:00
+Dispositivo: emulator-5554
+ro.product.model: Android SDK built for x86
+ro.build.version.release: 10
+ro.build.version.sdk: 29
+ro.product.cpu.abi: x86
+adb devices -l:
+List of devices attached
+emulator-5554          device product:sdk_gphone_x86 model:Android_SDK_built_for_x86 device:generic_x86 transport_id:2
