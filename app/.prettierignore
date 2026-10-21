@@ -1,0 +1,6 @@
+android/app/build/
+android/app/.cxx/
+android/build/
+android/.gradle/
+android/.kotlin/
+coverage/
