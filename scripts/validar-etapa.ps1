@@ -11,8 +11,12 @@
     4. Chequeo de tipos, lint, formato y pruebas Jest.
     5. Compilación del APK de depuración (assembleDebug) y SHA-256.
     6. Emulador o dispositivo: arranque, datos de Android y ABI.
-    7. Metro, instalación, apertura de la app y comprobación de la interfaz.
+    7. Comprobación del puerto 8081, Metro (con progreso y límite de 120 s),
+       instalación, apertura de la app y comprobación de la interfaz. Metro se
+       cierra siempre al terminar el paso, también con Ctrl+C.
     8. Opcional (-IncluirRelease): APK release, instalación y apertura sin Metro.
+  En cada variante se guardan el PID (pid-<variante>.txt) y los datos del
+  dispositivo (dispositivo-<variante>.txt).
   Al final genera resumen.md con el resultado de cada paso.
 
 .EXAMPLE
@@ -93,6 +97,7 @@ function Verificar-Ejecucion([string]$Adb, [string]$Dispositivo, [string]$Varian
   $xml = Join-Path $Salida "ui-$Variante.xml"
   $visible = Esperar-TextoEnPantalla $Adb $Dispositivo $xml 120
   $proceso = (& $Adb -s $Dispositivo shell pidof $PaqueteApp 2>&1 | Out-String).Trim()
+  "PID: $proceso" | Set-Content -LiteralPath (Join-Path $Salida "pid-$Variante.txt") -Encoding UTF8
 
   & $Adb -s $Dispositivo shell screencap -p /sdcard/gfp-captura.png 2>&1 | Out-Null
   & $Adb -s $Dispositivo pull /sdcard/gfp-captura.png (Join-Path $Salida "captura-$Variante.png") 2>&1 | Out-Null
@@ -109,6 +114,113 @@ function Verificar-Ejecucion([string]$Adb, [string]$Dispositivo, [string]$Varian
 
   if ($fatal -or $errorJs) { Registrar-Paso "Logcat sin errores fatales ni de JS ($Variante)" 'FALLO' "ver logcat-$Variante.txt" }
   else { Registrar-Paso "Logcat sin errores fatales ni de JS ($Variante)" 'OK' "ver logcat-$Variante.txt" }
+}
+
+function Probar-Metro([int]$TimeoutMs = 3000) {
+  try {
+    $solicitud = [System.Net.HttpWebRequest]::Create('http://localhost:8081/status')
+    $solicitud.Timeout = $TimeoutMs
+    $solicitud.ReadWriteTimeout = $TimeoutMs
+    $solicitud.Proxy = $null
+    $respuesta = $solicitud.GetResponse()
+    try {
+      $lector = New-Object System.IO.StreamReader($respuesta.GetResponseStream(), [System.Text.Encoding]::UTF8)
+      $texto = $lector.ReadToEnd()
+    }
+    finally {
+      $respuesta.Close()
+    }
+    return ($texto -match 'packager-status:running')
+  }
+  catch {
+    return $false
+  }
+}
+
+function Obtener-PidPuerto([int]$Puerto) {
+  if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+    $conexion = Get-NetTCPConnection -LocalPort $Puerto -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($conexion) { return [int]$conexion.OwningProcess }
+    return $null
+  }
+  foreach ($linea in ((netstat.exe -ano -p TCP | Out-String) -split "`r?`n")) {
+    if ($linea -match "^\s*TCP\s+\S+:$Puerto\s+\S+\s+LISTENING\s+(\d+)") { return [int]$Matches[1] }
+  }
+  return $null
+}
+
+function Describir-Proceso([int]$Id) {
+  $p = Get-Process -Id $Id -ErrorAction SilentlyContinue
+  if ($p) { return "PID $Id ($($p.ProcessName))" }
+  return "PID $Id"
+}
+
+function Mostrar-FinalMetro {
+  $log = Join-Path $Salida 'metro.log'
+  if (Test-Path -LiteralPath $log) {
+    Write-Host '--- ultimas lineas de metro.log ---' -ForegroundColor Yellow
+    Get-Content -LiteralPath $log -Tail 15 | ForEach-Object { Write-Host $_ }
+  }
+}
+
+function Detener-Metro($Proceso) {
+  if ($Proceso -and -not $Proceso.HasExited) {
+    & taskkill.exe /PID $Proceso.Id /T /F 2>&1 | Out-Null
+  }
+  Start-Sleep -Seconds 2
+  $cierre = Join-Path $Salida 'metro-cierre.txt'
+  $residual = Obtener-PidPuerto 8081
+  if (-not $residual) {
+    "$(Get-Date -Format o) Puerto 8081 libre tras cerrar Metro" | Set-Content -LiteralPath $cierre -Encoding UTF8
+    Registrar-Paso 'Cierre de Metro' 'OK' 'puerto 8081 libre (metro-cierre.txt)'
+    return
+  }
+  $info = Get-CimInstance Win32_Process -Filter "ProcessId=$residual" -ErrorAction SilentlyContinue
+  $comando = ''
+  if ($info) { $comando = [string]$info.CommandLine }
+  if ($comando -like "*$App*" -and $comando -match 'react-native' -and $comando -match '\bstart\b') {
+    Stop-Process -Id $residual -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+    "$(Get-Date -Format o) Metro residual de este proyecto cerrado: PID $residual" | Set-Content -LiteralPath $cierre -Encoding UTF8
+    Registrar-Paso 'Cierre de Metro' 'OK' "Metro residual de este proyecto cerrado (PID $residual)"
+  }
+  else {
+    "$(Get-Date -Format o) Puerto 8081 ocupado por $(Describir-Proceso $residual); no se cerro: no es el Metro de este proyecto" | Set-Content -LiteralPath $cierre -Encoding UTF8
+    Registrar-Paso 'Cierre de Metro' 'FALLO' "8081 sigue ocupado por $(Describir-Proceso $residual); no se cerro por no ser el Metro de este proyecto"
+  }
+}
+
+function Guardar-DatosDispositivo([string]$Disp, [string]$Variante) {
+  $archivo = Join-Path $Salida "dispositivo-$Variante.txt"
+  $props = @('ro.product.model', 'ro.build.version.release', 'ro.build.version.sdk', 'ro.product.cpu.abi')
+  $lineas = New-Object System.Collections.ArrayList
+  [void]$lineas.Add("Fecha: $(Get-Date -Format o)")
+  [void]$lineas.Add("Dispositivo: $Disp")
+  foreach ($prop in $props) {
+    $valor = (& $Adb -s $Disp shell getprop $prop 2>&1 | Out-String).Trim()
+    [void]$lineas.Add("${prop}: $valor")
+  }
+  [void]$lineas.Add('adb devices -l:')
+  [void]$lineas.Add((& $Adb devices -l 2>&1 | Out-String).Trim())
+  $lineas | Set-Content -LiteralPath $archivo -Encoding UTF8
+}
+
+function Confirmar-Dispositivo([string]$Disp, [int]$Segundos = 120) {
+  $limite = (Get-Date).AddSeconds($Segundos)
+  $aviso = Get-Date
+  while ((Get-Date) -lt $limite) {
+    $lista = & $Adb devices 2>&1 | Out-String
+    if ($lista -match ("(?m)^" + [regex]::Escape($Disp) + "\s+device\s*$")) {
+      $arranque = (& $Adb -s $Disp shell getprop sys.boot_completed 2>&1 | Out-String).Trim()
+      if ($arranque -eq '1') { return $true }
+    }
+    if ((Get-Date) -ge $aviso) {
+      Write-Host "Esperando a que $Disp este disponible (inicie el emulador si se cerro)..." -ForegroundColor Yellow
+      $aviso = (Get-Date).AddSeconds(15)
+    }
+    Start-Sleep -Seconds 5
+  }
+  return $false
 }
 
 Write-Host "Evidencias en: $Salida" -ForegroundColor Cyan
@@ -233,23 +345,53 @@ else {
 
 # 7. Instalacion y ejecucion (debug, con Metro)
 if ($debugOk -and $Dispositivo) {
-  $metro = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', "npx.cmd react-native start --port 8081 > `"$(Join-Path $Salida 'metro.log')`" 2>&1") -WorkingDirectory $App -WindowStyle Minimized -PassThru
-  $metroListo = $false
-  $limite = (Get-Date).AddSeconds(120)
-  while (-not $metroListo -and (Get-Date) -lt $limite) {
-    try {
-      $r = Invoke-WebRequest -Uri 'http://localhost:8081/status' -UseBasicParsing -TimeoutSec 5
-      if ($r.Content -match 'packager-status:running') { $metroListo = $true }
-    }
-    catch { Start-Sleep -Seconds 3 }
+  $ocupante = Obtener-PidPuerto 8081
+  if ($ocupante) {
+    Registrar-Paso 'Puerto 8081 libre antes de Metro' 'FALLO' "ocupado por $(Describir-Proceso $ocupante); cierrelo y repita"
+    Registrar-Paso 'Instalacion y ejecucion (debug)' 'OMITIDO' 'puerto 8081 ocupado'
   }
-  if ($metroListo) { Registrar-Paso 'Metro en ejecucion' 'OK' 'http://localhost:8081/status' } else { Registrar-Paso 'Metro en ejecucion' 'FALLO' 'ver metro.log' }
+  else {
+    Registrar-Paso 'Puerto 8081 libre antes de Metro' 'OK' 'sin proceso en escucha'
+    $metro = $null
+    try {
+      Write-Host 'Iniciando Metro en el puerto 8081 ...' -ForegroundColor Cyan
+      $metro = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', "npx.cmd react-native start --port 8081 > `"$(Join-Path $Salida 'metro.log')`" 2>&1") -WorkingDirectory $App -WindowStyle Minimized -PassThru
+      $metroListo = $false
+      $inicio = Get-Date
+      $limite = $inicio.AddSeconds(120)
+      $aviso = $inicio.AddSeconds(10)
+      while (-not $metroListo -and (Get-Date) -lt $limite -and -not $metro.HasExited) {
+        $metroListo = Probar-Metro
+        if (-not $metroListo) {
+          if ((Get-Date) -ge $aviso) {
+            Write-Host ("Esperando a Metro... {0:N0} s de 120" -f ((Get-Date) - $inicio).TotalSeconds)
+            $aviso = (Get-Date).AddSeconds(10)
+          }
+          Start-Sleep -Seconds 2
+        }
+      }
+      if ($metroListo) {
+        Registrar-Paso 'Metro en ejecucion' 'OK' ("listo en {0:N0} s (http://localhost:8081/status)" -f ((Get-Date) - $inicio).TotalSeconds)
+      }
+      elseif ($metro.HasExited) {
+        Registrar-Paso 'Metro en ejecucion' 'FALLO' 'el proceso de Metro termino antes de estar listo; ver metro.log'
+        Mostrar-FinalMetro
+      }
+      else {
+        Registrar-Paso 'Metro en ejecucion' 'FALLO' 'sin respuesta en 120 s; ver metro.log'
+        Mostrar-FinalMetro
+      }
 
-  Ejecutar $Adb @('-s', $Dispositivo, 'reverse', 'tcp:8081', 'tcp:8081') (Join-Path $Salida 'adb-reverse.log') | Out-Null
-  $instalado = Paso-Comando 'Instalacion APK de depuracion' $Adb @('-s', $Dispositivo, 'install', '-r', $apkDebug) 'instalar-debug.log'
-  if ($instalado -and $metroListo) { Verificar-Ejecucion $Adb $Dispositivo 'debug' }
-
-  & taskkill.exe /PID $metro.Id /T /F 2>&1 | Out-Null
+      Guardar-DatosDispositivo $Dispositivo 'debug'
+      Ejecutar $Adb @('-s', $Dispositivo, 'reverse', 'tcp:8081', 'tcp:8081') (Join-Path $Salida 'adb-reverse.log') | Out-Null
+      $instalado = Paso-Comando 'Instalacion APK de depuracion' $Adb @('-s', $Dispositivo, 'install', '-r', $apkDebug) 'instalar-debug.log'
+      if ($instalado -and $metroListo) { Verificar-Ejecucion $Adb $Dispositivo 'debug' }
+    }
+    finally {
+      Write-Host 'Cerrando Metro ...' -ForegroundColor Cyan
+      Detener-Metro $metro
+    }
+  }
 }
 else {
   Registrar-Paso 'Instalacion y ejecucion (debug)' 'OMITIDO' 'falta APK o dispositivo'
@@ -263,9 +405,17 @@ if ($IncluirRelease) {
     $hash = (Get-FileHash -LiteralPath $apkRelease -Algorithm SHA256).Hash
     "app-release.apk SHA256 $hash" | Set-Content -LiteralPath (Join-Path $Salida 'apk-release.sha256.txt') -Encoding UTF8
     Registrar-Paso 'APK release generado' 'OK' "SHA256 $hash"
-    & $Adb -s $Dispositivo reverse --remove-all 2>&1 | Out-Null
-    $instalado = Paso-Comando 'Instalacion APK release' $Adb @('-s', $Dispositivo, 'install', '-r', $apkRelease) 'instalar-release.log'
-    if ($instalado) { Verificar-Ejecucion $Adb $Dispositivo 'release' }
+    if (Confirmar-Dispositivo $Dispositivo) {
+      Registrar-Paso 'Dispositivo disponible para release' 'OK' $Dispositivo
+      Guardar-DatosDispositivo $Dispositivo 'release'
+      & $Adb -s $Dispositivo reverse --remove tcp:8081 2>&1 | Out-Null
+      Ejecutar $Adb @('-s', $Dispositivo, 'reverse', '--list') (Join-Path $Salida 'reverse-release.txt') | Out-Null
+      $instalado = Paso-Comando 'Instalacion APK release' $Adb @('-s', $Dispositivo, 'install', '-r', $apkRelease) 'instalar-release.log'
+      if ($instalado) { Verificar-Ejecucion $Adb $Dispositivo 'release' }
+    }
+    else {
+      Registrar-Paso 'Dispositivo disponible para release' 'FALLO' "$Dispositivo no disponible en 120 s"
+    }
   }
   else {
     Registrar-Paso 'APK release' 'FALLO' 'compilacion fallida, APK inexistente o sin dispositivo'
