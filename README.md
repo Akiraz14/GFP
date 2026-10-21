@@ -4,7 +4,11 @@ Aplicación móvil Android (React Native + TypeScript), de funcionamiento local,
 registrar y analizar ingresos y gastos personales. Entregable: APK instalable para
 Android 10 (API 29) o superior.
 
-## Fuentes de verdad (no se modifican)
+## Fuentes de verdad (fuera del repositorio)
+
+Por decisión del responsable del proyecto, los documentos fuente no se versionan en
+este repositorio. Se conservan fuera de él, en la ubicación de trabajo del
+responsable, y siguen siendo la fuente de verdad del proyecto:
 
 - `Propuesta_comercial-Gestión_Financiera_Personal.pdf`
 - `Propuesta_del_Proyecto_Gestion_Financiera_Personal_VF.md`
@@ -34,5 +38,5 @@ Validación Android completa: ver `docs/validacion/ETAPA-01.md`.
 
 ## Ramas
 
-- `main`: solo etapas aprobadas.
+- `main`: solo etapas aprobadas. Aún no existe: se creará sobre el commit aprobado de la Etapa 01, junto con la etiqueta `etapa-01-aprobada`.
 - `etapa/NN-nombre`: trabajo de cada etapa; al aprobarse se integra en `main` y se etiqueta `etapa-NN-aprobada`.
