@@ -1,0 +1,7 @@
+﻿Fecha: 2026-10-21T10:03:33.8104451-05:00
+> npm run format:check
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 format:check
+npm notice run prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+Checking formatting...
+All matched files use Prettier code style!
+< codigo de salida: 0

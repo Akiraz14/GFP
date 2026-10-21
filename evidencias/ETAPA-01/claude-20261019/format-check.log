@@ -1,0 +1,19 @@
+Fecha: 2026-10-20T01:00:25+00:00
+Entorno: terminal Linux enlazada a la carpeta del proyecto (Node v22.23.2, npm 10.9.8); node_modules instalado en Windows; Prettier es JavaScript puro
+Contexto: carpetas generadas presentes (android/app/build, android/app/.cxx, android/build, android/.gradle, android/.kotlin)
+> cd app && npm run format:check
+
+> co.gfpsas.gestionfinanciera@0.0.1 format:check
+> prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+
+/sessions/rcw-017rqausucwmtfhhxacwzmtc/mnt/GFP/app/node_modules/.bin/prettier: 33: exec: node.exe: not found
+< codigo de salida: 127
+
+Nota: el primer intento falló porque el atajo de node_modules/.bin generado en Windows invoca node.exe, que no existe en Linux. Se ejecuta el mismo comando del script format:check llamando a Prettier con node directamente:
+> cd app && node node_modules/prettier/bin-prettier.js --check "**/*.{js,jsx,ts,tsx,json,md}"
+Checking formatting...
+All matched files use Prettier code style!
+< codigo de salida: 0
+
+> control: mismo comando ignorando .prettierignore (--ignore-path /dev/null), para confirmar la causa
+< control interrumpido: superó el límite de 170 s de la terminal al recorrer las carpetas generadas; no produjo resultado. La causa ya consta en evidencias/ETAPA-01/20261019-194120/format.log (359 archivos, todos en android\app\build y android\app\.cxx).
