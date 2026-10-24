@@ -18,6 +18,11 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | G-05 | Nombre visible `GFP`; identificador de aplicación `co.gfpsas.gestionfinanciera`. | 2026-10-16 | 00 |
 | D-FUENTES | Los documentos fuente no se incluyen en el repositorio Git; se conservan fuera de él, en la ubicación de trabajo del responsable. No se restauran desde el historial. | 2026-10-16 | 01 |
 | CA-ID | Los criterios de aceptación se conservan literalmente; se usan identificadores internos `HUx-CAyy` solo para organizar pruebas y trazabilidad. | 2026-10-16 | 00 |
+| E02-LIB | Librerías nativas seleccionadas para los fundamentos técnicos, con versión exacta: `@op-engineering/op-sqlite` 18.2.5 con SQLCipher (`"op-sqlite": { "sqlcipher": true }`), `react-native-keychain` 10.0.0, `react-native-get-random-values` 2.0.0 (solo su módulo nativo `RNGetRandomValues`), `@noble/hashes` 2.4.0, `@react-native-ml-kit/text-recognition` 2.0.0 y `react-native-image-picker` 8.3.0. | 2026-10-23 | 02 |
+| E02-INT | Integración selectiva de la Etapa 02 en `main`: dependencias, configuración de SQLCipher, regla ESLint de aleatoriedad segura y documentación. La aplicación de la Etapa 01 (`App.tsx`, sus pruebas y `versionName "1.0"`) no cambia. El código de pruebas de concepto se conserva solo en `refs/revision/spike-02-v4` (`6caa2acc882965d68a37f87992c0a6136c7db4fa`) y no se integra. | 2026-10-23 | 02 |
+| E02-RNG | En `src/` se prohíben `Math.random` y el import del punto de entrada de `react-native-get-random-values` (contiene un respaldo inseguro con `Math.random`); los valores aleatorios criptográficos se obtienen del módulo nativo `RNGetRandomValues`. Regla ESLint en `app/.eslintrc.js`. | 2026-10-23 | 02 |
+| E02-CIERRE | Cierre técnico de la Etapa 02 aceptado con reservas, según el informe `Informe_Cierre_Tecnico_Stage02_V4.docx` (fuera del repositorio). Las reservas y las decisiones abiertas figuran en las secciones "Etapa 02" de este registro. | 2026-10-23 | 02 |
+| E02-OCR | La anomalía `similarity=0.355` de la imagen sintética 03 se acepta como limitación conocida, pendiente de pruebas OCR exhaustivas en una fase posterior. No valida la calidad ni la precisión del OCR. | 2026-10-23 | 02 |
 
 ## Discrepancias documentadas
 
@@ -88,3 +93,56 @@ impiden compilar; se revisarán si una actualización de AGP los convierte en er
 | APIs `applicationVariants`, `testVariants`, `unitTestVariants`, `libraryVariants` obsoletas | Plugin de Gradle de React Native y `react-native-safe-area-context` |
 | Constructor de `DefaultReactActivityDelegate` con flags obsoleto | `MainActivity.kt` de la plantilla |
 | Clases de la arquitectura antigua y atributo `package` en el manifiesto | `react-native-safe-area-context` |
+
+## Etapa 02 — resultados validados experimentalmente
+
+Ejecución del protocolo `scripts/poc-stage02.ps1` sobre la rama experimental
+`spike/02-compatibilidad` V4 (`6caa2ac`), 2026-10-23, emulador `emulator-5554` (API 34).
+Evidencia fuera del repositorio: `GFP-spike02-evidencias\20261023-163848-6caa2ac\`
+(`summary.md`: 48 PASS, 1 FAIL `BUILD-RELEASE`). Son resultados de un emulador con
+código de pruebas de concepto; no demuestran el comportamiento en producción ni en
+dispositivos físicos.
+
+| Fundamento | Resultado | Evidencia |
+|---|---|---|
+| SQLCipher (op-sqlite) | Lectura y escritura cifradas; clave incorrecta rechazada con `NOTADB` y archivo sin cambios; sin cabecera ni marcadores en claro con control positivo válido; SQLite estándar no abre la copia cifrada | `wrong-key-hashes.txt`, `at-rest.txt`, `marker-search.txt`, `sqlite-standard.txt` |
+| Persistencia | Datos de P1, P1B y P2 conservados tras force-stop, cierre, cambio de variante, actualización con `install -r` y reinicio | `steps\`, `runs.txt` |
+| Keystore (react-native-keychain) | Secreto guardado y recuperado entre ejecuciones; nivel declarado `SECURE_SOFTWARE` | `summary.md` (`P2-KEYSTORE-CAPABILITY`) |
+| PBKDF2-HMAC-SHA256 (@noble/hashes) | Vectores V1–V7D correctos en Hermes; benchmark 12/12 muestras en 435 s (presupuesto 900 s) | `p3-extended.txt`, `p3-benchmark.txt` |
+| Cámara, galería y OCR (viabilidad) | Lote de 6 imágenes sintéticas sin fallos (p50 543 ms, p95 3.497 ms); galería y cámara con resultado OCR | `p4-batch.txt`, `steps\` |
+| Build Debug | Compilado e instalado | `gradle-assembleDebug.log`, `apk-spike.txt` |
+| Build Release | Falló en la ruta larga (`ninja: Filename longer than 260 characters`); las pruebas Release usaron un APK compilado antes desde el mismo commit (`DD54C93E…`). Un Release compilado después en `C:\gfp-v4-short` (`819EF8CC…`) solo se instaló y abrió | `gradle-assembleRelease.log`; informe de cierre |
+
+## Etapa 02 — decisiones abiertas
+
+No se dan por resueltas por haber validado las librerías.
+
+| ID | Decisión abierta | Estado de la evidencia |
+|---|---|---|
+| E02-D1 | Algoritmo y parámetros de protección de contraseñas y respuestas: iteraciones de PBKDF2, `Tmax`, tamaño de sal y de clave derivada | Candidatos 600000 iteraciones, sal de 16 bytes y clave de 32 bytes solo como hipótesis de prueba; tiempos medidos en emulador, no en dispositivo físico |
+| E02-D2 | Política de normalización Unicode de contraseñas y respuestas (NFC u otra) | V7 y V7D demuestran que NFC y NFD producen claves distintas |
+| E02-D3 | Estrategia de clave de cifrado de la base de datos (generación, custodia en Keystore, rotación) | Secreto aleatorio en Keystore validado en el PoC; la estrategia no está decidida |
+| E02-D4 | Modelo multiusuario | Sin decidir |
+| E02-D5 | Esquema de base de datos en la Etapa 02 o incremental | Sin decidir |
+| E02-D6 | Criterios y evidencias concretas de cierre de la Etapa 02 (G-06) | Cierre técnico aceptado con reservas (E02-CIERRE); criterios formales sin registrar |
+| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Observados en el APK Debug del PoC (`permissions-debug.txt`) |
+| E02-D8 | Umbral de calidad del OCR | Sin umbral aprobado (E02-OCR) |
+| E02-D9 | Tratamiento de la vulnerabilidad alta informada por `npm audit` | Pendiente de evaluación independiente; no se ejecutó `npm audit fix` |
+
+## Etapa 02 — limitaciones registradas
+
+- Protección de claves respaldada por hardware no demostrada (`SECURE_SOFTWARE`).
+- Generación del secreto con `RNGetRandomValues` no observada en la ejecución final (el secreto ya existía).
+- Escenarios de desinstalación y reinstalación no ejecutados (destructivos, sin autorización).
+- Sin validación en dispositivo físico, incluida la cámara.
+- La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja.
+
+## Prerrequisitos de la Etapa 03 (HU1 Registrar usuario)
+
+Deben resolverse antes de iniciar la Etapa 03:
+
+| Prerrequisito | Motivo |
+|---|---|
+| E02-D1 y E02-D2 | HU1 almacena contraseña y respuestas de seguridad (relacionado con E03-D9 y E03-D10) |
+| E02-D3, E02-D4 y E02-D5 | HU1 crea el primer registro persistente de usuario |
+| G-07 y E03-D1 a E03-D10 | Decisiones propias de la etapa en `plan-etapas.md` |
