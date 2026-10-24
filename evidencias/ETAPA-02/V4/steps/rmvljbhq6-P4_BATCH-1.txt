@@ -1,0 +1,16 @@
+GFP-POC|v2|rmvljbhq6|66|P4_BATCH|STEP|step_begin|INFO|
+GFP-POC|v2|rmvljbhq6|67|P4_BATCH|P4|batch_start|INFO|batchSize=6
+GFP-POC|v2|rmvljbhq6|68|P4_BATCH|P4|ocr_result|OK|source=batch;index=01;durationMs=1772;chars=186;blocks=9;lines=9
+GFP-POC|v2|rmvljbhq6|69|P4_BATCH|P4|ocr_quality|INFO|index=01;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=1
+GFP-POC|v2|rmvljbhq6|70|P4_BATCH|P4|ocr_result|OK|source=batch;index=02;durationMs=3497;chars=197;blocks=8;lines=9
+GFP-POC|v2|rmvljbhq6|71|P4_BATCH|P4|ocr_quality|INFO|index=02;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=0.962;similarity=0.99
+GFP-POC|v2|rmvljbhq6|72|P4_BATCH|P4|ocr_result|OK|source=batch;index=03;durationMs=578;chars=169;blocks=8;lines=9
+GFP-POC|v2|rmvljbhq6|73|P4_BATCH|P4|ocr_quality|INFO|index=03;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=0.355
+GFP-POC|v2|rmvljbhq6|74|P4_BATCH|P4|ocr_result|OK|source=batch;index=04;durationMs=467;chars=198;blocks=9;lines=9
+GFP-POC|v2|rmvljbhq6|75|P4_BATCH|P4|ocr_quality|INFO|index=04;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=0.962;similarity=0.995
+GFP-POC|v2|rmvljbhq6|76|P4_BATCH|P4|ocr_result|OK|source=batch;index=05;durationMs=334;chars=167;blocks=8;lines=8
+GFP-POC|v2|rmvljbhq6|77|P4_BATCH|P4|ocr_quality|INFO|index=05;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=1
+GFP-POC|v2|rmvljbhq6|78|P4_BATCH|P4|ocr_result|OK|source=batch;index=06;durationMs=543;chars=198;blocks=7;lines=9
+GFP-POC|v2|rmvljbhq6|79|P4_BATCH|P4|ocr_quality|INFO|index=06;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=0.995
+GFP-POC|v2|rmvljbhq6|80|P4_BATCH|P4|batch_summary|INFO|images=6;failures=0;p50Ms=543;p95Ms=3497
+GFP-POC|v2|rmvljbhq6|81|P4_BATCH|STEP|step_end|INFO|

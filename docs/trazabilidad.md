@@ -60,16 +60,23 @@ quedó revalidado en `20261019-194120/`. La Etapa 01 fue aprobada. Ver `cierre-e
 ## Etapa 02 — criterios de cierre (no son criterios de historias)
 
 Criterio específico del plan: fundamentos críticos con pruebas y evidencias verificables;
-PoC de OCR solo de viabilidad; riesgos informados. Evidencia fuera del repositorio, en
-`GFP-spike02-evidencias\20261023-163848-6caa2ac\` (rama experimental `6caa2ac`, emulador
-API 34). Detalle y decisiones abiertas en `decisiones.md` (secciones "Etapa 02").
+PoC de OCR solo de viabilidad; riesgos informados. Evidencia de la ejecución V4 (rama
+experimental `6caa2ac`, emulador API 34) en `evidencias/ETAPA-02/V4/`, copia idéntica de
+`GFP-spike02-evidencias\20261023-163848-6caa2ac\` (ver `evidencias/ETAPA-02/README.md`).
+Detalle y decisiones abiertas en `decisiones.md` (secciones "Etapa 02"); veredicto en
+`cierre-etapa-02.md`.
 
 | ID interno | Criterio | Estado | Evidencia |
 |---|---|---|---|
-| E02-C1 | Librerías nativas seleccionadas y compatibles con React Native 0.87.1 | Verificado (emulador) | E02-LIB; `BUILD-DEBUG`, `RUN-D1` a `RUN-R3` en `summary.md` |
-| E02-C2 | Base de datos cifrada con SQLCipher: cifrado en reposo y rechazo de clave incorrecta | Verificado (emulador) | `at-rest.txt`, `marker-search.txt`, `wrong-key-hashes.txt`, `sqlite-standard.txt` |
-| E02-C3 | Secreto en Android Keystore persistente entre ejecuciones | Verificado (emulador); respaldo por hardware no demostrado | `P2-KEYSTORE-CAPABILITY`, `SCN-*` en `summary.md` |
-| E02-C4 | Derivación PBKDF2-HMAC-SHA256 conforme a vectores de referencia | Verificado (emulador); parámetros no aprobados (E02-D1, E02-D2) | `p3-extended.txt`, `p3-benchmark.txt` |
-| E02-C5 | Viabilidad de cámara, galería y OCR | Verificado como viabilidad; calidad sin umbral (E02-OCR, E02-D8) | `p4-batch.txt` |
-| E02-C6 | Decisiones de la etapa resueltas (plan, "Decisiones pendientes por etapa") | Parcial | Librerías resueltas (E02-LIB); E02-D1 a E02-D9 abiertas |
-| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Pendiente | Integración selectiva aprobada tras revisión del diff y validaciones técnicas (E02-INT) |
+| E02-C1 | Librerías nativas seleccionadas y compatibles con React Native 0.87.1 | Verificado (emulador) | E02-LIB; `BUILD-DEBUG`, `RUN-D1` a `RUN-R3` en `V4/summary.md` |
+| E02-C2 | Base de datos cifrada con SQLCipher: cifrado en reposo y rechazo de clave incorrecta | Verificado (emulador) | `V4/at-rest.txt`, `V4/marker-search.txt`, `V4/wrong-key-hashes.txt`, `V4/sqlite-standard.txt` |
+| E02-C3 | Secreto en Android Keystore persistente entre ejecuciones | Verificado (emulador); respaldo por hardware no demostrado | `P2-KEYSTORE-CAPABILITY`, `SCN-*` en `V4/summary.md`; `V4/steps/` |
+| E02-C4 | Derivación PBKDF2-HMAC-SHA256 conforme a vectores de referencia | Verificado (emulador); parámetros no aprobados (E02-D1, E02-D2) | `V4/p3-extended.txt`, `V4/p3-benchmark.txt`, `V4/pbkdf2-vectors.txt` |
+| E02-C5 | Viabilidad de cámara, galería y OCR | Verificado solo como viabilidad. La calidad del OCR no está aprobada: no hay umbral (E02-D8) y la imagen 03 dio `similarity=0.355` (E02-OCR) | `V4/p4-batch.txt`; `V4/steps/rmvljbhq6-P4_*` |
+| E02-C6 | Decisiones de la etapa resueltas (plan, "Decisiones pendientes por etapa") | Parcial | Librerías resueltas (E02-LIB); E02-D1 a E02-D5 y E02-D7 a E02-D9 abiertas; E02-D6 con criterios registrados y aprobación pendiente |
+| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Probado; compilación Android de `main` pendiente | Commits `372180c` y `e21ba6b` (E02-INT). Archivos de la aplicación de la Etapa 01 sin cambios respecto a `e10cebf`. `npm ci`, `typecheck`, `lint`, `format:check` y Jest 1/1 con código 0 sobre el árbol `app/` de `main` (`claude-20261023/`). `assembleDebug` de `main` en Windows no ejecutado |
+
+Rutas relativas a `evidencias/ETAPA-02/`. Estado del cierre: técnico aceptado con reservas
+(E02-CIERRE), con E02-C6 parcial y E02-C7 sin compilación Android de `main`. Este cierre no
+autoriza el inicio de la Etapa 03, que requiere la aprobación explícita del responsable y
+los prerrequisitos de `decisiones.md`.

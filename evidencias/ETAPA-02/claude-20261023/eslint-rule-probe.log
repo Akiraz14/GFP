@@ -1,0 +1,8 @@
+
+src/probeRandom.ts
+  1:1   error  'react-native-get-random-values' import is restricted from being used. The package entry point contains an insecure Math.random fallback; call the RNGetRandomValues native module directly  no-restricted-imports
+  2:22  error  'Math.random' is restricted from being used. Math.random is not a cryptographically secure source; use the RNGetRandomValues native module validated in Stage 02                             no-restricted-properties
+
+✖ 2 problems (2 errors, 0 warnings)
+
+eslint exit=1

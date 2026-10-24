@@ -1,0 +1,4 @@
+GFP-POC|v2|rmvljbhq6|86|P4_CAMERA|STEP|step_begin|INFO|
+GFP-POC|v2|rmvljbhq6|87|P4_CAMERA|P4|picker_result|OK|source=camera;mime=image/jpeg;width=960;height=1280;bytes=187292
+GFP-POC|v2|rmvljbhq6|88|P4_CAMERA|P4|ocr_result|OK|source=camera;durationMs=322;chars=0;blocks=0;lines=0
+GFP-POC|v2|rmvljbhq6|89|P4_CAMERA|STEP|step_end|INFO|

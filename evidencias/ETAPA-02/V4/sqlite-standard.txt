@@ -1,0 +1,7 @@
+C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-spike02-evidencias\20261023-163848-6caa2ac\db-copies\poc-p1-v2.db.D => sqlite3.exe : Error: in prepare, file is not a database (26)
+En C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-spike02-v4\scripts\poc-stage02.ps1: 558 Carácter: 31
++ ...  $output = (& sqlite3 -readonly $file 'SELECT count(*) FROM sqlite_ma ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: in prepa...a database (26):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-spike02-evidencias\20261023-163848-6caa2ac\db-copies\poc-canary-v2.db.D => 1

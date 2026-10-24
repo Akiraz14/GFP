@@ -1,0 +1,4 @@
+GFP-POC|v2|rmvljbhq6|82|P4_GALLERY|STEP|step_begin|INFO|
+GFP-POC|v2|rmvljbhq6|83|P4_GALLERY|P4|picker_result|OK|source=gallery;mime=image/jpeg;width=1600;height=1200;bytes=108196
+GFP-POC|v2|rmvljbhq6|84|P4_GALLERY|P4|ocr_result|OK|source=gallery;durationMs=525;chars=169;blocks=8;lines=9
+GFP-POC|v2|rmvljbhq6|85|P4_GALLERY|STEP|step_end|INFO|

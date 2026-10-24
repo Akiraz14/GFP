@@ -1,0 +1,31 @@
+GFP-POC|v2|rmvljbhq6|2|AUTO|STEP|step_begin|INFO|
+GFP-POC|v2|rmvljbhq6|3|AUTO|CANARY|canary_written|OK|database=poc-canary-v2.db;encrypted=false;marker=GFP-POC-CANARY-rmvljbhq6
+GFP-POC|v2|rmvljbhq6|4|AUTO|P1|open_ms|INFO|20
+GFP-POC|v2|rmvljbhq6|5|AUTO|P1|cipher_version|OK|value=4.19.0 community
+GFP-POC|v2|rmvljbhq6|6|AUTO|P1|journal_mode|INFO|value=delete
+GFP-POC|v2|rmvljbhq6|7|AUTO|P1|persistence|OK|firstRun=false;database=poc-p1-v2.db;marker=GFP-POC-SQL-P1-rmvjxlw6x;createdRun=rmvjxlw6x;previousRuns=18
+GFP-POC|v2|rmvljbhq6|8|AUTO|P1|read_write|OK|database=poc-p1-v2.db
+GFP-POC|v2|rmvljbhq6|9|AUTO|P1|wal_checkpoint|INFO|busy=0;log=-1;checkpointed=-1
+GFP-POC|v2|rmvljbhq6|10|AUTO|P1|database_closed|INFO|database=poc-p1-v2.db
+GFP-POC|v2|rmvljbhq6|11|AUTO|P1|wrong_key_control|OK|database=poc-p1-wrong-key-v2.db;marker=GFP-POC-SQL-P1-WK-rmvjxlw6x
+GFP-POC|v2|rmvljbhq6|12|AUTO|P1|wrong_key_rejected|OK|database=poc-p1-wrong-key-v2.db;kind=sqlite_notadb
+GFP-POC|v2|rmvljbhq6|13|AUTO|P1|passphrase_open_ms|INFO|4
+GFP-POC|v2|rmvljbhq6|14|AUTO|P2|keystore_capability|INFO|maxSupportedLevel=SECURE_SOFTWARE
+GFP-POC|v2|rmvljbhq6|15|AUTO|P2|persistence|OK|fingerprint=3acd778da689f604c3c136869c4bdfba4eff7143c83d7cb691a1d79979988bb2
+GFP-POC|v2|rmvljbhq6|16|AUTO|P2|public_marker_stored|OK|marker=GFP-POC-PUBLIC-rmvljbhq6
+GFP-POC|v2|rmvljbhq6|17|AUTO|P1B|key_source|INFO|fingerprint=3acd778da689f604c3c136869c4bdfba4eff7143c83d7cb691a1d79979988bb2
+GFP-POC|v2|rmvljbhq6|18|AUTO|P1B|open_ms|INFO|8
+GFP-POC|v2|rmvljbhq6|19|AUTO|P1B|cipher_version|OK|value=4.19.0 community
+GFP-POC|v2|rmvljbhq6|20|AUTO|P1B|journal_mode|INFO|value=delete
+GFP-POC|v2|rmvljbhq6|21|AUTO|P1B|persistence|OK|firstRun=false;database=poc-p1b-v2.db;marker=GFP-POC-SQL-P1B-rmvjxlw6x;createdRun=rmvjxlw6x;previousRuns=18
+GFP-POC|v2|rmvljbhq6|22|AUTO|P1B|read_write|OK|database=poc-p1b-v2.db
+GFP-POC|v2|rmvljbhq6|23|AUTO|P1B|wal_checkpoint|INFO|busy=0;log=-1;checkpointed=-1
+GFP-POC|v2|rmvljbhq6|24|AUTO|P1B|database_closed|INFO|database=poc-p1b-v2.db
+GFP-POC|v2|rmvljbhq6|25|AUTO|P1B|wrong_key_control|OK|database=poc-p1b-wrong-key-v2.db;marker=GFP-POC-SQL-P1B-WK-rmvjxlw6x
+GFP-POC|v2|rmvljbhq6|26|AUTO|P1B|wrong_key_rejected|OK|database=poc-p1b-wrong-key-v2.db;kind=sqlite_notadb
+GFP-POC|v2|rmvljbhq6|27|AUTO|P3|vector_V1|OK|durationMs=1;iterations=1
+GFP-POC|v2|rmvljbhq6|28|AUTO|P3|vector_V4|OK|durationMs=1;iterations=1
+GFP-POC|v2|rmvljbhq6|29|AUTO|P3|vector_V5|OK|durationMs=598;iterations=4096
+GFP-POC|v2|rmvljbhq6|30|AUTO|P3|vector_V6|OK|durationMs=1016;iterations=4096
+GFP-POC|v2|rmvljbhq6|31|AUTO|P3|salt_uniqueness|OK|saltBytes=16;saltsDiffer=true
+GFP-POC|v2|rmvljbhq6|32|AUTO|STEP|step_end|INFO|

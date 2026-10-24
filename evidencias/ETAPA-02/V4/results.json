@@ -1,0 +1,350 @@
+[
+    {
+        "Id":  "PRE-WORKTREE",
+        "Status":  "PASS",
+        "Detail":  "HEAD=6caa2acc882965d68a37f87992c0a6136c7db4fa limpio; detached=True",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "PRE-MAIN-REPOSITORY",
+        "Status":  "PASS",
+        "Detail":  "repositorio principal en e10cebf31b29fffcc783b0817724ed34308a39c8 (solo lectura)",
+        "Evidence":  "main-repository-start.txt"
+    },
+    {
+        "Id":  "INTEGRITY-STAGE01-START",
+        "Status":  "PASS",
+        "Detail":  "Debug Etapa 01: intacto; Release Etapa 01: intacto",
+        "Evidence":  "stage01-apk-sha256.txt"
+    },
+    {
+        "Id":  "PRE-TOOLS",
+        "Status":  "PASS",
+        "Detail":  "sqlite3=True python=True",
+        "Evidence":  "tools.txt"
+    },
+    {
+        "Id":  "PRE-PBKDF2-VECTORS",
+        "Status":  "PASS",
+        "Detail":  "Node y .NET reproducen V3, V7 y V7D; Node reproduce todos",
+        "Evidence":  "pbkdf2-vectors.txt"
+    },
+    {
+        "Id":  "PRE-OCR-IMAGES",
+        "Status":  "PASS",
+        "Detail":  "6 imagenes sinteticas con hash verificado",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "ENV-JDK17",
+        "Status":  "PASS",
+        "Detail":  "C:\\Program Files\\Microsoft\\jdk-17.0.20.101-hotspot",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "NPM-CI",
+        "Status":  "NOT RUN",
+        "Detail":  "parametro -SkipNpmCi",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "QUALITY-TSC",
+        "Status":  "PASS",
+        "Detail":  "exit 0 (Jest valida logica con simulaciones, no comportamiento nativo)",
+        "Evidence":  "typecheck.log"
+    },
+    {
+        "Id":  "QUALITY-ESLINT",
+        "Status":  "PASS",
+        "Detail":  "exit 0 (Jest valida logica con simulaciones, no comportamiento nativo)",
+        "Evidence":  "lint.log"
+    },
+    {
+        "Id":  "QUALITY-PRETTIER",
+        "Status":  "PASS",
+        "Detail":  "exit 0 (Jest valida logica con simulaciones, no comportamiento nativo)",
+        "Evidence":  "format.log"
+    },
+    {
+        "Id":  "JEST-LOGIC",
+        "Status":  "PASS",
+        "Detail":  "exit 0 (Jest valida logica con simulaciones, no comportamiento nativo)",
+        "Evidence":  "jest.log"
+    },
+    {
+        "Id":  "BUILD-DEBUG",
+        "Status":  "PASS",
+        "Detail":  "SHA256 E0994C87C6CBE0D88CE283D698F9CA278E9E69A286923819FFCA1E0BCC2253A8; 206057044 bytes",
+        "Evidence":  "apk-spike.txt"
+    },
+    {
+        "Id":  "APK-DEBUG-INFO",
+        "Status":  "INFO",
+        "Detail":  "ABI=arm64-v8a,armeabi-v7a,x86,x86_64; ML Kit/OCR comprimido=44817075 bytes; permisos=android.permission.INTERNET,android.permission.USE_BIOMETRIC,android.permission.USE_FINGERPRINT,android.permission.SYSTEM_ALERT_WINDOW,android.permission.ACCESS_LOCAL_NETWORK,co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION,android.permission.ACCESS_NETWORK_STATE",
+        "Evidence":  "permissions-debug.txt"
+    },
+    {
+        "Id":  "BUILD-RELEASE",
+        "Status":  "FAIL",
+        "Detail":  "exit 1",
+        "Evidence":  "gradle-assembleRelease.log"
+    },
+    {
+        "Id":  "INTEGRITY-STAGE01-AFTER-BUILD",
+        "Status":  "PASS",
+        "Detail":  "Debug Etapa 01: intacto; Release Etapa 01: intacto",
+        "Evidence":  "stage01-apk-sha256.txt"
+    },
+    {
+        "Id":  "APK-CERT-MATCH",
+        "Status":  "PASS",
+        "Detail":  "Debug y Release firmados con fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c",
+        "Evidence":  "apk-spike.txt"
+    },
+    {
+        "Id":  "DEVICE",
+        "Status":  "INFO",
+        "Detail":  "emulator-5554 emulador API 34",
+        "Evidence":  "device.txt"
+    },
+    {
+        "Id":  "PRE-INSTALLED-APP",
+        "Status":  "PASS",
+        "Detail":  "misma firma y versionCode compatible (1)",
+        "Evidence":  "apk-spike.txt"
+    },
+    {
+        "Id":  "METRO",
+        "Status":  "PASS",
+        "Detail":  "Metro listo",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "RUN-D1-start",
+        "Status":  "PASS",
+        "Detail":  "rmvlhxh66 sin FAIL ni BLOCKED (pid  -\u003e 17492)",
+        "Evidence":  "steps\\rmvlhxh66-AUTO-1.txt"
+    },
+    {
+        "Id":  "RUN-D2-force-stop",
+        "Status":  "PASS",
+        "Detail":  "rmvlhxzxt sin FAIL ni BLOCKED (pid  -\u003e 17655)",
+        "Evidence":  "steps\\rmvlhxzxt-AUTO-1.txt"
+    },
+    {
+        "Id":  "RUN-D3-back",
+        "Status":  "PASS",
+        "Detail":  "rmvlhyhf8 sin FAIL ni BLOCKED (pid  -\u003e 17794)",
+        "Evidence":  "steps\\rmvlhyhf8-AUTO-1.txt"
+    },
+    {
+        "Id":  "P1-WRONG-KEY",
+        "Status":  "PASS",
+        "Detail":  "3 verificaciones: control OK, clave incorrecta rechazada (NOTADB), hash identico",
+        "Evidence":  "wrong-key-hashes.txt"
+    },
+    {
+        "Id":  "P1B-WRONG-KEY",
+        "Status":  "PASS",
+        "Detail":  "3 verificaciones: control OK, clave incorrecta rechazada (NOTADB), hash identico",
+        "Evidence":  "wrong-key-hashes.txt"
+    },
+    {
+        "Id":  "AT-REST",
+        "Status":  "PASS",
+        "Detail":  "6 archivos: copias A=B=C=original, sin cabecera ni marcadores en claro; control positivo legible",
+        "Evidence":  "at-rest.txt"
+    },
+    {
+        "Id":  "MARKER-SEARCH",
+        "Status":  "PASS",
+        "Detail":  "control positivo solo en poc-canary-v2.db; 5 marcadores protegidos sin coincidencias",
+        "Evidence":  "marker-search.txt"
+    },
+    {
+        "Id":  "P1-SQLITE-STANDARD",
+        "Status":  "PASS",
+        "Detail":  "SQLite estandar abre el control y rechaza la copia cifrada (file is not a database)",
+        "Evidence":  "sqlite-standard.txt"
+    },
+    {
+        "Id":  "RUN-R1-variant-switch",
+        "Status":  "PASS",
+        "Detail":  "rmvlir8s6 sin FAIL ni BLOCKED (pid  -\u003e 18675)",
+        "Evidence":  "steps\\rmvlir8s6-AUTO-1.txt"
+    },
+    {
+        "Id":  "RELEASE-LOGS",
+        "Status":  "PASS",
+        "Detail":  "diagnostico disponible en Release (rmvlir8s6)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "RUN-R2-update",
+        "Status":  "PASS",
+        "Detail":  "rmvliro7t sin FAIL ni BLOCKED (pid  -\u003e 18808)",
+        "Evidence":  "steps\\rmvliro7t-AUTO-1.txt"
+    },
+    {
+        "Id":  "RUN-R3-reboot",
+        "Status":  "PASS",
+        "Detail":  "rmvljbhq6 sin FAIL ni BLOCKED (pid  -\u003e 5580)",
+        "Evidence":  "steps\\rmvljbhq6-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-FORCE-STOP",
+        "Status":  "PASS",
+        "Detail":  "rmvlhxzxt: P1, P1B y P2 persisten; misma huella",
+        "Evidence":  "steps\\rmvlhxzxt-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-CLOSE-REOPEN",
+        "Status":  "PASS",
+        "Detail":  "rmvlhyhf8: P1, P1B y P2 persisten; misma huella",
+        "Evidence":  "steps\\rmvlhyhf8-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-VARIANT-SWITCH",
+        "Status":  "PASS",
+        "Detail":  "rmvlir8s6: P1, P1B y P2 persisten; misma huella",
+        "Evidence":  "steps\\rmvlir8s6-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-UPDATE",
+        "Status":  "PASS",
+        "Detail":  "rmvliro7t: P1, P1B y P2 persisten; misma huella",
+        "Evidence":  "steps\\rmvliro7t-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-REBOOT",
+        "Status":  "PASS",
+        "Detail":  "rmvljbhq6: P1, P1B y P2 persisten; misma huella",
+        "Evidence":  "steps\\rmvljbhq6-AUTO-1.txt"
+    },
+    {
+        "Id":  "SCN-UNINSTALL-REINSTALL",
+        "Status":  "NOT RUN",
+        "Detail":  "destructivo: no autorizado en esta etapa",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "SCN-UNINSTALL-KEEP-DATA",
+        "Status":  "NOT RUN",
+        "Detail":  "adb uninstall -k excluido por decision",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P1-CIPHER",
+        "Status":  "PASS",
+        "Detail":  "OK en 6 ejecuciones (Debug y Release)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P1-READ-WRITE",
+        "Status":  "PASS",
+        "Detail":  "OK en 6 ejecuciones (Debug y Release)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P1B-CIPHER",
+        "Status":  "PASS",
+        "Detail":  "OK en 6 ejecuciones (Debug y Release)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P1B-READ-WRITE",
+        "Status":  "PASS",
+        "Detail":  "OK en 6 ejecuciones (Debug y Release)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P3-BASIC-SALT",
+        "Status":  "PASS",
+        "Detail":  "OK en 6 ejecuciones (Debug y Release)",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P2-KEYSTORE-CAPABILITY",
+        "Status":  "INFO",
+        "Detail":  "nivel maximo soportado declarado por react-native-keychain: SECURE_SOFTWARE; no demuestra el respaldo por hardware de la clave usada",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P3-BASIC-VECTORS",
+        "Status":  "PASS",
+        "Detail":  "24 calculos de V1, V4, V5 y V6 correctos en Hermes",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "RNG-NATIVE",
+        "Status":  "INFO",
+        "Detail":  "el secreto ya existia; la generacion no se observo en estas ejecuciones",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "P3-EXTENDED-VECTORS",
+        "Status":  "PASS",
+        "Detail":  "complete: 4 vectores OK; vectors=4;failed=0; runId=rmvljbhq6; elapsedS=265; last=rmvljbhq6#44 P3_EXTENDED/STEP/step_end/INFO (emulador)",
+        "Evidence":  "p3-extended.txt"
+    },
+    {
+        "Id":  "P3-BENCHMARK",
+        "Status":  "PASS",
+        "Detail":  "complete: outcome=complete;reason=all_samples;samples=12/12;elapsedMs=435400;budgetMs=900000;pending=none; runId=rmvljbhq6; elapsedS=444; last=rmvljbhq6#65 P3_BENCHMARK/STEP/step_end/INFO | iterations=100000;samples=3;medianMs=11836;runsMs=12455/11778/11836 | iterations=210000;samples=3;medianMs=24665;runsMs=26174/24303/24665 | iterations=310000;samples=3;medianMs=37146;runsMs=38638/35609/37146 | iterations=600000;samples=3;medianMs=70889;runsMs=71690/70073/70889 (emulador)",
+        "Evidence":  "p3-benchmark.txt"
+    },
+    {
+        "Id":  "P4-BATCH",
+        "Status":  "PASS",
+        "Detail":  "complete: ocrResults=6; images=6;failures=0;p50Ms=543;p95Ms=3497; runId=rmvljbhq6; elapsedS=22; last=rmvljbhq6#81 P4_BATCH/STEP/step_end/INFO; calidad sin umbral aprobado (INFO)",
+        "Evidence":  "p4-batch.txt"
+    },
+    {
+        "Id":  "P4-QUALITY",
+        "Status":  "INFO",
+        "Detail":  "index=01;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=1 | index=02;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=0.962;similarity=0.99 | index=03;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=0.355 | index=04;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=0.962;similarity=0.995 | index=05;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=1 | index=06;fieldMerchant=1;fieldDate=1;fieldTotal=1;fieldCurrency=1;fieldDocument=1;tokenRecall=1;similarity=0.995",
+        "Evidence":  "p4-batch.txt"
+    },
+    {
+        "Id":  "P4-GALLERY",
+        "Status":  "PASS",
+        "Detail":  "ocr_result (reconocimiento, no extraccion de campos)",
+        "Evidence":  "steps\\rmvljbhq6-P4_GALLERY-1.txt"
+    },
+    {
+        "Id":  "P4-CAMERA",
+        "Status":  "PASS",
+        "Detail":  "ocr_result (reconocimiento, no extraccion de campos)",
+        "Evidence":  "steps\\rmvljbhq6-P4_CAMERA-1.txt"
+    },
+    {
+        "Id":  "PRIVACY-SCAN",
+        "Status":  "PASS",
+        "Detail":  "17 archivos sin exposiciones ni casos ambiguos",
+        "Evidence":  "sensitive-scan.md"
+    },
+    {
+        "Id":  "INTEGRITY-STAGE01-END",
+        "Status":  "PASS",
+        "Detail":  "Debug Etapa 01: intacto; Release Etapa 01: intacto",
+        "Evidence":  "stage01-apk-sha256.txt"
+    },
+    {
+        "Id":  "MAIN-REPOSITORY-UNCHANGED",
+        "Status":  "PASS",
+        "Detail":  "HEAD, estado y referencias identicos al inicio",
+        "Evidence":  "main-repository-end.txt"
+    },
+    {
+        "Id":  "WORKTREE-UNCHANGED",
+        "Status":  "PASS",
+        "Detail":  "sin cambios",
+        "Evidence":  ""
+    },
+    {
+        "Id":  "DESTRUCTIVE-ACTIONS",
+        "Status":  "INFO",
+        "Detail":  "ninguna automatizada; limpieza pendiente de autorizacion (ver cleanup-pending.txt si existe)",
+        "Evidence":  ""
+    }
+]

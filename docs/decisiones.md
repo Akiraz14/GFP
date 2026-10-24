@@ -29,6 +29,7 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | ID | Discrepancia | Estado |
 |---|---|---|
 | C-01 | El documento de historias de usuario (§2.1) indica que en la fase MVP no se contempla la generación y entrega de un APK instalable. La propuesta comercial, la propuesta VF y la decisión DT-01 establecen el APK como entregable. Según Juan, la redacción del documento de historias responde a una consideración académica de flexibilidad ante la evaluación. **Alcance documental académico:** demostración desde el entorno de desarrollo. **Objetivo técnico del proyecto:** APK instalable y validado (DT-01). El documento de historias no se modifica. | Abierta hasta su formalización documental; no reduce el objetivo técnico. |
+| C-02 | G-03 establece un repositorio solo local, sin remoto publicado, en `C:\Users\juanz\Akiraz\Study\GFP`. El repositorio canónico está en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP` y tiene el remoto `origin` (`https://github.com/Akiraz14/GFP.git`), con `main` publicado en `e10cebf` (`git ls-remote`, 2026-10-23). La WU de cierre de la Etapa 02 autoriza sincronizar `main` con ese remoto. | Abierta: actualización formal de G-03 pendiente del responsable. |
 
 ## Entorno de validación confirmado (G-02)
 
@@ -98,10 +99,12 @@ impiden compilar; se revisarán si una actualización de AGP los convierte en er
 
 Ejecución del protocolo `scripts/poc-stage02.ps1` sobre la rama experimental
 `spike/02-compatibilidad` V4 (`6caa2ac`), 2026-10-23, emulador `emulator-5554` (API 34).
-Evidencia fuera del repositorio: `GFP-spike02-evidencias\20261023-163848-6caa2ac\`
-(`summary.md`: 48 PASS, 1 FAIL `BUILD-RELEASE`). Son resultados de un emulador con
-código de pruebas de concepto; no demuestran el comportamiento en producción ni en
-dispositivos físicos.
+Evidencia original fuera del repositorio: `GFP-spike02-evidencias\20261023-163848-6caa2ac\`
+(`summary.md`: 48 PASS, 1 FAIL `BUILD-RELEASE`). Copia versionada en
+`evidencias/ETAPA-02/V4/`, idéntica byte a byte en sus 69 archivos (SHA-256 comparados el
+2026-10-23; en Git, con finales de línea LF); las copias de bases de datos y el APK no se versionan (ver
+`evidencias/ETAPA-02/README.md`). Son resultados de un emulador con código de pruebas de
+concepto; no demuestran el comportamiento en producción ni en dispositivos físicos.
 
 | Fundamento | Resultado | Evidencia |
 |---|---|---|
@@ -113,21 +116,32 @@ dispositivos físicos.
 | Build Debug | Compilado e instalado | `gradle-assembleDebug.log`, `apk-spike.txt` |
 | Build Release | Falló en la ruta larga (`ninja: Filename longer than 260 characters`); las pruebas Release usaron un APK compilado antes desde el mismo commit (`DD54C93E…`). Un Release compilado después en `C:\gfp-v4-short` (`819EF8CC…`) solo se instaló y abrió | `gradle-assembleRelease.log`; informe de cierre |
 
+## Etapa 02 — integración en `main`
+
+| Elemento | Valor |
+|---|---|
+| Commits | `372180c` (feat: integrate stage 02 technical foundations) y `e21ba6b` (merge sin avance rápido de `372180c` sobre `e10cebf`) |
+| Archivos | `app/.eslintrc.js`, `app/package.json`, `app/package-lock.json`, `docs/decisiones.md`, `docs/trazabilidad.md` |
+| Sin cambios respecto a `e10cebf` (comprobado con `git diff --quiet`) | `app/App.tsx`, `app/__tests__/App.test.tsx`, `app/android/` (incluido `versionName "1.0"` e identificador `co.gfpsas.gestionfinanciera`), `app/src/`, `app/app.json`, `app/index.js`, `app/jest.config.js`, `app/jest.setup.js`, `scripts/`, `evidencias/ETAPA-01/` |
+| Validaciones sobre el árbol `app/` de `main` (`b5a0f08`) | Claude, Linux, 2026-10-23: `npm ci`, `typecheck`, `lint`, `format:check` y Jest (1/1) con código 0 (`evidencias/ETAPA-02/claude-20261023/`) |
+| No ejecutado | Compilación Android Debug de `main` integrado en Windows con JDK 17. Las compilaciones Debug y Release de la Etapa 02 se hicieron sobre la rama experimental `6caa2ac`, con las mismas versiones de las dependencias |
+
 ## Etapa 02 — decisiones abiertas
 
-No se dan por resueltas por haber validado las librerías.
+No se dan por resueltas por haber validado las librerías. Los valores de las pruebas son
+hipótesis de prueba, no parámetros aprobados.
 
-| ID | Decisión abierta | Estado de la evidencia |
-|---|---|---|
-| E02-D1 | Algoritmo y parámetros de protección de contraseñas y respuestas: iteraciones de PBKDF2, `Tmax`, tamaño de sal y de clave derivada | Candidatos 600000 iteraciones, sal de 16 bytes y clave de 32 bytes solo como hipótesis de prueba; tiempos medidos en emulador, no en dispositivo físico |
-| E02-D2 | Política de normalización Unicode de contraseñas y respuestas (NFC u otra) | V7 y V7D demuestran que NFC y NFD producen claves distintas |
-| E02-D3 | Estrategia de clave de cifrado de la base de datos (generación, custodia en Keystore, rotación) | Secreto aleatorio en Keystore validado en el PoC; la estrategia no está decidida |
-| E02-D4 | Modelo multiusuario | Sin decidir |
-| E02-D5 | Esquema de base de datos en la Etapa 02 o incremental | Sin decidir |
-| E02-D6 | Criterios y evidencias concretas de cierre de la Etapa 02 (G-06) | Cierre técnico aceptado con reservas (E02-CIERRE); criterios formales sin registrar |
-| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Observados en el APK Debug del PoC (`permissions-debug.txt`) |
-| E02-D8 | Umbral de calidad del OCR | Sin umbral aprobado (E02-OCR) |
-| E02-D9 | Tratamiento de la vulnerabilidad alta informada por `npm audit` | Pendiente de evaluación independiente; no se ejecutó `npm audit fix` |
+| ID | Decisión abierta | Estado | Justificación y evidencia | Condición de resolución | Prerrequisito de la Etapa 03 |
+|---|---|---|---|---|---|
+| E02-D1 | Algoritmo y parámetros de protección de contraseñas y respuestas: iteraciones de PBKDF2, `Tmax`, tamaño de sal y de clave derivada | Abierta | Candidatos 600000 iteraciones, sal de 16 bytes y clave de 32 bytes solo como hipótesis de prueba; benchmark medido en emulador (mediana 70,9 s para 600000 iteraciones en Hermes, `p3-benchmark.txt`), no en dispositivo físico | El responsable aprueba algoritmo y parámetros, con la medición en el dispositivo o emulador que acepte como referencia | Sí |
+| E02-D2 | Política de normalización Unicode de contraseñas y respuestas (NFC u otra) | Abierta | V7 y V7D demuestran que NFC y NFD producen claves distintas (`pbkdf2-vectors.txt`) | Política aprobada, coherente con E03-D9 y E05-D3 | Sí |
+| E02-D3 | Estrategia de clave de cifrado de la base de datos (generación, custodia en Keystore, rotación) | Abierta | Secreto aleatorio en Keystore validado en el PoC con nivel declarado `SECURE_SOFTWARE`; respaldo por hardware y generación con `RNGetRandomValues` no observados en la ejecución final | Estrategia aprobada: generación, custodia, nivel de protección aceptado, comportamiento ante borrado de datos o reinstalación y rotación | Sí |
+| E02-D4 | Modelo multiusuario | Abierta | Sin evidencia ni decisión; afecta a HU2-CA11 | Modelo aprobado por el responsable | Sí |
+| E02-D5 | Esquema de base de datos en la Etapa 02 o incremental | Abierta | Sin decidir; afecta a HU8-CA07c | Decisión del responsable sobre el alcance del esquema | Sí |
+| E02-D6 | Criterios y evidencias concretas de cierre de la Etapa 02 (G-06) | Criterios registrados; aprobación pendiente | Criterios E02-C1 a E02-C7 con estado y evidencia en `trazabilidad.md`; veredicto en `cierre-etapa-02.md` | Aprobación explícita del responsable de los criterios y del cierre con reservas | Sí |
+| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Abierta | Observados en el APK Debug del PoC (`permissions-debug.txt`), junto con otros declarados por dependencias | Decisión del responsable con la lista de permisos del APK de `main` (`aapt2`); a más tardar en la Etapa 13, según la observación registrada sobre `INTERNET` | No |
+| E02-D8 | Umbral de calidad del OCR | Abierta | Sin umbral aprobado (E02-OCR); la viabilidad demostrada no aprueba la calidad | Umbral y conjunto de pruebas aprobados antes de la Etapa 10 (HU7) | No |
+| E02-D9 | Tratamiento de la vulnerabilidad alta informada por `npm audit` | Abierta | `npm audit` (2026-10-23, `claude-20261023/npm-audit.json`): un único hallazgo alto, `body-parser` 2.3.0 (GHSA-27r3-jxmh-p828, denegación de servicio), dependencia transitiva de la dependencia de desarrollo `@react-native-community/cli` 20.2.0 (`cli-server-api`). Ya figuraba en el `package-lock.json` de `e10cebf`; no la introducen las dependencias de la Etapa 02. `npm audit` informa una corrección disponible. No se ejecutó `npm audit fix` | Decisión del responsable (actualizar, fijar la versión o aceptar el riesgo) y revalidación completa si cambia el lockfile | No |
 
 ## Etapa 02 — limitaciones registradas
 
@@ -135,7 +149,10 @@ No se dan por resueltas por haber validado las librerías.
 - Generación del secreto con `RNGetRandomValues` no observada en la ejecución final (el secreto ya existía).
 - Escenarios de desinstalación y reinstalación no ejecutados (destructivos, sin autorización).
 - Sin validación en dispositivo físico, incluida la cámara.
-- La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja.
+- La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja. Procedimiento conocido: compilar desde un worktree en una ruta corta (por ejemplo `C:\gfp-v4-short`) con JDK 17 solo en el proceso. Las pruebas Release se ejecutaron con el APK `DD54C93E…`; el Release `819EF8CC…`, compilado en la ruta corta, solo se instaló y abrió.
+- Compilación Android de `main` integrado (`e21ba6b`) no ejecutada; ver "Etapa 02 — integración en `main`".
+- Pruebas en un solo emulador (API 34); no se repitieron en el emulador API 29 de la Etapa 01.
+- OCR evaluado solo con 6 imágenes sintéticas; la anomalía `similarity=0.355` (imagen 03) queda como limitación conocida (E02-OCR).
 
 ## Prerrequisitos de la Etapa 03 (HU1 Registrar usuario)
 
@@ -143,6 +160,8 @@ Deben resolverse antes de iniciar la Etapa 03:
 
 | Prerrequisito | Motivo |
 |---|---|
+| E02-D6 y aprobación del cierre de la Etapa 02 | Protocolo por etapa: pausa obligatoria hasta aprobación explícita |
 | E02-D1 y E02-D2 | HU1 almacena contraseña y respuestas de seguridad (relacionado con E03-D9 y E03-D10) |
 | E02-D3, E02-D4 y E02-D5 | HU1 crea el primer registro persistente de usuario |
 | G-07 y E03-D1 a E03-D10 | Decisiones propias de la etapa en `plan-etapas.md` |
+| Autorización explícita del responsable para iniciar la Etapa 03 | El cierre técnico de la Etapa 02 no la concede |

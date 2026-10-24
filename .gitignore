@@ -6,3 +6,6 @@ node_modules/
 *.keystore
 !app/android/app/debug.keystore
 .DS_Store
+
+# Copias binarias de bases de datos del emulador (manifiesto en evidencias/ETAPA-02/README.md)
+evidencias/ETAPA-02/V4/db-copies/

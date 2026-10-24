@@ -1,0 +1,9 @@
+PASS __tests__/App.test.tsx
+  App base
+    ✓ renderiza la pantalla base con el nombre visible GFP (87 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        0.62 s, estimated 3 s
+Ran all test suites.

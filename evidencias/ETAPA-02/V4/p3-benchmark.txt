@@ -1,0 +1,22 @@
+phase=complete status=PASS reason=complete complete: outcome=complete;reason=all_samples;samples=12/12;elapsedMs=435400;budgetMs=900000;pending=none; runId=rmvljbhq6; elapsedS=444; last=rmvljbhq6#65 P3_BENCHMARK/STEP/step_end/INFO
+GFP-POC|v2|rmvljbhq6|45|P3_BENCHMARK|STEP|step_begin|INFO|
+GFP-POC|v2|rmvljbhq6|46|P3_BENCHMARK|P3|build_type|INFO|dev=false
+GFP-POC|v2|rmvljbhq6|47|P3_BENCHMARK|P3|benchmark_plan|INFO|budgetMs=900000;samplesPerSize=3;iterations=100000/210000/310000/600000
+GFP-POC|v2|rmvljbhq6|48|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=100000;sample=1;durationMs=12455;elapsedMs=12473
+GFP-POC|v2|rmvljbhq6|49|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=210000;sample=1;durationMs=26174;elapsedMs=38652
+GFP-POC|v2|rmvljbhq6|50|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=310000;sample=1;durationMs=38638;elapsedMs=77300
+GFP-POC|v2|rmvljbhq6|51|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=600000;sample=1;durationMs=71690;elapsedMs=149001
+GFP-POC|v2|rmvljbhq6|52|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=100000;sample=2;durationMs=11778;elapsedMs=160789
+GFP-POC|v2|rmvljbhq6|53|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=210000;sample=2;durationMs=24303;elapsedMs=185097
+GFP-POC|v2|rmvljbhq6|54|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=310000;sample=2;durationMs=35609;elapsedMs=220722
+GFP-POC|v2|rmvljbhq6|55|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=600000;sample=2;durationMs=70073;elapsedMs=290802
+GFP-POC|v2|rmvljbhq6|56|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=100000;sample=3;durationMs=11836;elapsedMs=302649
+GFP-POC|v2|rmvljbhq6|57|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=210000;sample=3;durationMs=24665;elapsedMs=327327
+GFP-POC|v2|rmvljbhq6|58|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=310000;sample=3;durationMs=37146;elapsedMs=364492
+GFP-POC|v2|rmvljbhq6|59|P3_BENCHMARK|P3|benchmark_sample|INFO|iterations=600000;sample=3;durationMs=70889;elapsedMs=435400
+GFP-POC|v2|rmvljbhq6|60|P3_BENCHMARK|P3|benchmark|INFO|iterations=100000;samples=3;medianMs=11836;runsMs=12455/11778/11836
+GFP-POC|v2|rmvljbhq6|61|P3_BENCHMARK|P3|benchmark|INFO|iterations=210000;samples=3;medianMs=24665;runsMs=26174/24303/24665
+GFP-POC|v2|rmvljbhq6|62|P3_BENCHMARK|P3|benchmark|INFO|iterations=310000;samples=3;medianMs=37146;runsMs=38638/35609/37146
+GFP-POC|v2|rmvljbhq6|63|P3_BENCHMARK|P3|benchmark|INFO|iterations=600000;samples=3;medianMs=70889;runsMs=71690/70073/70889
+GFP-POC|v2|rmvljbhq6|64|P3_BENCHMARK|P3|benchmark_result|OK|outcome=complete;reason=all_samples;samples=12/12;elapsedMs=435400;budgetMs=900000;pending=none
+GFP-POC|v2|rmvljbhq6|65|P3_BENCHMARK|STEP|step_end|INFO|

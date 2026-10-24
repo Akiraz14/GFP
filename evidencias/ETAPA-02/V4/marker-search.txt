@@ -1,0 +1,8 @@
+inspection run=D3 rmvlhyhf8 status=READY canary=GFP-POC-CANARY-rmvlhyhf8 protected=5 reasons=
+canary GFP-POC-CANARY-rmvlhyhf8 exit=0
+./databases/poc-canary-v2.db
+GFP-POC-SQL-P1-rmvjxlw6x private exit=1 [] external []
+GFP-POC-SQL-P1B-rmvjxlw6x private exit=1 [] external []
+GFP-POC-SQL-P1-WK-rmvjxlw6x private exit=1 [] external []
+GFP-POC-SQL-P1B-WK-rmvjxlw6x private exit=1 [] external []
+GFP-POC-PUBLIC-rmvlhyhf8 private exit=1 [] external []

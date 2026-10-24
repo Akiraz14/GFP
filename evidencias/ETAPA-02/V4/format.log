@@ -1,0 +1,6 @@
+> npm.cmd run format:check
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 format:check
+npm notice run prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+Checking formatting...
+All matched files use Prettier code style!
+< exit code: 0

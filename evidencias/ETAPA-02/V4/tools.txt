@@ -1,0 +1,8 @@
+aapt2=True
+adb=True
+apksigner=True
+git=True
+node=True
+npm.cmd=True
+python=True
+sqlite3=True
