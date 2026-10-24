@@ -55,5 +55,21 @@ a HU4-CA10.
 | E01-C7 | Repositorio Git local con convenciones; documentos fuente excluidos del repositorio por decisión del responsable | Verificado | Historial sin objetos de los documentos fuente (`git rev-list --objects --all`, 2026-10-16); decisión D-FUENTES en `decisiones.md` |
 
 Rutas relativas a `evidencias/ETAPA-01/`. El script corregido `scripts/validar-etapa.ps1`
-quedó revalidado en `20261019-194120/`. Pendiente para cerrar la Etapa 01: la aprobación
-del responsable. Ver `cierre-etapa-01.md`.
+quedó revalidado en `20261019-194120/`. La Etapa 01 fue aprobada. Ver `cierre-etapa-01.md`.
+
+## Etapa 02 — criterios de cierre (no son criterios de historias)
+
+Criterio específico del plan: fundamentos críticos con pruebas y evidencias verificables;
+PoC de OCR solo de viabilidad; riesgos informados. Evidencia fuera del repositorio, en
+`GFP-spike02-evidencias\20261023-163848-6caa2ac\` (rama experimental `6caa2ac`, emulador
+API 34). Detalle y decisiones abiertas en `decisiones.md` (secciones "Etapa 02").
+
+| ID interno | Criterio | Estado | Evidencia |
+|---|---|---|---|
+| E02-C1 | Librerías nativas seleccionadas y compatibles con React Native 0.87.1 | Verificado (emulador) | E02-LIB; `BUILD-DEBUG`, `RUN-D1` a `RUN-R3` en `summary.md` |
+| E02-C2 | Base de datos cifrada con SQLCipher: cifrado en reposo y rechazo de clave incorrecta | Verificado (emulador) | `at-rest.txt`, `marker-search.txt`, `wrong-key-hashes.txt`, `sqlite-standard.txt` |
+| E02-C3 | Secreto en Android Keystore persistente entre ejecuciones | Verificado (emulador); respaldo por hardware no demostrado | `P2-KEYSTORE-CAPABILITY`, `SCN-*` en `summary.md` |
+| E02-C4 | Derivación PBKDF2-HMAC-SHA256 conforme a vectores de referencia | Verificado (emulador); parámetros no aprobados (E02-D1, E02-D2) | `p3-extended.txt`, `p3-benchmark.txt` |
+| E02-C5 | Viabilidad de cámara, galería y OCR | Verificado como viabilidad; calidad sin umbral (E02-OCR, E02-D8) | `p4-batch.txt` |
+| E02-C6 | Decisiones de la etapa resueltas (plan, "Decisiones pendientes por etapa") | Parcial | Librerías resueltas (E02-LIB); E02-D1 a E02-D9 abiertas |
+| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Pendiente | Integración selectiva aprobada tras revisión del diff y validaciones técnicas (E02-INT) |
