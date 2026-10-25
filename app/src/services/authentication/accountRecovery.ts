@@ -29,6 +29,20 @@ import {
 export const RECOVERY_CHALLENGE_TTL_MS = 15 * 60_000;
 export const UNKNOWN_IDENTIFIER_SUBJECT = 'unknown-identifier';
 
+// Una cola por base de datos: cada intento lee el contador que dejó el anterior, así
+// que los intentos simultáneos no pueden superar el límite.
+const recoveryQueues = new WeakMap<object, Promise<unknown>>();
+
+function serialized<T>(key: object, work: () => Promise<T>): Promise<T> {
+  const previous = recoveryQueues.get(key) ?? Promise.resolve();
+  const run = previous.then(work, work);
+  recoveryQueues.set(
+    key,
+    run.catch(() => undefined),
+  );
+  return run;
+}
+
 export type RecoveryStartResult =
   | { status: 'challenge'; questionIds: [string, string] }
   | { status: 'invalid_identifier' }
@@ -84,7 +98,26 @@ export class AccountRecoveryService {
     );
   }
 
-  async start(identifier: string): Promise<RecoveryStartResult> {
+  start(identifier: string): Promise<RecoveryStartResult> {
+    return serialized(this.dependencies.database, () =>
+      this.startSerialized(identifier),
+    );
+  }
+
+  complete(
+    identifier: string,
+    answers: readonly SecurityAnswerInput[],
+    newPassword: string,
+    confirmation: string,
+  ): Promise<RecoveryCompletionResult> {
+    return serialized(this.dependencies.database, () =>
+      this.completeSerialized(identifier, answers, newPassword, confirmation),
+    );
+  }
+
+  private async startSerialized(
+    identifier: string,
+  ): Promise<RecoveryStartResult> {
     const repository = this.repository();
     const now = this.now();
     const unknownState = await this.lockState(
@@ -124,7 +157,7 @@ export class AccountRecoveryService {
     return { status: 'challenge', questionIds };
   }
 
-  async complete(
+  private async completeSerialized(
     identifier: string,
     answers: readonly SecurityAnswerInput[],
     newPassword: string,

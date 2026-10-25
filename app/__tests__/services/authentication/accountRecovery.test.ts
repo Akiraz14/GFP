@@ -1,4 +1,5 @@
 import { IdentityRepository } from '../../../src/infrastructure/database/repositories/identityRepository';
+import type { Pbkdf2Engine } from '../../../src/infrastructure/security/pbkdf2Engine';
 import {
   AccountRecoveryService,
   RECOVERY_CHALLENGE_TTL_MS,
@@ -199,6 +200,64 @@ describe('account recovery with security questions (HU3)', () => {
       status: 'locked',
       retryAfterMs: 30 * MINUTE,
     });
+  });
+
+  test('evaluates at most three concurrent wrong attempts before locking', async () => {
+    const { database, ana } = await setup();
+    const slowEngine: Pbkdf2Engine = {
+      async deriveHmacSha256(...args) {
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 5));
+        return nodePbkdf2Engine.deriveHmacSha256(...args);
+      },
+    };
+    const parallel = new AccountRecoveryService({
+      database,
+      engine: slowEngine,
+      random: nodeRandomBytes,
+      now: () => 1_000_000,
+      parameters: TEST_PARAMETERS,
+    });
+    const questions = await challenge(parallel);
+    const wrong = questions.map(id => answerFor(id, 'no-sport'));
+    const results = await Promise.all(
+      Array.from({ length: 10 }, () =>
+        parallel.complete('ana@example.com', wrong, NEW_PASSWORD, NEW_PASSWORD),
+      ),
+    );
+    expect(
+      results.filter(result => result.status === 'invalid_data'),
+    ).toHaveLength(3);
+    expect(results.filter(result => result.status === 'locked')).toHaveLength(
+      7,
+    );
+    const credential = await new IdentityRepository(database).getCredential(
+      ana,
+    );
+    await expect(
+      verifySecret('Clave123!', credential!, nodePbkdf2Engine),
+    ).resolves.toBe(true);
+  });
+
+  test('shares the attempt limit between service instances of the same database', async () => {
+    const { database } = await setup();
+    const make = () =>
+      new AccountRecoveryService({
+        database,
+        engine: nodePbkdf2Engine,
+        random: nodeRandomBytes,
+        now: () => 1_000_000,
+        parameters: TEST_PARAMETERS,
+      });
+    const questions = await challenge(make());
+    const wrong = questions.map(id => answerFor(id, 'no-sport'));
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () =>
+        make().complete('ana@example.com', wrong, NEW_PASSWORD, NEW_PASSWORD),
+      ),
+    );
+    expect(
+      results.filter(result => result.status === 'invalid_data'),
+    ).toHaveLength(3);
   });
 
   test('throttles repeated unknown identifiers', async () => {
