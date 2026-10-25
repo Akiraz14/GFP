@@ -213,6 +213,9 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
 | E03-D1 y E03-D2 | Definidas por el responsable (2026-10-25) | Asistente de tres pasos y celular obligatorio |
 | A-W1 a A-W6 y A-ID1 a A-ID4 | Aprobadas por el responsable (2026-10-25), con los textos de interfaz aprobados | Implementación pendiente: cambio de la migración 1 y de `IdentityRepository` con sus pruebas (`decisiones-etapa-03.md`, «Implementación pendiente») |
-| A-ID5 — dígito de verificación del NIT | Pendiente de definición para HU1 | Riesgo de NIT duplicado con y sin dígito; recomendación en `decisiones-etapa-03.md`. No afecta al cierre de la Etapa 02 |
-| E03-D4 y E03-D5 | Propuestas | Contenido de los catálogos |
+| A-ID5 — dígito de verificación del NIT | Recomendación pendiente de aprobación (2026-10-25) | Dígito obligatorio con guion y validación según la Orden Administrativa 4 de 1989 de la DIAN para bases de hasta 9 dígitos; bases más largas requieren decisión (`decisiones-etapa-03.md`). No afecta al cierre de la Etapa 02 |
+| E03-D4 y E03-D5 | Propuestas revisadas, pendientes de aprobación (2026-10-25) | Catálogo de 5 tipos de documento con caracteres por tipo; 10 preguntas en 8 grupos con sus limitaciones de entropía |
+| A-W7 a A-W9 | Recomendaciones pendientes de aprobación (2026-10-25) | Fallo técnico al registrar, registro en curso y apertura de la base: situaciones que HU1 no define |
+| Criterios de HU1 | 19 criterios literales transcritos; E03-V01 a E03-V04 derivados de decisiones aprobadas; E03-V05 a E03-V08 pendientes de aprobación | `trazabilidad.md`, sección «HU1 — criterios de aceptación» |
+| P-D2 | Recomendada al empezar la implementación de HU1 | La validación de nombres de HU1 depende de `\p{L}` en Hermes |
 | Autorización explícita para iniciar la Etapa 03 | Pendiente del responsable | El cierre técnico de la Etapa 02 no la concede |

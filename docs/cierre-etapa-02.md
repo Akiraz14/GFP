@@ -161,6 +161,6 @@ Etapa 03.
 
 ## Pendiente del responsable
 
-1. E03-D4 y E03-D5; definir A-ID5 (dígito de verificación del NIT); autorizar la implementación de A-ID1 a A-ID4.
+1. Aprobar o ajustar las propuestas revisadas de E03-D4, E03-D5, A-ID5 (dígito de verificación del NIT) y A-W7 a A-W9 (`decisiones-etapa-03.md`, 2026-10-25); autorizar la implementación de A-ID1 a A-ID4.
 2. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
 3. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.

@@ -136,7 +136,8 @@ migración aplicada y `PRAGMA user_version` refleja la versión.
 | Entidades financieras | No se anticipan. HU4 y HU8 añadirán sus tablas con `user_id` en migraciones posteriores |
 
 Los catálogos de la versión 2 (`document_types` y preguntas con opciones) son
-propuestas pendientes de aprobación (E03-D4 y E03-D5). Mientras no haya una entrega de
+propuestas pendientes de aprobación (E03-D4 y E03-D5, revisadas el 2026-10-25 en
+`decisiones-etapa-03.md`). Mientras no haya una entrega de
 la Etapa 03, pueden ajustarse editando esa migración; después de entregarse, cualquier
 cambio requiere una migración nueva.
 
@@ -185,6 +186,7 @@ Normalización (E02-D2):
 Limitaciones que se aceptan expresamente:
 
 - Las opciones de respuesta tienen entropía limitada: con 7 a 11 opciones por pregunta, dos respuestas admiten como mucho 121 combinaciones. Las preguntas de seguridad son un mecanismo de recuperación de menor garantía que un canal externo verificado (correo o SMS), que está fuera del alcance.
+- Con la limitación de intentos de recuperación, quien tenga el dispositivo puede hacer 21 intentos en las primeras 24 horas; si las respuestas fueran equiprobables, cubrirían cerca del 17 % de las 121 combinaciones posibles, y más con respuestas predecibles (E03-D5).
 - La protección real frente a la adivinación es la limitación de intentos. Quien obtenga el archivo de la base y su clave podría probar todas las combinaciones fuera de línea; PBKDF2 solo lo encarece.
 - El mensaje «Identificador incorrecto», exigido por HU3, permite saber si un identificador está registrado. Se mitiga con la limitación de intentos sobre identificadores inexistentes.
 - El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY`. El alcance del bloqueo (por cuenta o por dispositivo) es E04-D1; la tabla `auth_throttles` admite ambos.
