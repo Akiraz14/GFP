@@ -1,1 +1,0 @@
-# presentacion — ver ../README.md

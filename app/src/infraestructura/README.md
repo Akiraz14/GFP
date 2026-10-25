@@ -1,1 +1,0 @@
-# infraestructura — ver ../README.md
