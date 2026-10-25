@@ -6,13 +6,14 @@ viabilidad y los riesgos están informados. Los fundamentos de identidad y segur
 (E02-D1 a E02-D5) están implementados, probados en Jest y `javac` y compilados en Android.
 La etapa no queda completamente cerrada: E02-C6 es parcial (iteraciones de PBKDF2
 provisionales, permiso `INTERNET` y umbrales del OCR), el módulo nativo no se ha
-ejecutado en un dispositivo (E02-C8), el APK Debug de `main` no se ha instalado y la aprobación
-formal de los criterios (E02-D6) está pendiente del responsable. Este cierre no autoriza
-el inicio de la Etapa 03.
+ejecutado en un dispositivo (E02-C8) y el APK Debug de `main` no se ha instalado. Este cierre
+no autoriza el inicio de la Etapa 03.
 
-**Estado de aprobación:** pendiente de la aprobación explícita del responsable (E02-D6).
-E02-CIERRE recoge el veredicto técnico del informe de cierre V4 del 2026-10-23; no es la
-aprobación formal de la etapa.
+**Estado de aprobación:** cierre aprobado formalmente con reservas por el responsable
+(2026-10-25, E02-D6), conforme a este documento y a las limitaciones técnicas documentadas.
+La aprobación no da por superadas las reservas: E02-C6 sigue parcial, P-D1, P-D2, P-D3 y P-D7
+siguen pendientes y el APK Debug de `main` no se ha instalado. E02-CIERRE recoge el veredicto
+técnico del informe de cierre V4 del 2026-10-23.
 
 ## Alcance evaluado
 
@@ -127,7 +128,7 @@ técnicas").
 | E02-D3 | Custodia de la clave SQLCipher | Adoptada; P-D3 pendiente | No |
 | E02-D4 | Varias cuentas locales con aislamiento lógico | Adoptada | No |
 | E02-D5 | Modelo de datos de identidad y seguridad | Adoptada; catálogos propuestos | No |
-| E02-D6 | Criterios de cierre | Registrados; aprobación pendiente | Sí |
+| E02-D6 | Criterios de cierre | Aprobados con reservas por el responsable (2026-10-25) | No |
 | E02-D7 | Permisos del APK | Parcialmente resuelta; `INTERNET` hasta P-D7 | No |
 | E02-D8 | Calidad del OCR | Plan definido; umbrales para la Etapa 10 | No |
 | E02-D9 | Vulnerabilidad `body-parser` | Resuelta (2.4.0) | No |
@@ -144,7 +145,7 @@ usuarios y manipulación del reloj.
 
 ## Condiciones para autorizar la Etapa 03
 
-1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6).
+1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6). Cumplida el 2026-10-25, con reservas.
 2. E03-D1, E03-D2, A-W1 a A-W6 y A-ID1 a A-ID4 están definidas por el responsable (2026-10-25); queda implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`, con sus pruebas), definir A-ID5 (dígito de verificación del NIT) y aprobar el contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
 3. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
 4. Autorización explícita del responsable para iniciar la Etapa 03.
@@ -155,8 +156,6 @@ Etapa 03.
 
 ## Pendiente del responsable
 
-1. Aprobación del cierre con reservas y de los criterios (E02-D6).
-2. E03-D4 y E03-D5; definir A-ID5 (dígito de verificación del NIT); autorizar la implementación de A-ID1 a A-ID4.
-3. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
-4. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.
-5. Autorizar la publicación en GitHub.
+1. E03-D4 y E03-D5; definir A-ID5 (dígito de verificación del NIT); autorizar la implementación de A-ID1 a A-ID4.
+2. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
+3. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.
