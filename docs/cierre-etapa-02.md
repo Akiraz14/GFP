@@ -10,6 +10,10 @@ ejecutado en un dispositivo (E02-C8), el APK Debug de `main` no se ha instalado 
 formal de los criterios (E02-D6) está pendiente del responsable. Este cierre no autoriza
 el inicio de la Etapa 03.
 
+**Estado de aprobación:** pendiente de la aprobación explícita del responsable (E02-D6).
+E02-CIERRE recoge el veredicto técnico del informe de cierre V4 del 2026-10-23; no es la
+aprobación formal de la etapa.
+
 ## Alcance evaluado
 
 Criterio específico del plan (`plan-etapas.md`): fundamentos críticos con pruebas y
@@ -56,7 +60,9 @@ Detalle y evidencias en `trazabilidad.md` (sección "Etapa 02").
 | `cbef19f` | `docs/cierre-etapa-02.md`, actualización de `docs/decisiones.md` y `docs/trazabilidad.md`, evidencias de `evidencias/ETAPA-02/` y regla de `.gitignore` para las copias de bases de datos |
 | `a9b86dc` | Evidencia `windows-debug-20261025/` de la compilación Debug de `cbef19f` y actualización de este documento, `decisiones.md`, `trazabilidad.md` y el manifiesto de evidencias |
 | `a5c1379`, `d3e69ee`, `03195e9`, `d609143`, `440ba4d` | `body-parser` 2.4.0; renombrado de las carpetas de capas a inglés; fundamentos de identidad y seguridad con sus pruebas; permisos y exclusión de copias en el manifiesto; documentación y evidencias (`claude-20261025/`) |
-| Commits de la revisión consolidada | Serialización de la recuperación con pruebas de regresión; evidencia `windows-identity-20261025/` y `claude-20261025-review/` |
+| `a592e1b` | Serialización de la recuperación con pruebas de regresión (hallazgo bloqueante de la revisión consolidada) |
+| `04cdc49` | Evidencia `windows-identity-20261025/` y `claude-20261025-review/`, hallazgos de la revisión y estados actualizados |
+| `d8a5b6a`, `d5bebde` | Decisiones de producto E03-D1, E03-D2, A-ID1 a A-ID4 y A-W1 a A-W6 para HU1 |
 
 Se conservan sin cambios desde la Etapa 01: `App.tsx`, `__tests__/App.test.tsx`,
 `versionName "1.0"`, la identidad `co.gfpsas.gestionfinanciera`, `scripts/` y
@@ -139,7 +145,7 @@ usuarios y manipulación del reloj.
 ## Condiciones para autorizar la Etapa 03
 
 1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6).
-2. E03-D1, E03-D2, A-W1 a A-W6 y A-ID1 a A-ID4 están definidas por el responsable (2026-10-25); queda implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`, con sus pruebas) y aprobar el contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
+2. E03-D1, E03-D2, A-W1 a A-W6 y A-ID1 a A-ID4 están definidas por el responsable (2026-10-25); queda implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`, con sus pruebas), definir A-ID5 (dígito de verificación del NIT) y aprobar el contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
 3. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
 4. Autorización explícita del responsable para iniciar la Etapa 03.
 
@@ -150,7 +156,7 @@ Etapa 03.
 ## Pendiente del responsable
 
 1. Aprobación del cierre con reservas y de los criterios (E02-D6).
-2. E03-D4 y E03-D5, y autorizar la implementación de A-ID1 a A-ID4.
+2. E03-D4 y E03-D5; definir A-ID5 (dígito de verificación del NIT); autorizar la implementación de A-ID1 a A-ID4.
 3. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
 4. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.
 5. Autorizar la publicación en GitHub.

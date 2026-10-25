@@ -214,3 +214,8 @@ Limitaciones que se aceptan expresamente:
 | Datos en memoria de JavaScript (contraseña como `string`) | Los arreglos de bytes se borran tras usarse; los `string` de JavaScript no se pueden borrar |
 | Errores de consulta que mezclen usuarios | API de repositorios basada en la sesión, pruebas de aislamiento y revisión obligatoria de cada repositorio nuevo |
 | Reloj del dispositivo manipulado hacia adelante | Puede acortar un bloqueo; es una limitación de una app sin servidor |
+| Reinstalación y pérdida de la clave sin probar en un dispositivo | Prueba P-D3 en un AVD aislado |
+
+Otras reservas abiertas de la Etapa 02 que no dependen de este diseño: el permiso
+`INTERNET` se conserva hasta la prueba P-D7 (E02-D7), y los umbrales de calidad del OCR
+son propuestas sin aprobar (E02-D8, `plan-evaluacion-ocr.md`).

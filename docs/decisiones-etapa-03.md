@@ -87,7 +87,7 @@ historia (`trazabilidad.md`, sección "HU1 — decisiones de producto").
 | ID | Tema | Decisión aprobada | Contraste con HU1 |
 |---|---|---|---|
 | A-W1 | Confirmación de contraseña | No se añade: HU1 no la exige | Coincide con la lista de campos de HU1 |
-| A-W2 | Alcance de «Limpiar» | Borra los campos de los tres pasos y vuelve al paso 1. Si hay datos ingresados, pide confirmación antes de descartarlos. Texto propuesto: «¿Deseas borrar todos los datos ingresados?», con «Cancelar» y «Borrar» | HU1: «El botón “Limpiar” limpia todos los campos del formulario». La confirmación es un paso adicional aprobado, sin cambiar el resultado. «Cancelar» conserva el comportamiento literal, sin confirmación |
+| A-W2 | Alcance de «Limpiar» | Borra los campos de los tres pasos y vuelve al paso 1. Si hay datos ingresados, pide confirmación antes de descartarlos. Texto aprobado por el responsable (2026-10-25): «¿Deseas borrar todos los datos ingresados?», con los botones «Cancelar» y «Borrar» | HU1: «El botón “Limpiar” limpia todos los campos del formulario». La confirmación es un paso adicional aprobado, sin cambiar el resultado. «Cancelar» conserva el comportamiento literal, sin confirmación |
 | A-W3 | Comprobación de usuario ya registrado | Previa al terminar el paso 2 y definitiva al «Registrar». La definitiva se ejecuta en la transacción que crea la cuenta y la garantizan las restricciones de la base de datos; si una restricción falla por un registro simultáneo, se muestra el mismo mensaje y no se guarda nada | HU1 exige el mensaje «El usuario se encuentra registrado» y guardar solo si el usuario no está registrado; no fija el momento |
 | A-W4 | Destino tras el registro | Descartar los datos del asistente y dirigir al usuario a la vista de inicio de sesión. **Definición de producto aprobada:** HU1 no especifica el destino; solo exige el mensaje «El registro fue exitoso» y limpiar los campos. Mientras HU2 no esté implementada, la ruta de inicio de sesión usa la pantalla provisional de G-07 | No contradice HU1: los campos se limpian y el mensaje se muestra antes de navegar |
 | A-W5 | Textos del asistente | Títulos de los pasos: «Identificación y datos personales», «Contacto y acceso» y «Preguntas de seguridad»; botones «Atrás», «Siguiente» y «Registrar»; indicador «Paso n de 3» | «Registrar», «Limpiar» y «Cancelar» son los literales de HU1 |
@@ -137,8 +137,8 @@ conservan también por separado. El canónico es único. Al iniciar sesión:
 | Empieza por `+` | Celular canónico | Una cuenta o ninguna |
 | Sin `@` ni `+` (documento o celular sin código de país) | Documento normalizado (A-ID3) y número nacional | Una cuenta: se usa; ninguna: «El campo identificación o contraseña son incorrectos»; varias (el mismo número nacional en países distintos): se pide el número completo con código de país |
 
-Texto propuesto para el último caso: «Ingresa el número celular con el código de país»;
-HU2 no define un mensaje para esta situación.
+Texto aprobado por el responsable (2026-10-25) para el último caso: «Ingresa el número
+celular con el código de país». HU2 no define un mensaje para esta situación.
 
 **A-ID3 — Documento normalizado para comparar.** Para comparar y garantizar la unicidad,
 el documento se normaliza con NFC, eliminando espacios, puntos y guiones y pasando las
@@ -149,7 +149,7 @@ la izquierda, letras ni otros caracteres.
 |---|---|---|---|
 | Separadores de miles en cédulas | «1.020.304.050» y «1020304050» | Mismo documento | Deseado: es el mismo número |
 | NIT con dígito de verificación | «900.123.456-7» y «9001234567» | Mismo documento | Deseado: el guion solo separa el dígito de verificación, que se conserva |
-| NIT con y sin dígito de verificación | «900123456-7» y «900123456» | Documentos distintos | No se fusionan: la regla no inventa ni quita el dígito. Riesgo: el mismo NIT registrado dos veces en formas distintas. Se valorará en la implementación de HU1 si el NIT exige el dígito |
+| NIT con y sin dígito de verificación | «900123456-7» y «900123456» | Documentos distintos | No se fusionan: la regla no inventa ni quita el dígito. Riesgo pendiente de definición (A-ID5) |
 | Pasaporte con letras | «ab123456» y «AB123456» | Mismo documento | Deseado: los pasaportes usan mayúsculas |
 | Ceros a la izquierda | «0012345» y «12345» | Documentos distintos | Se conservan: pueden distinguir documentos válidos |
 | Mismo número en tipos distintos | CC «9001234567» y NIT «900123456-7» | Colisión | Inherente a HU2, que inicia sesión solo con el número: se rechaza como usuario registrado (A-ID1). Ya ocurría sin normalizar |
@@ -166,6 +166,14 @@ ejecutan migraciones, y el APK que la contiene no se instaló. No existe ninguna
 con ella. Por eso se modifica la migración 1 antes de la primera entrega. Si al
 implementarlo constara alguna entrega, instalación o base de datos que dependa de ella, se
 crearía una migración nueva y la migración 1 no se tocaría.
+
+**A-ID5 — Dígito de verificación del NIT (pendiente de definición para HU1).** No está
+decidido si el NIT exige el dígito de verificación ni cómo se trata al comparar. La regla
+A-ID3 no cambia: no se elimina ni se calcula el dígito.
+
+- **Riesgo:** el mismo NIT escrito con dígito («900123456-7») y sin él («900123456») produce dos valores normalizados distintos. Podría registrarse dos veces, y quien se registró con dígito no podría iniciar sesión escribiéndolo sin él, ni al revés.
+- **Recomendación:** al implementar HU1, exigir el dígito de verificación para el tipo `NIT` y validarlo con el algoritmo de la DIAN (módulo 11). Así cada NIT tiene una única forma válida y la regla A-ID3 no cambia. Requiere decisión del responsable, porque añade una validación que HU1 no establece.
+- **Alcance:** afecta solo al tipo `NIT` de HU1. No afecta a ningún requisito ni criterio de cierre de la Etapa 02.
 
 ### Implementación pendiente
 

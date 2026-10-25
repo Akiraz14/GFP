@@ -211,6 +211,7 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | E02-D1 a E02-D5 | Adoptadas | P-D1, P-D2 y P-D3 se completan antes del cierre de la Etapa 03 |
 | G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
 | E03-D1 y E03-D2 | Definidas por el responsable (2026-10-25) | Asistente de tres pasos y celular obligatorio |
-| A-W1 a A-W6 y A-ID1 a A-ID4 | Aprobadas por el responsable (2026-10-25) | Implementación pendiente: cambio de la migración 1 y de `IdentityRepository` con sus pruebas (`decisiones-etapa-03.md`, «Implementación pendiente») |
+| A-W1 a A-W6 y A-ID1 a A-ID4 | Aprobadas por el responsable (2026-10-25), con los textos de interfaz aprobados | Implementación pendiente: cambio de la migración 1 y de `IdentityRepository` con sus pruebas (`decisiones-etapa-03.md`, «Implementación pendiente») |
+| A-ID5 — dígito de verificación del NIT | Pendiente de definición para HU1 | Riesgo de NIT duplicado con y sin dígito; recomendación en `decisiones-etapa-03.md`. No afecta al cierre de la Etapa 02 |
 | E03-D4 y E03-D5 | Propuestas | Contenido de los catálogos |
 | Autorización explícita para iniciar la Etapa 03 | Pendiente del responsable | El cierre técnico de la Etapa 02 no la concede |
