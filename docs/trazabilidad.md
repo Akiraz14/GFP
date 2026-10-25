@@ -49,11 +49,12 @@ modificar sus criterios literales. Detalle en `decisiones-etapa-03.md`.
 
 | Decisión | Efecto en HU1 | Criterios derivados | Estado |
 |---|---|---|---|
-| E03-D1 — asistente de tres pasos | Los campos de HU1 se distribuyen en tres pasos; «Registrar» queda en el último | E03-W01 a E03-W08 | Definida; ambigüedades A-W1 a A-W6 pendientes |
-| E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1 | Prueba de obligatoriedad del celular en el paso 2 | Definida; ambigüedades A-ID1 a A-ID4 pendientes |
+| E03-D1 — asistente de tres pasos | Los campos de HU1 se distribuyen en tres pasos; «Registrar» queda en el último; «Limpiar» pide confirmación si hay datos; tras el registro se va al inicio de sesión | E03-W01 a E03-W10 | Definida; A-W1 a A-W6 aprobadas por el responsable |
+| E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1; correo, documento y celular forman un espacio de identificadores inequívoco | Obligatoriedad del celular en el paso 2; colisiones entre documento y celular; formatos de documento; celular canónico | Definida; A-ID1 a A-ID4 aprobadas por el responsable; implementación pendiente |
 
 La transcripción literal de los 19 criterios de HU1 y su relación con estas pruebas se
-incorpora al iniciar la Etapa 03.
+incorpora al iniciar la Etapa 03. A-ID2 también condiciona HU2 (Etapa 04): el inicio de
+sesión con celular sin código de país solo se acepta si es inequívoco.
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

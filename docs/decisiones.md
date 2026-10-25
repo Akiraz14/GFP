@@ -28,6 +28,8 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | E02-ID | Resolución de E02-D1 a E02-D9 y de la recuperación por preguntas de seguridad, con los valores de la sección "Etapa 02 — decisiones técnicas" y el diseño de `arquitectura-identidad.md`. Los valores marcados como provisionales o propuestos no están aprobados como definitivos. | 2026-10-25 | 02 |
 | E03-D1 | Definida por el responsable: el registro de HU1 se presenta como un asistente de tres pasos (identificación y datos personales; contacto y acceso; preguntas de seguridad), con validación por paso y sin guardar nada hasta «Registrar». Distribución, criterios E03-W01 a E03-W08 y ambigüedades A-W1 a A-W6 en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
 | E03-D2 | Definida por el responsable: el número celular, con su código de país, es obligatorio en el registro, porque HU2 permite iniciar sesión con correo, documento o celular. Tratamiento de los identificadores y ambigüedades A-ID1 a A-ID4 en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
+| A-ID1 a A-ID4 | Aprobadas por el responsable: espacio de identificadores inequívoco entre correo, documento y celular, con rechazo genérico «El usuario se encuentra registrado» (A-ID1); celular canónico E.164 e inicio de sesión sin código de país solo si es inequívoco (A-ID2); documento comparado sin espacios, puntos ni guiones y en mayúsculas, conservando el original (A-ID3); celular obligatorio en la validación y en el esquema, modificando la migración 1 porque no se ha distribuido (A-ID4). Implementación pendiente. Detalle en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
+| A-W1 a A-W6 | Aprobadas por el responsable: sin confirmación de contraseña (A-W1); «Limpiar» borra los tres pasos con confirmación previa (A-W2); comprobación de usuario registrado al terminar el paso 2 y definitiva, atómica y respaldada por restricciones, al «Registrar» (A-W3); tras el registro, ir al inicio de sesión, como definición de producto porque HU1 no fija el destino (A-W4); textos «Atrás», «Siguiente» y «Registrar» (A-W5); distribución basada en HU1, sin afirmar coincidencia con el prototipo (A-W6). Detalle en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
 
 ## Discrepancias documentadas
 
@@ -209,6 +211,6 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | E02-D1 a E02-D5 | Adoptadas | P-D1, P-D2 y P-D3 se completan antes del cierre de la Etapa 03 |
 | G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
 | E03-D1 y E03-D2 | Definidas por el responsable (2026-10-25) | Asistente de tres pasos y celular obligatorio |
-| A-W1 a A-W6 y A-ID1 a A-ID4 | Pendientes de decisión | Detalles del asistente y unicidad de los identificadores de inicio de sesión (`decisiones-etapa-03.md`); A-ID1 y A-ID4 afectan a la migración 1 |
+| A-W1 a A-W6 y A-ID1 a A-ID4 | Aprobadas por el responsable (2026-10-25) | Implementación pendiente: cambio de la migración 1 y de `IdentityRepository` con sus pruebas (`decisiones-etapa-03.md`, «Implementación pendiente») |
 | E03-D4 y E03-D5 | Propuestas | Contenido de los catálogos |
 | Autorización explícita para iniciar la Etapa 03 | Pendiente del responsable | El cierre técnico de la Etapa 02 no la concede |
