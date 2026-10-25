@@ -139,7 +139,7 @@ usuarios y manipulación del reloj.
 ## Condiciones para autorizar la Etapa 03
 
 1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6).
-2. Decisiones de producto E03-D1 y E03-D2, y contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
+2. E03-D1 y E03-D2 ya están definidas por el responsable (2026-10-25); quedan las ambigüedades A-W1 a A-W6 y A-ID1 a A-ID4 y el contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
 3. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
 4. Autorización explícita del responsable para iniciar la Etapa 03.
 
@@ -150,7 +150,7 @@ Etapa 03.
 ## Pendiente del responsable
 
 1. Aprobación del cierre con reservas y de los criterios (E02-D6).
-2. E03-D1, E03-D2, E03-D4 y E03-D5.
+2. A-W1 a A-W6, A-ID1 a A-ID4, E03-D4 y E03-D5.
 3. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
 4. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.
 5. Autorizar la publicación en GitHub.

@@ -26,6 +26,8 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | G-08 | Repositorio canónico en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP`, con el remoto `origin` en el repositorio oficial de GitHub (`https://github.com/Akiraz14/GFP.git`) y la rama `main` sincronizada. Los documentos fuente siguen fuera del repositorio (D-FUENTES). Sustituye a G-03 y resuelve C-02. | 2026-10-25 | 02 |
 | G-09 | Política oficial de nomenclatura: código, persistencia y pruebas en inglés; comentarios, documentación y textos visibles en español; commits en inglés con Conventional Commits. Ver `nomenclatura.md`. | 2026-10-25 | 02 |
 | E02-ID | Resolución de E02-D1 a E02-D9 y de la recuperación por preguntas de seguridad, con los valores de la sección "Etapa 02 — decisiones técnicas" y el diseño de `arquitectura-identidad.md`. Los valores marcados como provisionales o propuestos no están aprobados como definitivos. | 2026-10-25 | 02 |
+| E03-D1 | Definida por el responsable: el registro de HU1 se presenta como un asistente de tres pasos (identificación y datos personales; contacto y acceso; preguntas de seguridad), con validación por paso y sin guardar nada hasta «Registrar». Distribución, criterios E03-W01 a E03-W08 y ambigüedades A-W1 a A-W6 en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
+| E03-D2 | Definida por el responsable: el número celular, con su código de país, es obligatorio en el registro, porque HU2 permite iniciar sesión con correo, documento o celular. Tratamiento de los identificadores y ambigüedades A-ID1 a A-ID4 en `decisiones-etapa-03.md`. | 2026-10-25 | 03 |
 
 ## Discrepancias documentadas
 
@@ -206,6 +208,7 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | Compilación Android de los fundamentos de identidad | Verificada (`windows-identity-20261025/`) | El módulo nativo y el manifiesto compilan |
 | E02-D1 a E02-D5 | Adoptadas | P-D1, P-D2 y P-D3 se completan antes del cierre de la Etapa 03 |
 | G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
-| E03-D1 y E03-D2 | Requieren aprobación | Elecciones de producto entre texto y prototipo, y entre campo obligatorio u opcional |
+| E03-D1 y E03-D2 | Definidas por el responsable (2026-10-25) | Asistente de tres pasos y celular obligatorio |
+| A-W1 a A-W6 y A-ID1 a A-ID4 | Pendientes de decisión | Detalles del asistente y unicidad de los identificadores de inicio de sesión (`decisiones-etapa-03.md`); A-ID1 y A-ID4 afectan a la migración 1 |
 | E03-D4 y E03-D5 | Propuestas | Contenido de los catálogos |
 | Autorización explícita para iniciar la Etapa 03 | Pendiente del responsable | El cierre técnico de la Etapa 02 no la concede |

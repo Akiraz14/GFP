@@ -66,7 +66,7 @@ erDiagram
     TEXT middle_name "opcional"
     TEXT last_name
     TEXT second_last_name "opcional"
-    TEXT phone_country_code "opcional, junto con phone_number"
+    TEXT phone_country_code "obligatorio por E03-D2; el esquema aún lo admite vacío (A-ID4)"
     TEXT phone_number "UNIQUE con el indicativo"
     TEXT email
     TEXT email_normalized "UNIQUE"
@@ -128,7 +128,7 @@ migración aplicada y `PRAGMA user_version` refleja la versión.
 | Aspecto | Decisión |
 |---|---|
 | Tipos | Identificadores y textos `TEXT`; fechas `INTEGER` en milisegundos UTC; sal y verificador `BLOB` con longitud comprobada por `CHECK` |
-| Unicidad | `document_number`, `email_normalized` y (`phone_country_code`, `phone_number`) cuando hay celular. HU2 permite iniciar sesión con cualquiera de los tres, así que cada uno debe identificar una sola cuenta (E03-D3) |
+| Unicidad | `document_number`, `email_normalized` y (`phone_country_code`, `phone_number`). El celular es obligatorio por E03-D2; la unicidad entre documento y celular (A-ID1) y la del número nacional (A-ID2) están pendientes de decisión. HU2 permite iniciar sesión con cualquiera de los tres, así que cada uno debe identificar una sola cuenta (E03-D3) |
 | Integridad | Claves foráneas con `ON DELETE CASCADE` desde `users`; `CHECK` sobre algoritmo, iteraciones, longitudes y estados |
 | Transacciones | Cada migración se aplica en una transacción con su registro en `schema_migrations`; la creación de cuenta (usuario, credencial y 5 respuestas) y el cambio de contraseña por recuperación son atómicos |
 | Versionado | Migraciones numeradas, consecutivas e inmutables una vez entregadas; la suma SHA-256 de cada migración aplicada se comprueba en cada apertura |

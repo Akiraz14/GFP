@@ -42,6 +42,19 @@ Estados: Pendiente · Implementado · Probado · Parcial · Verificado.
 HU5-CA07 pertenece a HU5 y se verifica en E08 como criterio propio; no sustituye
 a HU4-CA10.
 
+## HU1 — decisiones de producto (no son criterios literales)
+
+Decisiones del responsable del 2026-10-25 que condicionan la implementación de HU1 sin
+modificar sus criterios literales. Detalle en `decisiones-etapa-03.md`.
+
+| Decisión | Efecto en HU1 | Criterios derivados | Estado |
+|---|---|---|---|
+| E03-D1 — asistente de tres pasos | Los campos de HU1 se distribuyen en tres pasos; «Registrar» queda en el último | E03-W01 a E03-W08 | Definida; ambigüedades A-W1 a A-W6 pendientes |
+| E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1 | Prueba de obligatoriedad del celular en el paso 2 | Definida; ambigüedades A-ID1 a A-ID4 pendientes |
+
+La transcripción literal de los 19 criterios de HU1 y su relación con estas pruebas se
+incorpora al iniciar la Etapa 03.
+
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
 | ID interno | Criterio | Estado | Evidencia |
