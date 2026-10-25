@@ -5,6 +5,7 @@ module.exports = {
     {
       files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.js', 'src/**/*.jsx'],
       rules: {
+        'no-console': 'error',
         'no-restricted-properties': [
           'error',
           {

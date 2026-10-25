@@ -48,5 +48,13 @@
   },
   "op-sqlite": {
     "sqlcipher": true
+  },
+  "codegenConfig": {
+    "name": "GfpSpecs",
+    "type": "modules",
+    "jsSrcsDir": "src/infrastructure/native",
+    "android": {
+      "javaPackageName": "co.gfpsas.gestionfinanciera.specs"
+    }
   }
 }
