@@ -13,7 +13,7 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | G-01 | Plan de etapas v3 aprobado: etapas 00, 01, 02, una etapa por historia (HU1–HU10) y etapa 13 de integración. Orden: HU1, HU2, HU3, HU8, HU4, HU5, HU6, HU7, HU9, HU10. Ver `plan-etapas.md`. | 2026-10-16 | 00 |
 | DT-01 | El APK instalable y funcional para Android 10 (API 29) o superior es un entregable técnico obligatorio. Su generación, instalación y validación forman parte del proyecto. | 2026-10-16 | 00 |
 | G-02 | Validación Android: Claude prepara guías, comandos, pruebas y registro de evidencias; Juan ejecuta en Windows lo que el entorno de Claude no permite. La validación en una segunda versión de Android es complementaria salvo acuerdo posterior. | 2026-10-16 | 00 |
-| G-03 | Repositorio Git solo local en `C:\Users\juanz\Akiraz\Study\GFP`, con los documentos fuente intactos. No se crea ni publica repositorio remoto por ahora. | 2026-10-16 | 00 |
+| G-03 | Repositorio Git solo local en `C:\Users\juanz\Akiraz\Study\GFP`, con los documentos fuente intactos. No se crea ni publica repositorio remoto por ahora. Sustituida por G-08. | 2026-10-16 | 00 |
 | G-04 | React Native CLI 0.87.x con TypeScript, npm, ESLint, Prettier, Jest y React Native Testing Library. Las dependencias nativas se validan en la Etapa 02. | 2026-10-16 | 00 |
 | G-05 | Nombre visible `GFP`; identificador de aplicación `co.gfpsas.gestionfinanciera`. | 2026-10-16 | 00 |
 | D-FUENTES | Los documentos fuente no se incluyen en el repositorio Git; se conservan fuera de él, en la ubicación de trabajo del responsable. No se restauran desde el historial. | 2026-10-16 | 01 |
@@ -23,13 +23,17 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | E02-RNG | En `src/` se prohíben `Math.random` y el import del punto de entrada de `react-native-get-random-values` (contiene un respaldo inseguro con `Math.random`); los valores aleatorios criptográficos se obtienen del módulo nativo `RNGetRandomValues`. Regla ESLint en `app/.eslintrc.js`. | 2026-10-23 | 02 |
 | E02-CIERRE | Cierre técnico de la Etapa 02 aceptado con reservas, según el informe `Informe_Cierre_Tecnico_Stage02_V4.docx` (fuera del repositorio). Las reservas y las decisiones abiertas figuran en las secciones "Etapa 02" de este registro. | 2026-10-23 | 02 |
 | E02-OCR | La anomalía `similarity=0.355` de la imagen sintética 03 se acepta como limitación conocida, pendiente de pruebas OCR exhaustivas en una fase posterior. No valida la calidad ni la precisión del OCR. | 2026-10-23 | 02 |
+| G-08 | Repositorio canónico en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP`, con el remoto `origin` en el repositorio oficial de GitHub (`https://github.com/Akiraz14/GFP.git`) y la rama `main` sincronizada. Los documentos fuente siguen fuera del repositorio (D-FUENTES). Sustituye a G-03 y resuelve C-02. | 2026-10-25 | 02 |
+| G-09 | Política oficial de nomenclatura: código, persistencia y pruebas en inglés; comentarios, documentación y textos visibles en español; commits en inglés con Conventional Commits. Ver `nomenclatura.md`. | 2026-10-25 | 02 |
+| E02-ID | Resolución de E02-D1 a E02-D9 y de la recuperación por preguntas de seguridad, con los valores de la sección "Etapa 02 — decisiones técnicas" y el diseño de `arquitectura-identidad.md`. Los valores marcados como provisionales o propuestos no están aprobados como definitivos. | 2026-10-25 | 02 |
 
 ## Discrepancias documentadas
 
 | ID | Discrepancia | Estado |
 |---|---|---|
 | C-01 | El documento de historias de usuario (§2.1) indica que en la fase MVP no se contempla la generación y entrega de un APK instalable. La propuesta comercial, la propuesta VF y la decisión DT-01 establecen el APK como entregable. Según Juan, la redacción del documento de historias responde a una consideración académica de flexibilidad ante la evaluación. **Alcance documental académico:** demostración desde el entorno de desarrollo. **Objetivo técnico del proyecto:** APK instalable y validado (DT-01). El documento de historias no se modifica. | Abierta hasta su formalización documental; no reduce el objetivo técnico. |
-| C-02 | G-03 establece un repositorio solo local, sin remoto publicado, en `C:\Users\juanz\Akiraz\Study\GFP`. El repositorio canónico está en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP` y tiene el remoto `origin` (`https://github.com/Akiraz14/GFP.git`), y la WU de cierre de la Etapa 02 autorizó sincronizar `main` con ese remoto: `main` y `origin/main` coinciden en `cbef19f` (`git ls-remote`, 2026-10-25). | Abierta: actualización formal de G-03 pendiente del responsable. |
+| C-02 | G-03 establece un repositorio solo local, sin remoto publicado, en `C:\Users\juanz\Akiraz\Study\GFP`. El repositorio canónico está en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP` y tiene el remoto `origin` (`https://github.com/Akiraz14/GFP.git`), y la WU de cierre de la Etapa 02 autorizó sincronizar `main` con ese remoto: `main` y `origin/main` coinciden en `cbef19f` (`git ls-remote`, 2026-10-25). | Resuelta por G-08 (2026-10-25). |
+| C-03 | HU1 indica «Ingresar respuestas de seguridad correspondientes a las preguntas seleccionadas»; la WU del 2026-10-25 decide que las respuestas se seleccionen entre opciones, para que tildes, mayúsculas o variaciones de escritura no impidan la recuperación. La selección es una forma de ingresar la respuesta y el documento de historias no se modifica. El modelo admite también respuestas escritas (`free-text-folded`). | Resuelta por decisión del responsable (WU 2026-10-25); contenido del catálogo pendiente (E03-D5). |
 
 ## Entorno de validación confirmado (G-02)
 
@@ -57,10 +61,10 @@ Motivo del JDK 17: `@react-native/gradle-plugin` 0.87.1 fija `jvmToolchain(17)` 
 
 | Observación | Etapa |
 |---|---|
-| La plantilla declara el permiso `INTERNET` (necesario para Metro en desarrollo). Si debe mantenerse en el APK final se decide con la seguridad de la Etapa 02 o en la Etapa 13. | 02 / 13 |
+| La plantilla declara el permiso `INTERNET` (necesario para Metro en desarrollo). Tratado en E02-D7: se conserva hasta la prueba P-D7. | 02 / 13 |
 | La plantilla firma la variante release con la clave de depuración. La clave de firma definitiva es la decisión E13-D1. | 13 |
 | El diagrama C4 Nivel 3 incluye los componentes "Sincronización Local" (Servicios) y "Generación de Reportes" (Análisis). Su alcance se interpreta con las historias de usuario y las exclusiones (sin sincronización entre dispositivos ni exportación); se revisará al implementar las etapas afectadas. | 02 / 11 |
-| El APK release registra en `aapt2 dump badging` los permisos `android.permission.INTERNET` y `co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (este último lo genera AndroidX). Se revisan junto con la observación del permiso `INTERNET`. | 02 / 13 |
+| El APK release registra en `aapt2 dump badging` los permisos `android.permission.INTERNET` y `co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (este último lo genera AndroidX). Tratados en E02-D7. | 02 / 13 |
 
 ## Diagnóstico de la validación Android en Windows (Etapa 01)
 
@@ -127,22 +131,47 @@ concepto; no demuestran el comportamiento en producción ni en dispositivos fís
 | Compilación Debug de `main` en Windows | Juan, 2026-10-25, worktree desacoplado `GFP Proyecto\GFP-e02-int` en `cbef19f`, JDK 17.0.20.1 solo en el proceso, Gradle 9.4.1: `npm ci`, `typecheck`, `lint`, `format:check`, Jest (1/1) y `assembleDebug` con código 0 (`BUILD SUCCESSFUL in 15m 5s`, `[OP-SQLITE] using sqlcipher.`). APK `0AEF5C750B2B7D53E9162176F054E6CB859C26752292EAB30552B492B17BEBAC` (206057040 bytes): `co.gfpsas.gestionfinanciera`, `versionName 1.0`, `minSdkVersion 29`. Repositorio canónico y APK de la Etapa 01 sin cambios (`evidencias/ETAPA-02/windows-debug-20261025/`) |
 | No ejecutado | Instalación y ejecución del APK Debug de `main` en un emulador o dispositivo; compilación Release de `main` |
 
-## Etapa 02 — decisiones abiertas
+## Etapa 02 — fundamentos de identidad y seguridad (2026-10-25)
 
-No se dan por resueltas por haber validado las librerías. Los valores de las pruebas son
-hipótesis de prueba, no parámetros aprobados.
+Implementación de E02-D1 a E02-D5 según la WU del 2026-10-25, sin pantallas ni flujos
+de HU1, HU2 o HU3. Diseño en `arquitectura-identidad.md`; evidencia en
+`evidencias/ETAPA-02/claude-20261025/`.
 
-| ID | Decisión abierta | Estado | Justificación y evidencia | Condición de resolución | Prerrequisito de la Etapa 03 |
+| Componente | Archivos principales |
+|---|---|
+| PBKDF2 nativo (TurboModule `GfpCrypto`) | `app/src/infrastructure/native/NativeGfpCrypto.ts`, `app/android/app/src/main/java/co/gfpsas/gestionfinanciera/crypto/`, `codegenConfig` en `app/package.json`, registro en `MainApplication.kt` |
+| Aleatoriedad, codificación y motor PBKDF2 | `app/src/infrastructure/security/` |
+| Verificadores, normalización, política de contraseñas, preguntas, intentos y recuperación | `app/src/services/authentication/` |
+| Sesión | `app/src/services/session/sessionManager.ts` |
+| Base cifrada, migraciones, catálogos y repositorios | `app/src/infrastructure/database/` |
+| Permisos y copias | `app/android/app/src/main/AndroidManifest.xml`, `res/xml/data_extraction_rules.xml` |
+| Dependencias | `body-parser` 2.4.0 en `app/package-lock.json` (sin cambios en `package.json` salvo `codegenConfig`) |
+
+| Validación | Resultado |
+|---|---|
+| `npm ci`, `typecheck`, `lint`, `format:check`, Jest | Código 0; 13 suites y 74 pruebas (Claude, Linux, 2026-10-25) |
+| `npm audit` | 0 vulnerabilidades tras `body-parser` 2.4.0 |
+| `Pbkdf2HmacSha256.java` con `javac` y JDK 21 | 5 de 5 vectores de referencia correctos; 600 000 iteraciones en 564 ms de mediana en el equipo de Claude (`claude-20261025/pbkdf2-java-vectors.txt`; referencia, no medición de dispositivo) |
+| Codegen de React Native 0.87.1 | Genera `NativeGfpCryptoSpec` con la firma que implementa `GfpCryptoModule` y `GfpSpecs_ModuleProvider` |
+| Compilación Android con el módulo nativo y el manifiesto nuevo | Pendiente en Windows (`docs/validacion/etapa-02-pruebas-dispositivo.md` y script de la WU) |
+
+## Etapa 02 — decisiones técnicas
+
+Estados al 2026-10-25. «Adoptada» indica una decisión tomada e implementada; una
+decisión de seguridad no se considera verificada en dispositivo hasta que pasa su
+prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
+
+| ID | Decisión | Estado | Valores y justificación | Pendiente y condición de cierre | Bloquea iniciar la Etapa 03 |
 |---|---|---|---|---|---|
-| E02-D1 | Algoritmo y parámetros de protección de contraseñas y respuestas: iteraciones de PBKDF2, `Tmax`, tamaño de sal y de clave derivada | Abierta | Candidatos 600000 iteraciones, sal de 16 bytes y clave de 32 bytes solo como hipótesis de prueba; benchmark medido en emulador (mediana 70,9 s para 600000 iteraciones en Hermes, `p3-benchmark.txt`), no en dispositivo físico | El responsable aprueba algoritmo y parámetros, con la medición en el dispositivo o emulador que acepte como referencia | Sí |
-| E02-D2 | Política de normalización Unicode de contraseñas y respuestas (NFC u otra) | Abierta | V7 y V7D demuestran que NFC y NFD producen claves distintas (`pbkdf2-vectors.txt`) | Política aprobada, coherente con E03-D9 y E05-D3 | Sí |
-| E02-D3 | Estrategia de clave de cifrado de la base de datos (generación, custodia en Keystore, rotación) | Abierta | Secreto aleatorio en Keystore validado en el PoC con nivel declarado `SECURE_SOFTWARE`; respaldo por hardware y generación con `RNGetRandomValues` no observados en la ejecución final | Estrategia aprobada: generación, custodia, nivel de protección aceptado, comportamiento ante borrado de datos o reinstalación y rotación | Sí |
-| E02-D4 | Modelo multiusuario | Abierta | Sin evidencia ni decisión; afecta a HU2-CA11 | Modelo aprobado por el responsable | Sí |
-| E02-D5 | Esquema de base de datos en la Etapa 02 o incremental | Abierta | Sin decidir; afecta a HU8-CA07c | Decisión del responsable sobre el alcance del esquema | Sí |
-| E02-D6 | Criterios y evidencias concretas de cierre de la Etapa 02 (G-06) | Criterios registrados; aprobación pendiente | Criterios E02-C1 a E02-C7 con estado y evidencia en `trazabilidad.md`; veredicto en `cierre-etapa-02.md` | Aprobación explícita del responsable de los criterios y del cierre con reservas | Sí |
-| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Abierta | Observados en el APK Debug del PoC (`permissions-debug.txt`) y en el APK Debug de `main` (`windows-debug-20261025/aapt2-permissions.txt`): `INTERNET`, `USE_BIOMETRIC`, `USE_FINGERPRINT`, `SYSTEM_ALERT_WINDOW`, `ACCESS_LOCAL_NETWORK`, `ACCESS_NETWORK_STATE` y `co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | Decisión del responsable con la lista de permisos del APK de `main` (`aapt2`); a más tardar en la Etapa 13, según la observación registrada sobre `INTERNET` | No |
-| E02-D8 | Umbral de calidad del OCR | Abierta | Sin umbral aprobado (E02-OCR); la viabilidad demostrada no aprueba la calidad | Umbral y conjunto de pruebas aprobados antes de la Etapa 10 (HU7) | No |
-| E02-D9 | Tratamiento de la vulnerabilidad alta informada por `npm audit` | Abierta | `npm audit` (2026-10-23, `claude-20261023/npm-audit.json`): un único hallazgo alto, `body-parser` 2.3.0 (GHSA-27r3-jxmh-p828, denegación de servicio), dependencia transitiva de la dependencia de desarrollo `@react-native-community/cli` 20.2.0 (`cli-server-api`). Ya figuraba en el `package-lock.json` de `e10cebf`; no la introducen las dependencias de la Etapa 02. `npm audit` informa una corrección disponible. No se ejecutó `npm audit fix` | Decisión del responsable (actualizar, fijar la versión o aceptar el riesgo) y revalidación completa si cambia el lockfile | No |
+| E02-D1 | Protección de contraseñas y respuestas | Adoptada; iteraciones provisionales | PBKDF2-HMAC-SHA256; sal aleatoria de 16 bytes por secreto; clave derivada de 32 bytes; comparación en tiempo constante; un verificador independiente por respuesta; formato con algoritmo, iteraciones, sal, normalización y versión de formato (1), con `needsRehash()` para migrar. Implementación nativa porque `@noble/hashes` en Hermes necesitó 70,9 s para 600 000 iteraciones en el emulador (`V4/p3-benchmark.txt`). **600 000 iteraciones provisionales** | P-D1 en el dispositivo físico mínimo (objetivo de un segundo aproximadamente, mínimo 310 000 iteraciones) antes del cierre de la Etapa 03 | No: el parámetro está versionado y los verificadores se regeneran |
+| E02-D2 | Normalización Unicode | Adoptada | NFC antes de derivar, al registrar, autenticar y recuperar; sin minúsculas ni eliminación de espacios internos; contraseña nueva con espacios externos rechazada; caracteres de control y unidades sustitutas aisladas rechazados. No existen credenciales previas, así que no hay migración | P-D2 (Hermes) antes del cierre de la Etapa 03; si falla, la operación se detiene de forma segura | No |
+| E02-D3 | Custodia de la clave SQLCipher | Adoptada | 256 bits de `RNGetRandomValues`; Keychain `AES_GCM_NO_AUTH` sobre Android Keystore, sin biometría; comprobación de SQLCipher; `key_lost` y `key_rejected` sin borrar la base; copias y transferencias excluidas; sin rotación periódica, con procedimiento de `PRAGMA rekey`; regla `no-console`. Respaldo por hardware no demostrado | P-D3 en un AVD aislado durante la Etapa 03 | No |
+| E02-D4 | Modelo multiusuario | Adoptada | Varias cuentas locales en una base compartida con aislamiento lógico: `user_id` en todo dato privado y acceso por sesión activa (`OwnedRepository`, `SessionManager`). Se rechaza un solo usuario por instalación | — | No |
+| E02-D5 | Modelo de datos | Adoptada | Esquema v1 de identidad y seguridad y catálogos v2, tablas `STRICT`, claves foráneas en cascada, unicidad de identificadores, migraciones transaccionales con suma SHA-256 y protección ante esquemas más nuevos | Contenido de los catálogos (E03-D4, E03-D5) | No |
+| E02-D6 | Criterios de cierre de la Etapa 02 (G-06) | Criterios registrados | E02-C1 a E02-C8 en `trazabilidad.md`; veredicto en `cierre-etapa-02.md` | Aprobación explícita del responsable | Sí |
+| E02-D7 | Permisos del APK | Parcialmente resuelta | Se retiran `USE_BIOMETRIC` y `USE_FINGERPRINT` (`tools:node="remove"`): ninguna HU usa biometría y `react-native-keychain` solo los consulta con control de acceso biométrico. Se conservan: `INTERNET` (Metro en Debug y `datatransport` de ML Kit), `ACCESS_NETWORK_STATE` (`datatransport`), `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (permiso interno de `androidx.core`). `SYSTEM_ALERT_WINDOW` y `ACCESS_LOCAL_NETWORK` proceden del AAR de depuración de React Native | Compilar y comprobar los manifiestos Debug y Release; P-D7 para `INTERNET` | No |
+| E02-D8 | Calidad del OCR | Plan definido | `plan-evaluacion-ocr.md`: exactitud por campo, umbrales propuestos (monto ≥ 90 %, fecha ≥ 85 %, comercio ≥ 75 %), conjunto etiquetado, baja confianza y confirmación humana. Calidad no aprobada | Aprobación de umbrales al iniciar la Etapa 10 | No |
+| E02-D9 | Vulnerabilidad `body-parser` | Resuelta | La introducía `@react-native-community/cli-server-api` 20.2.0, que pide `^2.2.2`; GHSA-27r3-jxmh-p828 afecta a `>=2.0.0 <2.4.0`. Actualización acotada del lockfile a 2.4.0, dentro del rango; `npm audit`: 0 vulnerabilidades; `npm ci` y las pruebas pasan | Compilación Android de la WU | No |
 
 ## Etapa 02 — limitaciones registradas
 
@@ -153,16 +182,18 @@ hipótesis de prueba, no parámetros aprobados.
 - La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja. Procedimiento conocido: compilar desde un worktree en una ruta corta (por ejemplo `C:\gfp-v4-short`) con JDK 17 solo en el proceso. Las pruebas Release se ejecutaron con el APK `DD54C93E…`; el Release `819EF8CC…`, compilado en la ruta corta, solo se instaló y abrió.
 - El APK Debug de `main` se compiló, pero no se instaló ni ejecutó; la compilación Release de `main` no se ejecutó. Ver "Etapa 02 — integración en `main`".
 - Pruebas en un solo emulador (API 34); no se repitieron en el emulador API 29 de la Etapa 01.
+- El módulo nativo `GfpCrypto` y el manifiesto modificado no se han compilado en Android; las pruebas de JavaScript usan una implementación de Node como sustituto del módulo nativo.
+- Las pruebas P-D1, P-D2, P-D3 y P-D7 no se han ejecutado.
 - OCR evaluado solo con 6 imágenes sintéticas; la anomalía `similarity=0.355` (imagen 03) queda como limitación conocida (E02-OCR).
 
 ## Prerrequisitos de la Etapa 03 (HU1 Registrar usuario)
 
-Deben resolverse antes de iniciar la Etapa 03:
-
-| Prerrequisito | Motivo |
-|---|---|
-| E02-D6 y aprobación del cierre de la Etapa 02 | Protocolo por etapa: pausa obligatoria hasta aprobación explícita |
-| E02-D1 y E02-D2 | HU1 almacena contraseña y respuestas de seguridad (relacionado con E03-D9 y E03-D10) |
-| E02-D3, E02-D4 y E02-D5 | HU1 crea el primer registro persistente de usuario |
-| G-07 y E03-D1 a E03-D10 | Decisiones propias de la etapa en `plan-etapas.md` |
-| Autorización explícita del responsable para iniciar la Etapa 03 | El cierre técnico de la Etapa 02 no la concede |
+| Prerrequisito | Estado | Motivo |
+|---|---|---|
+| Aprobación del cierre de la Etapa 02 (E02-D6) | Pendiente del responsable | Protocolo por etapa |
+| Compilación Android de los fundamentos de identidad | Pendiente (Windows) | El módulo nativo y el manifiesto deben compilar antes de usarse en HU1 |
+| E02-D1 a E02-D5 | Adoptadas | P-D1, P-D2 y P-D3 se completan antes del cierre de la Etapa 03 |
+| G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
+| E03-D1 y E03-D2 | Requieren aprobación | Elecciones de producto entre texto y prototipo, y entre campo obligatorio u opcional |
+| E03-D4 y E03-D5 | Propuestas | Contenido de los catálogos |
+| Autorización explícita para iniciar la Etapa 03 | Pendiente del responsable | El cierre técnico de la Etapa 02 no la concede |

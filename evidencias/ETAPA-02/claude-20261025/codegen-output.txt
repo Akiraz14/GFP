@@ -1,0 +1,27 @@
+> node react-native/scripts/generate-specs-cli.js --platform android --libraryName GfpSpecs --javaPackageName co.gfpsas.gestionfinanciera.specs
+## Archivos generados
+./java/co/gfpsas/gestionfinanciera/specs/NativeGfpCryptoSpec.java
+./jni/CMakeLists.txt
+./jni/GfpSpecs-generated.cpp
+./jni/GfpSpecs.h
+./jni/react/renderer/components/GfpSpecs/ComponentDescriptors.cpp
+./jni/react/renderer/components/GfpSpecs/ComponentDescriptors.h
+./jni/react/renderer/components/GfpSpecs/EventEmitters.cpp
+./jni/react/renderer/components/GfpSpecs/EventEmitters.h
+./jni/react/renderer/components/GfpSpecs/GfpSpecsJSI.h
+./jni/react/renderer/components/GfpSpecs/Props.cpp
+./jni/react/renderer/components/GfpSpecs/Props.h
+./jni/react/renderer/components/GfpSpecs/ShadowNodes.cpp
+./jni/react/renderer/components/GfpSpecs/ShadowNodes.h
+./jni/react/renderer/components/GfpSpecs/States.cpp
+./jni/react/renderer/components/GfpSpecs/States.h
+
+## NativeGfpCryptoSpec.java (firma)
+23:public abstract class NativeGfpCryptoSpec extends ReactContextBaseJavaModule implements TurboModule {
+24:  public static final String NAME = "GfpCrypto";
+32:    return NAME;
+37:  public abstract void pbkdf2HmacSha256(String passwordHex, String saltHex, double iterations, double keyLengthBytes, Promise promise);
+
+## GfpSpecs-generated.cpp (registro)
+17:  return static_cast<JavaTurboModule &>(turboModule).invokeJavaMethod(rt, PromiseKind, "pbkdf2HmacSha256", "(Ljava/lang/String;Ljava/lang/String;DDLcom/facebook/react/bridge/Promise;)V", args, count, cachedMethodId);
+26:  if (moduleName == "GfpCrypto") {

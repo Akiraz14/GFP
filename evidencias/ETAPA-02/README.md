@@ -6,6 +6,7 @@ Cierre: `docs/cierre-etapa-02.md`. Criterios: `docs/trazabilidad.md` (E02-C1 a E
 |---|---|---|---|
 | `V4/` | Ejecución V4 del protocolo `poc-stage02.ps1` sobre `6caa2acc882965d68a37f87992c0a6136c7db4fa`, 2026-10-23, `emulator-5554` (API 34): `summary.md`, `results.json`, logs, pasos y análisis de privacidad | Juan (Windows) | Sí, excepto lo indicado abajo |
 | `claude-20261023/` | Validación del árbol `app/` de `main` integrado: `npm ci`, tsc, ESLint, Prettier, Jest, regla E02-RNG y `npm audit` | Claude (Linux) | Sí |
+| `claude-20261025/` | Fundamentos de identidad y seguridad (WU del 2026-10-25): `npm ci`, tsc, ESLint, Prettier, Jest (74 pruebas), `npm audit`, vectores de `Pbkdf2HmacSha256.java` con `javac` y salida del codegen del módulo `GfpCrypto` | Claude (Linux) | Sí |
 | `windows-debug-20261025/` | Compilación Debug de `main` (`cbef19f`) en Windows con JDK 17, en el worktree `GFP Proyecto\GFP-e02-int`: entorno, `npm ci`, calidad, Jest, Gradle, `aapt2`, hashes de los APK de la Etapa 01 y estado del repositorio antes y después | Juan (Windows), script `stage02-debug-validation.ps1` | Sí |
 | `archivo-spike-v4/` | Copia de archivo del protocolo y las herramientas de la rama experimental | — | Sí, como archivo experimental no integrable |
 

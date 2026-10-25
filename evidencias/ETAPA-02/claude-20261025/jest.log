@@ -1,0 +1,121 @@
+PASS __tests__/App.test.tsx
+  App base
+    ✓ renderiza la pantalla base con el nombre visible GFP (85 ms)
+
+(node:1921) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS __tests__/infrastructure/migrator.test.ts
+  schema migrations (E02-D5)
+    ✓ creates the identity schema and catalogs from an empty database (20 ms)
+    ✓ is idempotent (5 ms)
+    ✓ upgrades version 1 to version 2 without losing data (7 ms)
+    ✓ refuses edited migrations and newer schemas (15 ms)
+    ✓ rolls back a failing migration completely (13 ms)
+    ✓ enforces verifier shape, referential integrity and cascades (18 ms)
+
+PASS __tests__/services/authentication/accountRecovery.test.ts
+  account recovery with security questions (HU3)
+    ✓ asks two different configured questions and keeps them for the challenge (24 ms)
+    ✓ reports an unknown identifier (17 ms)
+    ✓ updates the password only after both answers are correct (22 ms)
+    ✓ a single wrong answer fails without saying which one (21 ms)
+    ✓ rejects missing answers (22 ms)
+    ✓ rejects extra answers (21 ms)
+    ✓ rejects unexpected answers (22 ms)
+    ✓ rejects case-changed answers (19 ms)
+    ✓ locks recovery after repeated failures with growing waits (24 ms)
+    ✓ throttles repeated unknown identifiers (12 ms)
+    ✓ applies the password policy and the confirmation before checking answers (12 ms)
+    ✓ accepts NFD input for the new password and stores it as NFC (14 ms)
+    ✓ expires challenges and never lets one user recover another (18 ms)
+
+PASS __tests__/services/session/userIsolation.test.ts
+  local multi-user isolation (E02-D4)
+    ✓ each session only reaches its own profile (36 ms)
+    ✓ a forged session object with another user id is rejected (18 ms)
+    ✓ logging out blocks the previous session (17 ms)
+    ✓ owned rows disappear with their owner and never leak to others (13 ms)
+  already registered users (E03-D3)
+    ✓ rejects a duplicate document number (12 ms)
+    ✓ rejects a duplicate email ignoring case (11 ms)
+    ✓ rejects a duplicate phone with the same country code (14 ms)
+    ✓ allows an account without phone and the same national number in another country (23 ms)
+    ✓ finds users by email, document or phone and refuses ambiguous phones (23 ms)
+
+PASS __tests__/infrastructure/encryptedDatabase.test.ts
+  encrypted database opening (E02-D3)
+    ✓ creates a 256-bit key from the secure source on first run (16 ms)
+    ✓ reuses the stored key on later runs (6 ms)
+    ✓ never replaces a database whose key is missing (2 ms)
+    ✓ reports a rejected key without touching the file (1 ms)
+    ✓ refuses to run without SQLCipher (1 ms)
+    ✓ rejects malformed stored keys (9 ms)
+
+PASS __tests__/infrastructure/pbkdf2Engine.test.ts
+  native PBKDF2 engine bridge
+    ✓ reproduces reference vector passwd/salt (2 ms)
+    ✓ reproduces reference vector password/salt (1 ms)
+    ✓ reproduces reference vector password/salt (3 ms)
+    ✓ reproduces reference vector passwordPASSWORDpassword/saltSALTsaltSALTsaltSALTsaltSALTsalt (7 ms)
+    ✓ sends exact UTF-8 bytes to the native module (1 ms)
+    ✓ rejects arguments outside the supported range before calling native code (10 ms)
+    ✓ rejects a native result with the wrong length (1 ms)
+
+PASS __tests__/services/authentication/secretVerifier.test.ts
+  secret verifier (E02-D1)
+    ✓ stores algorithm, parameters, salt, verifier and format version (1 ms)
+    ✓ uses the provisional production iteration count by default
+    ✓ verifies the same password and NFD equivalents, nothing else (4 ms)
+    ✓ derives independent verifiers for identical secrets (1 ms)
+    ✓ treats malformed option answers as a failed verification (7 ms)
+    ✓ rejects unsupported stored records instead of guessing (1 ms)
+    ✓ flags records created with other parameters for rehash (1 ms)
+
+PASS __tests__/services/authentication/securityQuestionPolicy.test.ts
+  security question policy (HU1, HU3, E03-D6)
+    ✓ the proposed catalog allows five non-similar questions (2 ms)
+    ✓ accepts five distinct, non-similar questions with catalog options
+    ✓ rejects wrong counts, duplicates, similar questions and unknown options (1 ms)
+    ✓ picks two different configured questions for recovery (7 ms)
+
+PASS __tests__/infrastructure/secureRandom.test.ts
+  secure random source
+    ✓ fails closed when the native module is missing (7 ms)
+    ✓ decodes bytes returned by the native module (1 ms)
+    ✓ rejects malformed and all-zero native responses (2 ms)
+    ✓ produces RFC 4122 version 4 identifiers (1 ms)
+    ✓ uses rejection sampling for bounded indexes (1 ms)
+
+PASS __tests__/services/authentication/attemptThrottle.test.ts
+  attempt throttling
+    ✓ locks login for 15 minutes after 3 failures (HU2) (1 ms)
+    ✓ doubles recovery waits up to 24 hours
+    ✓ a success clears failures and lock level (1 ms)
+    ✓ stays locked when the clock moves backwards
+
+PASS __tests__/services/authentication/secretNormalization.test.ts
+  secret normalization (E02-D2)
+    ✓ maps canonically equivalent passwords to the same NFC string (1 ms)
+    ✓ keeps case, accents and every space in passwords
+    ✓ detects lone surrogates and control characters (1 ms)
+    ✓ folds free-text answers without losing letters (1 ms)
+
+PASS __tests__/infrastructure/encoding.test.ts
+  encoding
+    ✓ decodes canonical base64 and rejects malformed input (5 ms)
+    ✓ round-trips hex and encodes UTF-8 exactly
+    ✓ compares byte arrays without early exit semantics
+
+PASS __tests__/services/authentication/passwordPolicy.test.ts
+  password policy (HU1, HU3)
+    ✓ accepts at least 8 characters with a letter, a number and a symbol (1 ms)
+    ✓ reports each missing rule (1 ms)
+    ✓ allows internal spaces but rejects outer whitespace
+    ✓ counts code points after NFC and bounds the length
+    ✓ rejects invalid code units before normalization
+
+Test Suites: 13 passed, 13 total
+Tests:       74 passed, 74 total
+Snapshots:   0 total
+Time:        1.979 s, estimated 4 s
+Ran all test suites.

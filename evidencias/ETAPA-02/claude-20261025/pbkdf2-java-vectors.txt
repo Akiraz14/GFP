@@ -1,0 +1,17 @@
+> javac -encoding US-ASCII -Xlint:all (JDK "21.0.12.1")
+javac exit=0
+> java co.gfpsas.gestionfinanciera.crypto.Pbkdf2Calibration 600000 5
+GFP-PBKDF2|vector|V1|OK
+GFP-PBKDF2|vector|V4|OK
+GFP-PBKDF2|vector|V5|OK
+GFP-PBKDF2|vector|V6|OK
+GFP-PBKDF2|vector|V7|OK
+GFP-PBKDF2|vectors_result|OK|failed=0
+GFP-PBKDF2|sample|iterations=600000|index=1|ms=637
+GFP-PBKDF2|sample|iterations=600000|index=2|ms=555
+GFP-PBKDF2|sample|iterations=600000|index=3|ms=564
+GFP-PBKDF2|sample|iterations=600000|index=4|ms=616
+GFP-PBKDF2|sample|iterations=600000|index=5|ms=562
+GFP-PBKDF2|summary|iterations=600000|samples=5|medianMs=564|minMs=555|maxMs=637|provider=SunJCE
+exit=0
+Nota: tiempos del equipo de Claude (JDK de escritorio); no son una medición de dispositivo Android.
