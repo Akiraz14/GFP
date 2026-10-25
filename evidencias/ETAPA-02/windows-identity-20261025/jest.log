@@ -1,0 +1,22 @@
+﻿> [C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-id\app] npx.cmd jest --ci
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 npx
+npm notice run jest --ci
+PASS __tests__/services/authentication/attemptThrottle.test.ts
+PASS __tests__/services/authentication/secretNormalization.test.ts
+PASS __tests__/services/authentication/passwordPolicy.test.ts
+PASS __tests__/infrastructure/encoding.test.ts
+PASS __tests__/infrastructure/pbkdf2Engine.test.ts (5.376 s)
+PASS __tests__/infrastructure/secureRandom.test.ts (5.487 s)
+PASS __tests__/services/authentication/securityQuestionPolicy.test.ts (5.517 s)
+PASS __tests__/services/authentication/secretVerifier.test.ts (5.657 s)
+PASS __tests__/infrastructure/encryptedDatabase.test.ts (5.691 s)
+PASS __tests__/infrastructure/migrator.test.ts (5.863 s)
+PASS __tests__/services/session/userIsolation.test.ts (6.028 s)
+PASS __tests__/services/authentication/accountRecovery.test.ts (6.135 s)
+PASS __tests__/App.test.tsx (5.395 s)
+
+Test Suites: 13 passed, 13 total
+Tests:       74 passed, 74 total
+Snapshots:   0 total
+Time:        13.427 s
+Ran all test suites.

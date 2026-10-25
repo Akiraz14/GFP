@@ -1,0 +1,1 @@
+﻿sha256=3CF23009ABCBAB5D80207C046F5320A48A47429136B4B8707456FC80E2A29B19 path=C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-id\app\android\app\build\outputs\apk\debug\app-debug.apk

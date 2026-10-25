@@ -1,0 +1,6 @@
+npm-ci exit=0
+typecheck exit=0
+lint exit=0
+format-check exit=0
+jest exit=0
+npm-audit exit=0

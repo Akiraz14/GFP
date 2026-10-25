@@ -1,0 +1,11 @@
+﻿HEAD 440ba4dd871deb0a4c1e43517b0e818b5abfc087
+STATUS
+REFS
+refs/heads/main 440ba4dd871deb0a4c1e43517b0e818b5abfc087
+refs/remotes/origin/HEAD a9b86dc29c9519c4bcd76923d53b5c562857970d
+refs/remotes/origin/main a9b86dc29c9519c4bcd76923d53b5c562857970d
+refs/revision/spike-02 c4af5f09cff277efeef5f8365035d8a8c4ccc4c7
+refs/revision/spike-02-v2 8b64ccbbd4107ddd8c6e9c41cdf7897d3293c9f0
+refs/revision/spike-02-v3 abd4804ea4390b3b3a29532877e8f118080ea550
+refs/revision/spike-02-v4 6caa2acc882965d68a37f87992c0a6136c7db4fa
+refs/tags/etapa-01-aprobada f43095be1245581461b1a9dd53c343c27a8316b6

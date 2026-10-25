@@ -3,10 +3,10 @@
 **Veredicto: cierre técnico aceptado con reservas (E02-CIERRE).** Los fundamentos críticos
 tienen pruebas y evidencias verificables en emulador, la PoC de OCR demuestra solo
 viabilidad y los riesgos están informados. Los fundamentos de identidad y seguridad
-(E02-D1 a E02-D5) están implementados y probados en Jest y `javac`. La etapa no queda
-completamente cerrada: E02-C6 es parcial (iteraciones de PBKDF2 provisionales, permiso
-`INTERNET` y umbrales del OCR), el módulo nativo y el manifiesto nuevos no se han
-compilado en Android (E02-C8), el APK Debug de `main` no se ha instalado y la aprobación
+(E02-D1 a E02-D5) están implementados, probados en Jest y `javac` y compilados en Android.
+La etapa no queda completamente cerrada: E02-C6 es parcial (iteraciones de PBKDF2
+provisionales, permiso `INTERNET` y umbrales del OCR), el módulo nativo no se ha
+ejecutado en un dispositivo (E02-C8), el APK Debug de `main` no se ha instalado y la aprobación
 formal de los criterios (E02-D6) está pendiente del responsable. Este cierre no autoriza
 el inicio de la Etapa 03.
 
@@ -45,7 +45,7 @@ Detalle y evidencias en `trazabilidad.md` (sección "Etapa 02").
 | E02-C5 | Viabilidad de cámara, galería y OCR | Verificado solo como viabilidad; calidad no aprobada |
 | E02-C6 | Decisiones de la etapa resueltas | Parcial |
 | E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Verificado (compilación Debug en Windows); APK de `main` no instalado |
-| E02-C8 | Fundamentos de identidad y seguridad implementados y probados | Probado (Jest y `javac`); compilación Android pendiente |
+| E02-C8 | Fundamentos de identidad y seguridad implementados y probados | Verificado (Jest, `javac` y compilación Debug en Windows); ejecución en dispositivo pendiente |
 
 ## Cambios integrados en `main`
 
@@ -55,7 +55,8 @@ Detalle y evidencias en `trazabilidad.md` (sección "Etapa 02").
 | `e21ba6b` | Merge de `372180c` sobre `e10cebf` |
 | `cbef19f` | `docs/cierre-etapa-02.md`, actualización de `docs/decisiones.md` y `docs/trazabilidad.md`, evidencias de `evidencias/ETAPA-02/` y regla de `.gitignore` para las copias de bases de datos |
 | `a9b86dc` | Evidencia `windows-debug-20261025/` de la compilación Debug de `cbef19f` y actualización de este documento, `decisiones.md`, `trazabilidad.md` y el manifiesto de evidencias |
-| Commits de la WU del 2026-10-25 | `body-parser` 2.4.0; renombrado de las carpetas de capas a inglés; fundamentos de identidad y seguridad con sus pruebas; permisos y exclusión de copias en el manifiesto; documentación y evidencias (`claude-20261025/`) |
+| `a5c1379`, `d3e69ee`, `03195e9`, `d609143`, `440ba4d` | `body-parser` 2.4.0; renombrado de las carpetas de capas a inglés; fundamentos de identidad y seguridad con sus pruebas; permisos y exclusión de copias en el manifiesto; documentación y evidencias (`claude-20261025/`) |
+| Commits de la revisión consolidada | Serialización de la recuperación con pruebas de regresión; evidencia `windows-identity-20261025/` y `claude-20261025-review/` |
 
 Se conservan sin cambios desde la Etapa 01: `App.tsx`, `__tests__/App.test.tsx`,
 `versionName "1.0"`, la identidad `co.gfpsas.gestionfinanciera`, `scripts/` y
@@ -83,13 +84,15 @@ Rutas relativas a `evidencias/ETAPA-02/`; manifiesto en `README.md` de esa carpe
 | `npm ci`, tsc, ESLint, Prettier y Jest sobre `app/` de `main` | PASS | `claude-20261023/` | Claude (Linux) |
 | Regla E02-RNG | 2 errores en `src/`, 0 fuera | `claude-20261023/eslint-rule-probe.log` | Claude (Linux) |
 | `npm audit` | 1 hallazgo alto (E02-D9) | `claude-20261023/npm-audit.json` | Claude (Linux) |
-| Fundamentos de identidad: `npm ci`, tsc, ESLint, Prettier y Jest (13 suites, 74 pruebas: vectores PBKDF2, normalización NFC/NFD, contraseñas, verificadores, preguntas, intentos, recuperación, migraciones, clave SQLCipher y aislamiento) | PASS | `claude-20261025/` | Claude (Linux, 2026-10-25) |
+| Fundamentos de identidad: `npm ci`, tsc, ESLint, Prettier y Jest (13 suites; 74 pruebas, 76 tras la revisión consolidada: vectores PBKDF2, normalización NFC/NFD, contraseñas, verificadores, preguntas, intentos, recuperación, migraciones, clave SQLCipher y aislamiento) | PASS | `claude-20261025/` | Claude (Linux, 2026-10-25) |
 | `Pbkdf2HmacSha256.java` con `javac` y JDK 21 | 5/5 vectores | `claude-20261025/pbkdf2-java-vectors.txt` | Claude (Linux, 2026-10-25) |
 | `npm audit` tras `body-parser` 2.4.0 | 0 vulnerabilidades | `claude-20261025/npm-audit.json` | Claude (Linux, 2026-10-25) |
 | `npm ci`, tsc, ESLint, Prettier, Jest y `assembleDebug` de `main` (`cbef19f`) con JDK 17 | PASS: `BUILD SUCCESSFUL in 15m 5s`, SQLCipher activo, APK `0AEF5C75…` (`versionName 1.0`, `co.gfpsas.gestionfinanciera`, `minSdkVersion 29`); repositorio canónico y APK de la Etapa 01 sin cambios | `windows-debug-20261025/` | Juan (Windows, 2026-10-25) |
+| `npm ci`, `npm audit`, tsc, ESLint, Prettier, Jest (74/74), `assembleDebug` y manifiesto Release de `440ba4d` con JDK 17 | PASS: `BUILD SUCCESSFUL in 8m 15s`, `NativeGfpCryptoSpec` generado, APK `3CF23009…` sin permisos biométricos y con `dataExtractionRules`; Release solo con `INTERNET`, `ACCESS_NETWORK_STATE` y el permiso interno de AndroidX; Etapa 01 sin cambios | `windows-identity-20261025/` | Juan (Windows, 2026-10-25) |
+| Revisión consolidada: 10 intentos de recuperación simultáneos | Antes: 10 evaluados (bloqueante). Después: 3 evaluados y 7 bloqueados; Jest 76/76 | `claude-20261025-review/` | Claude (Linux, 2026-10-25) |
 
-No ejecutadas: compilación Android del módulo `GfpCrypto` y del manifiesto nuevo;
-instalación y ejecución del APK Debug de `main`; compilación Release de `main`;
+No ejecutadas: ejecución del módulo `GfpCrypto` en un dispositivo; instalación y ejecución
+del APK Debug de `main`; compilación Release de `main`;
 desinstalación y reinstalación (destructivas, sin autorización); pruebas en dispositivo
 físico (P-D1, P-D2, P-D3 y P-D7 en `validacion/etapa-02-pruebas-dispositivo.md`).
 
@@ -102,7 +105,7 @@ físico (P-D1, P-D2, P-D3 y P-D7 en `validacion/etapa-02-pruebas-dispositivo.md`
 - La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja.
 - Calidad del OCR no aprobada: 6 imágenes sintéticas y anomalía `similarity=0.355` aceptada como limitación conocida (E02-OCR).
 - APK Debug de `main` compilado en Windows, pero no instalado ni ejecutado; Release de `main` no compilado.
-- Módulo nativo `GfpCrypto` y manifiesto modificado sin compilar en Android; Jest sustituye el módulo nativo por una implementación de Node.
+- Módulo nativo `GfpCrypto` compilado pero no ejecutado en un dispositivo; Jest sustituye el módulo nativo por una implementación de Node.
 - Iteraciones de PBKDF2 provisionales (600 000) hasta medirlas en el dispositivo físico mínimo (P-D1).
 - Las opciones de respuesta de seguridad tienen entropía limitada; la recuperación depende de la limitación de intentos (`arquitectura-identidad.md`, sección 4).
 
@@ -136,18 +139,18 @@ usuarios y manipulación del reloj.
 ## Condiciones para autorizar la Etapa 03
 
 1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6).
-2. Compilación Android correcta del código de esta WU, con los manifiestos Debug y Release comprobados.
-3. Decisiones de producto E03-D1 y E03-D2, y contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
-4. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
-5. Autorización explícita del responsable para iniciar la Etapa 03.
+2. Decisiones de producto E03-D1 y E03-D2, y contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
+3. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
+4. Autorización explícita del responsable para iniciar la Etapa 03.
 
-P-D1, P-D2 y P-D3 no bloquean el inicio, pero deben completarse antes del cierre de la
+La compilación Android de los fundamentos de identidad ya está verificada
+(`windows-identity-20261025/`). P-D1, P-D2 y P-D3 no bloquean el inicio, pero deben completarse antes del cierre de la
 Etapa 03.
 
 ## Pendiente del responsable
 
 1. Aprobación del cierre con reservas y de los criterios (E02-D6).
 2. E03-D1, E03-D2, E03-D4 y E03-D5.
-3. Ejecutar la compilación Android de esta WU en Windows.
-4. Autorizar o descartar la instalación del APK Debug de `main` (condición 4). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
-5. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y el de esta WU), que se conservan.
+3. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
+4. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.
+5. Autorizar la publicación en GitHub.

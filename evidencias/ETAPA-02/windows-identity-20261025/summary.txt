@@ -1,0 +1,29 @@
+﻿INICIO 2026-10-25T11:36:57.4752065-05:00 en AKIRAZ-LT
+PASS main=440ba4dd871deb0a4c1e43517b0e818b5abfc087, rama main, limpio (origin/main=a9b86dc29c9519c4bcd76923d53b5c562857970d)
+INFO entorno registrado (environment.txt)
+PASS worktree-add (exit 0, 1s)
+PASS worktree C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-id en 440ba4dd871deb0a4c1e43517b0e818b5abfc087
+PASS npm-ci (exit 0, 51s)
+PASS npm-audit (exit 0, 3s)
+PASS typecheck (exit 0, 4s)
+PASS lint (exit 0, 17s)
+PASS format-check (exit 0, 3s)
+PASS jest (exit 0, 18s)
+PASS gradle-assembleDebug (exit 0, 496s)
+PASS gradle-processReleaseMainManifest (exit 0, 37s)
+APK Debug SHA-256 3CF23009ABCBAB5D80207C046F5320A48A47429136B4B8707456FC80E2A29B19 bytes 206106845
+PASS codegen NativeGfpCryptoSpec generado
+INFO package: name='co.gfpsas.gestionfinanciera' versionCode='1' versionName='1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17' | targetSdkVersion:'36' | application-label:'GFP'
+PASS Debug sin USE_BIOMETRIC
+PASS Debug sin USE_FINGERPRINT
+PASS Debug declara dataExtractionRules
+INFO permisos Release: android.permission.INTERNET, co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION, android.permission.ACCESS_NETWORK_STATE
+PASS sin cambios desde e10cebf: app/App.tsx
+PASS sin cambios desde e10cebf: app/__tests__/App.test.tsx
+PASS sin cambios desde e10cebf: scripts
+PASS sin cambios desde e10cebf: evidencias/ETAPA-01
+INFO namespace "co.gfpsas.gestionfinanciera" | applicationId "co.gfpsas.gestionfinanciera" | versionName "1.0"
+PASS worktree sin cambios tras la compilacion
+PASS APK Etapa 01 intactos: 8EB6D5A0D3317A852ACA7A0A560459E579F25BBD1238B90388CED32BF39B395E debug\app-debug.apk / D39154D3AE285AE089BFBF7AC53E7997B7CB1C905D27ED53982B721801E4FA05 release\app-release.apk
+PASS repositorio canonico sin cambios (HEAD, estado, referencias)
+FIN 2026-10-25T11:47:32.8098228-05:00: evidencias en C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-spike02-evidencias\identity-debug-20261025-113657

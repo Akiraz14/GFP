@@ -149,11 +149,23 @@ de HU1, HU2 o HU3. Diseño en `arquitectura-identidad.md`; evidencia en
 
 | Validación | Resultado |
 |---|---|
-| `npm ci`, `typecheck`, `lint`, `format:check`, Jest | Código 0; 13 suites y 74 pruebas (Claude, Linux, 2026-10-25) |
+| `npm ci`, `typecheck`, `lint`, `format:check`, Jest | Código 0; 13 suites y 74 pruebas (Claude, Linux, 2026-10-25); 76 tras la corrección de la revisión consolidada (`claude-20261025-review/`) |
 | `npm audit` | 0 vulnerabilidades tras `body-parser` 2.4.0 |
 | `Pbkdf2HmacSha256.java` con `javac` y JDK 21 | 5 de 5 vectores de referencia correctos; 600 000 iteraciones en 564 ms de mediana en el equipo de Claude (`claude-20261025/pbkdf2-java-vectors.txt`; referencia, no medición de dispositivo) |
 | Codegen de React Native 0.87.1 | Genera `NativeGfpCryptoSpec` con la firma que implementa `GfpCryptoModule` y `GfpSpecs_ModuleProvider` |
-| Compilación Android con el módulo nativo y el manifiesto nuevo | Pendiente en Windows (`docs/validacion/etapa-02-pruebas-dispositivo.md` y script de la WU) |
+| Compilación Android con el módulo nativo y el manifiesto nuevo | Juan, 2026-10-25, worktree `GFP Proyecto\GFP-e02-id` en `440ba4d`, JDK 17.0.20.1: `npm ci`, `npm audit` (0 vulnerabilidades), `typecheck`, `lint`, `format:check`, Jest (74/74), `assembleDebug` (`BUILD SUCCESSFUL in 8m 15s`, codegen `NativeGfpCryptoSpec` generado, sin avisos del código de GFP) y `:app:processReleaseMainManifest` con código 0. APK Debug `3CF23009ABCBAB5D80207C046F5320A48A47429136B4B8707456FC80E2A29B19` sin `USE_BIOMETRIC` ni `USE_FINGERPRINT` y con `dataExtractionRules`; manifiesto Release con `INTERNET`, `ACCESS_NETWORK_STATE` y `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. Etapa 01 y repositorio canónico sin cambios (`windows-identity-20261025/`) |
+| Ejecución del módulo nativo en un dispositivo | No ejecutada: P-D1 y P-D2 (`validacion/etapa-02-pruebas-dispositivo.md`) |
+
+## Etapa 02 — revisión consolidada antes de publicar (2026-10-25)
+
+| Severidad | Hallazgo | Evidencia | Tratamiento |
+|---|---|---|---|
+| Bloqueante (corregido) | `AccountRecoveryService` leía el contador de intentos, esperaba la derivación PBKDF2 y después lo escribía: 10 intentos incorrectos simultáneos se evaluaban todos en lugar de bloquearse tras 3. Con opciones de entropía limitada, una ráfaga en paralelo podía recuperar la cuenta sin conocer las respuestas | Reproducido con Jest: 10 de 10 intentos evaluados antes de la corrección | `start()` y `complete()` se serializan por base de datos, también entre instancias del servicio. Pruebas de regresión: 10 intentos simultáneos producen 3 `invalid_data` y 7 `locked`; 6 intentos repartidos entre instancias producen 3 evaluados (`accountRecovery.test.ts`, `claude-20261025-review/`) |
+| Importante | `IdentityRepository.createAccount()` inserta usuario, credencial y respuestas, pero no abre su propia transacción: un llamador futuro que no la use podría dejar una cuenta incompleta | Revisión del código; las pruebas la usan dentro de una transacción | HU1 debe invocarla dentro de `database.transaction()`; se revisa al implementar HU1 |
+| Importante | `SessionManager.start()` acepta cualquier `userId`; la garantía de aislamiento depende de que solo el servicio de inicio de sesión (HU2) lo invoque tras autenticar | Revisión del código | Regla de arquitectura para la Etapa 04, que también debe serializar el límite de intentos de inicio de sesión como la recuperación |
+| Importante | La suma de comprobación de una migración incluye su SQL literal: cambiar una migración ya entregada, aunque sea solo el espaciado, impediría abrir la base (`checksum_mismatch`) | `migrator.test.ts` | Las migraciones son inmutables tras la primera entrega (`arquitectura-identidad.md`) |
+| Importante | El enlace de BLOB de `op-sqlite` (sal y verificador como `Uint8Array`) y el módulo `GfpCrypto` solo se han probado con dobles en Jest | Compilación correcta; ninguna ejecución en dispositivo | Se comprueban al conectar la base en HU1 (P-D3) y con P-D1 y P-D2 |
+| Mejora futura | `isVerifiableCandidate()` y `needsRehash()` aún no tienen llamadores de producción | Revisión del código | Se usan en HU2 |
 
 ## Etapa 02 — decisiones técnicas
 
@@ -169,9 +181,9 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | E02-D4 | Modelo multiusuario | Adoptada | Varias cuentas locales en una base compartida con aislamiento lógico: `user_id` en todo dato privado y acceso por sesión activa (`OwnedRepository`, `SessionManager`). Se rechaza un solo usuario por instalación | — | No |
 | E02-D5 | Modelo de datos | Adoptada | Esquema v1 de identidad y seguridad y catálogos v2, tablas `STRICT`, claves foráneas en cascada, unicidad de identificadores, migraciones transaccionales con suma SHA-256 y protección ante esquemas más nuevos | Contenido de los catálogos (E03-D4, E03-D5) | No |
 | E02-D6 | Criterios de cierre de la Etapa 02 (G-06) | Criterios registrados | E02-C1 a E02-C8 en `trazabilidad.md`; veredicto en `cierre-etapa-02.md` | Aprobación explícita del responsable | Sí |
-| E02-D7 | Permisos del APK | Parcialmente resuelta | Se retiran `USE_BIOMETRIC` y `USE_FINGERPRINT` (`tools:node="remove"`): ninguna HU usa biometría y `react-native-keychain` solo los consulta con control de acceso biométrico. Se conservan: `INTERNET` (Metro en Debug y `datatransport` de ML Kit), `ACCESS_NETWORK_STATE` (`datatransport`), `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (permiso interno de `androidx.core`). `SYSTEM_ALERT_WINDOW` y `ACCESS_LOCAL_NETWORK` proceden del AAR de depuración de React Native | Compilar y comprobar los manifiestos Debug y Release; P-D7 para `INTERNET` | No |
+| E02-D7 | Permisos del APK | Parcialmente resuelta | Se retiran `USE_BIOMETRIC` y `USE_FINGERPRINT` (`tools:node="remove"`): ninguna HU usa biometría y `react-native-keychain` solo los consulta con control de acceso biométrico. Se conservan: `INTERNET` (Metro en Debug y `datatransport` de ML Kit), `ACCESS_NETWORK_STATE` (`datatransport`), `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (permiso interno de `androidx.core`). `SYSTEM_ALERT_WINDOW` y `ACCESS_LOCAL_NETWORK` proceden del AAR de depuración de React Native Manifiestos Debug y Release comprobados (`windows-identity-20261025/`): sin permisos biométricos en ambos; `SYSTEM_ALERT_WINDOW` y `ACCESS_LOCAL_NETWORK` solo en Debug. Pendiente P-D7 para `INTERNET` | No |
 | E02-D8 | Calidad del OCR | Plan definido | `plan-evaluacion-ocr.md`: exactitud por campo, umbrales propuestos (monto ≥ 90 %, fecha ≥ 85 %, comercio ≥ 75 %), conjunto etiquetado, baja confianza y confirmación humana. Calidad no aprobada | Aprobación de umbrales al iniciar la Etapa 10 | No |
-| E02-D9 | Vulnerabilidad `body-parser` | Resuelta | La introducía `@react-native-community/cli-server-api` 20.2.0, que pide `^2.2.2`; GHSA-27r3-jxmh-p828 afecta a `>=2.0.0 <2.4.0`. Actualización acotada del lockfile a 2.4.0, dentro del rango; `npm audit`: 0 vulnerabilidades; `npm ci` y las pruebas pasan | Compilación Android de la WU | No |
+| E02-D9 | Vulnerabilidad `body-parser` | Resuelta | La introducía `@react-native-community/cli-server-api` 20.2.0, que pide `^2.2.2`; GHSA-27r3-jxmh-p828 afecta a `>=2.0.0 <2.4.0`. Actualización acotada del lockfile a 2.4.0, dentro del rango; `npm audit`: 0 vulnerabilidades; `npm ci` y las pruebas pasan | — | No |
 
 ## Etapa 02 — limitaciones registradas
 
@@ -182,7 +194,7 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 - La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja. Procedimiento conocido: compilar desde un worktree en una ruta corta (por ejemplo `C:\gfp-v4-short`) con JDK 17 solo en el proceso. Las pruebas Release se ejecutaron con el APK `DD54C93E…`; el Release `819EF8CC…`, compilado en la ruta corta, solo se instaló y abrió.
 - El APK Debug de `main` se compiló, pero no se instaló ni ejecutó; la compilación Release de `main` no se ejecutó. Ver "Etapa 02 — integración en `main`".
 - Pruebas en un solo emulador (API 34); no se repitieron en el emulador API 29 de la Etapa 01.
-- El módulo nativo `GfpCrypto` y el manifiesto modificado no se han compilado en Android; las pruebas de JavaScript usan una implementación de Node como sustituto del módulo nativo.
+- El módulo nativo `GfpCrypto` compila en Android, pero no se ha ejecutado en un dispositivo; las pruebas de JavaScript usan una implementación de Node como sustituto del módulo nativo.
 - Las pruebas P-D1, P-D2, P-D3 y P-D7 no se han ejecutado.
 - OCR evaluado solo con 6 imágenes sintéticas; la anomalía `similarity=0.355` (imagen 03) queda como limitación conocida (E02-OCR).
 
@@ -191,7 +203,7 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | Prerrequisito | Estado | Motivo |
 |---|---|---|
 | Aprobación del cierre de la Etapa 02 (E02-D6) | Pendiente del responsable | Protocolo por etapa |
-| Compilación Android de los fundamentos de identidad | Pendiente (Windows) | El módulo nativo y el manifiesto deben compilar antes de usarse en HU1 |
+| Compilación Android de los fundamentos de identidad | Verificada (`windows-identity-20261025/`) | El módulo nativo y el manifiesto compilan |
 | E02-D1 a E02-D5 | Adoptadas | P-D1, P-D2 y P-D3 se completan antes del cierre de la Etapa 03 |
 | G-07, E03-D3, E03-D6 a E03-D10 | Resueltas | `decisiones-etapa-03.md` |
 | E03-D1 y E03-D2 | Requieren aprobación | Elecciones de producto entre texto y prototipo, y entre campo obligatorio u opcional |

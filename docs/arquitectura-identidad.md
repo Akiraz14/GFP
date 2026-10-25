@@ -180,6 +180,7 @@ Normalización (E02-D2):
 | Intentos limitados con esperas progresivas | WU | 3 fallos bloquean la recuperación de la cuenta durante 15 minutos; cada bloqueo siguiente dobla la espera (30, 60, 120… minutos) hasta 24 horas (E05-D1). Los identificadores inexistentes repetidos bloquean el inicio de la recuperación en el dispositivo con la misma regla |
 | No cambiar la contraseña sin completar la verificación | HU3, WU | La nueva contraseña cumple la política, coincide con la confirmación y solo se guarda tras verificar ambas respuestas, en una transacción que también elimina el reto y reinicia los contadores |
 | Retroceso del reloj | Riesgo propio | Si la hora del dispositivo retrocede, el bloqueo vigente se mantiene |
+| Intentos simultáneos | Revisión consolidada | `start()` y `complete()` se ejecutan en serie por base de datos, también entre instancias del servicio, para que cada intento lea el contador del anterior. El inicio de sesión (HU2) debe aplicar la misma regla |
 
 Limitaciones que se aceptan expresamente:
 
