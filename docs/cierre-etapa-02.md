@@ -3,7 +3,7 @@
 **Veredicto: cierre técnico aceptado con reservas (E02-CIERRE).** Los fundamentos críticos
 tienen pruebas y evidencias verificables en emulador, la PoC de OCR demuestra solo
 viabilidad y los riesgos están informados. La etapa no queda completamente cerrada:
-E02-C6 es parcial, la compilación Android de `main` integrado no se ejecutó y la
+E02-C6 es parcial, el APK Debug de `main` integrado se compiló pero no se instaló, y la
 aprobación formal de los criterios (E02-D6) está pendiente del responsable. Este cierre
 no autoriza el inicio de la Etapa 03.
 
@@ -40,7 +40,7 @@ Detalle y evidencias en `trazabilidad.md` (sección "Etapa 02").
 | E02-C4 | PBKDF2-HMAC-SHA256 conforme a vectores | Verificado (emulador); parámetros no aprobados |
 | E02-C5 | Viabilidad de cámara, galería y OCR | Verificado solo como viabilidad; calidad no aprobada |
 | E02-C6 | Decisiones de la etapa resueltas | Parcial |
-| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Probado; compilación Android de `main` pendiente |
+| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Verificado (compilación Debug en Windows); APK de `main` no instalado |
 
 ## Cambios integrados en `main`
 
@@ -48,12 +48,14 @@ Detalle y evidencias en `trazabilidad.md` (sección "Etapa 02").
 |---|---|
 | `372180c` | `app/package.json` y `app/package-lock.json` (6 dependencias con versión exacta y `"op-sqlite": { "sqlcipher": true }`), `app/.eslintrc.js` (regla E02-RNG en `src/`), `docs/decisiones.md`, `docs/trazabilidad.md` |
 | `e21ba6b` | Merge de `372180c` sobre `e10cebf` |
-| Commit de cierre | `docs/cierre-etapa-02.md`, actualización de `docs/decisiones.md` y `docs/trazabilidad.md`, evidencias de `evidencias/ETAPA-02/` y regla de `.gitignore` para las copias de bases de datos |
+| `cbef19f` | `docs/cierre-etapa-02.md`, actualización de `docs/decisiones.md` y `docs/trazabilidad.md`, evidencias de `evidencias/ETAPA-02/` y regla de `.gitignore` para las copias de bases de datos |
+| Commit de validación final | Evidencia `windows-debug-20261025/` y actualización de este documento, `decisiones.md`, `trazabilidad.md` y el manifiesto de evidencias |
 
 Sin cambios respecto a `e10cebf`: `App.tsx`, `__tests__/App.test.tsx`, `app/android/`
 (`versionName "1.0"`, `co.gfpsas.gestionfinanciera`), `app/src/`, la configuración de Jest,
 `scripts/` y `evidencias/ETAPA-01/`. Los APK de la Etapa 01 conservan sus hashes
-(`8EB6D5A0…` Debug, `D39154D3…` Release; comprobado el 2026-10-23).
+(`8EB6D5A0…` Debug, `D39154D3…` Release; comprobado el 2026-10-23 y antes y después de la
+compilación del 2026-10-25).
 
 ## Pruebas ejecutadas y evidencias
 
@@ -72,9 +74,11 @@ Rutas relativas a `evidencias/ETAPA-02/`; manifiesto en `README.md` de esa carpe
 | `npm ci`, tsc, ESLint, Prettier y Jest sobre `app/` de `main` | PASS | `claude-20261023/` | Claude (Linux) |
 | Regla E02-RNG | 2 errores en `src/`, 0 fuera | `claude-20261023/eslint-rule-probe.log` | Claude (Linux) |
 | `npm audit` | 1 hallazgo alto (E02-D9) | `claude-20261023/npm-audit.json` | Claude (Linux) |
+| `npm ci`, tsc, ESLint, Prettier, Jest y `assembleDebug` de `main` (`cbef19f`) con JDK 17 | PASS: `BUILD SUCCESSFUL in 15m 5s`, SQLCipher activo, APK `0AEF5C75…` (`versionName 1.0`, `co.gfpsas.gestionfinanciera`, `minSdkVersion 29`); repositorio canónico y APK de la Etapa 01 sin cambios | `windows-debug-20261025/` | Juan (Windows, 2026-10-25) |
 
-No ejecutadas: compilación Android de `main` integrado; desinstalación y reinstalación
-(destructivas, sin autorización); pruebas en dispositivo físico.
+No ejecutadas: instalación y ejecución del APK Debug de `main`; compilación Release de
+`main`; desinstalación y reinstalación (destructivas, sin autorización); pruebas en
+dispositivo físico.
 
 ## Limitaciones y reservas
 
@@ -84,7 +88,7 @@ No ejecutadas: compilación Android de `main` integrado; desinstalación y reins
 - Las pruebas Release usaron el APK `DD54C93E…`; el Release `819EF8CC…`, compilado en la ruta corta, solo se instaló y abrió.
 - La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja.
 - Calidad del OCR no aprobada: 6 imágenes sintéticas y anomalía `similarity=0.355` aceptada como limitación conocida (E02-OCR).
-- Compilación Android Debug de `main` integrado no ejecutada.
+- APK Debug de `main` compilado en Windows, pero no instalado ni ejecutado; Release de `main` no compilado.
 - Vulnerabilidad alta de `body-parser` sin tratar (E02-D9).
 
 ## Decisiones pendientes y su impacto
@@ -111,11 +115,12 @@ Otras discrepancias abiertas: C-02 (G-03 frente al remoto de GitHub).
 1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C7 (E02-D6).
 2. Decisiones E02-D1 a E02-D5 resueltas y registradas en `decisiones.md`.
 3. G-07 y E03-D1 a E03-D10 resueltas (`plan-etapas.md`).
-4. Propuesta pendiente de aprobación: compilar e instalar en Windows el Debug de `main` integrado con JDK 17 y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
+4. Propuesta pendiente de aprobación: instalar el APK Debug de `main` (`0AEF5C75…`) en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan). La compilación ya está hecha (`windows-debug-20261025/`).
 5. Autorización explícita del responsable para iniciar la Etapa 03.
 
 ## Pendiente del responsable
 
 1. Aprobación del cierre con reservas y de los criterios (E02-D6).
 2. Decisiones E02-D1 a E02-D5, E02-D7 a E02-D9 y C-02.
-3. Ejecución de la compilación Android de `main` en Windows, si se aprueba la condición 4.
+3. Autorizar o descartar la instalación del APK Debug de `main` (condición 4). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
+4. Decidir si se retira el worktree `GFP Proyecto\GFP-e02-int`, que se conserva.

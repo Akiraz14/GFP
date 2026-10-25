@@ -1,0 +1,3 @@
+﻿> [C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app] npm.cmd run typecheck
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 typecheck
+npm notice run tsc --noEmit

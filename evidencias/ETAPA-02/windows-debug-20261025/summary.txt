@@ -1,0 +1,24 @@
+﻿INICIO 2026-10-25T09:37:25.2975181-05:00 en AKIRAZ-LT
+PASS main=origin/main=cbef19f17ee5cc96e5355f584088e86019ee7c33, rama main, limpio
+INFO entorno registrado (environment.txt)
+PASS worktree-add (exit 0, 0s)
+PASS worktree C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int en cbef19f17ee5cc96e5355f584088e86019ee7c33
+PASS npm-ci (exit 0, 48s)
+PASS typecheck (exit 0, 2s)
+PASS lint (exit 0, 13s)
+PASS format-check (exit 0, 1s)
+PASS jest (exit 0, 10s)
+PASS gradle-version (exit 0, 6s)
+PASS gradle-assembleDebug (exit 0, 907s)
+APK Debug SHA-256 0AEF5C750B2B7D53E9162176F054E6CB859C26752292EAB30552B492B17BEBAC bytes 206057040
+INFO package: name='co.gfpsas.gestionfinanciera' versionCode='1' versionName='1.0' platformBuildVersionName='17' platformBuildVersionCode='37' compileSdkVersion='37' compileSdkVersionCodename='17' | targetSdkVersion:'36' | application-label:'GFP' | native-code: 'arm64-v8a' 'armeabi-v7a' 'x86' 'x86_64'
+PASS sin cambios desde e10cebf: app/App.tsx
+PASS sin cambios desde e10cebf: app/__tests__/App.test.tsx
+PASS sin cambios desde e10cebf: app/android
+PASS sin cambios desde e10cebf: app/src
+PASS sin cambios desde e10cebf: scripts
+PASS sin cambios desde e10cebf: evidencias/ETAPA-01
+PASS worktree sin cambios tras la compilacion
+PASS APK Etapa 01 intactos: 8EB6D5A0D3317A852ACA7A0A560459E579F25BBD1238B90388CED32BF39B395E debug\app-debug.apk / D39154D3AE285AE089BFBF7AC53E7997B7CB1C905D27ED53982B721801E4FA05 release\app-release.apk
+PASS repositorio canonico sin cambios (HEAD, estado, referencias)
+FIN 2026-10-25T09:54:02.2482786-05:00: evidencias en C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-spike02-evidencias\integration-debug-20261025-093725

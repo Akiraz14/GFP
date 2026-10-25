@@ -1,0 +1,16 @@
+﻿JAVA_HOME (solo este proceso)=C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot
+openjdk version "17.0.20.1" 2026-08-18 LTS
+OpenJDK Runtime Environment Microsoft-14940689 (build 17.0.20.1+1-LTS)
+OpenJDK 64-Bit Server VM Microsoft-14940689 (build 17.0.20.1+1-LTS, mixed mode, sharing)
+ANDROID_HOME=C:\Users\juanz\AppData\Local\Android\Sdk
+SDK usado=C:\Users\juanz\AppData\Local\Android\Sdk
+build-tools=36.0.0,37.0.0
+ndk=27.1.12297006,28.2.13676358
+cmake=3.22.1
+platforms=android-29,android-35,android-36,android-37.0
+node=v24.22.0
+npm=12.2.0
+git=git version 2.55.0.windows.3
+LongPathsEnabled=1
+OS=Microsoft Windows NT 10.0.26200.0
+Worktree=C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int (longitud 52)

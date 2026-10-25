@@ -6,6 +6,7 @@ Cierre: `docs/cierre-etapa-02.md`. Criterios: `docs/trazabilidad.md` (E02-C1 a E
 |---|---|---|---|
 | `V4/` | Ejecución V4 del protocolo `poc-stage02.ps1` sobre `6caa2acc882965d68a37f87992c0a6136c7db4fa`, 2026-10-23, `emulator-5554` (API 34): `summary.md`, `results.json`, logs, pasos y análisis de privacidad | Juan (Windows) | Sí, excepto lo indicado abajo |
 | `claude-20261023/` | Validación del árbol `app/` de `main` integrado: `npm ci`, tsc, ESLint, Prettier, Jest, regla E02-RNG y `npm audit` | Claude (Linux) | Sí |
+| `windows-debug-20261025/` | Compilación Debug de `main` (`cbef19f`) en Windows con JDK 17, en el worktree `GFP Proyecto\GFP-e02-int`: entorno, `npm ci`, calidad, Jest, Gradle, `aapt2`, hashes de los APK de la Etapa 01 y estado del repositorio antes y después | Juan (Windows), script `stage02-debug-validation.ps1` | Sí |
 | `archivo-spike-v4/` | Copia de archivo del protocolo y las herramientas de la rama experimental | — | Sí, como archivo experimental no integrable |
 
 ## Procedencia de `V4/`
@@ -47,3 +48,5 @@ eliminaron.
 | `GFP-spike02-evidencias\` (junto al repositorio) | Ejecuciones V2 (`8b64ccb`), V3 (`abd4804`) y V4 (`6caa2ac`), e imágenes sintéticas `ocr-sinteticas-v1` |
 | `Informe_Cierre_Tecnico_Stage02_V4.docx` (junto al repositorio) | Informe de cierre técnico V4 |
 | `refs/revision/spike-02-v4` (`6caa2ac`) | Código de las pruebas de concepto; no integrado en `main` |
+| `GFP-spike02-evidencias\integration-debug-20261025-093725\` | Original de `windows-debug-20261025/` (18 archivos, iguales salvo la conversión de CRLF a LF en Git) |
+| `GFP Proyecto\GFP-e02-int\app\android\app\build\outputs\apk\debug\app-debug.apk` | APK Debug de `main`, no versionado: 206057040 bytes, SHA-256 `0aef5c750b2b7d53e9162176f054e6cb859c26752292eab30552b492b17bebac` |

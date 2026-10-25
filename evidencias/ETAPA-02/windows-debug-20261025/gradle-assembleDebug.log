@@ -1,0 +1,487 @@
+﻿> [C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\android] gradlew.bat assembleDebug --console=plain
+Starting a Gradle Daemon, 1 incompatible and 1 stopped Daemons could not be reused, use --status for details
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:shared:compileKotlin
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+
+> Configure project :app
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: API 'applicationVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling applicationVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+WARNING: API 'testVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling testVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+WARNING: API 'unitTestVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling unitTestVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+
+> Configure project :op-engineering_op-sqlite
+WARNING: API 'libraryVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+    android.newDsl=false
+to this project's gradle.properties file.
+For more information, see http://developer.android.com/build/r/new-dsl.
+
+To determine what is calling libraryVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+[OP-SQLITE] Detected op-sqlite config from package.json at: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\android\..\package.json
+[OP-SQLITE] using sqlcipher.
+
+> Task :app:generateAutolinkingNewArchitectureFiles
+> Task :app:generateAutolinkingPackageList
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:generateReactNativeEntryPoint
+> Task :op-engineering_op-sqlite:generateCodegenSchemaFromJavaScript
+> Task :op-engineering_op-sqlite:generateCodegenArtifactsFromSchema
+> Task :op-engineering_op-sqlite:prepareHeaders
+> Task :op-engineering_op-sqlite:preBuild
+> Task :react-native-get-random-values:generateCodegenSchemaFromJavaScript
+> Task :react-native-get-random-values:generateCodegenArtifactsFromSchema
+> Task :react-native-get-random-values:preBuild
+> Task :react-native-image-picker:generateCodegenSchemaFromJavaScript
+> Task :react-native-image-picker:generateCodegenArtifactsFromSchema
+> Task :react-native-image-picker:preBuild
+
+> Task :react-native-keychain:generateCodegenSchemaFromJavaScript
+No modules to process in combine-js-to-schema-cli. If this is unexpected, please check if you set up your NativeComponent correctly. See combine-js-to-schema.js for how codegen finds modules.
+
+> Task :react-native-keychain:generateCodegenArtifactsFromSchema
+> Task :react-native-keychain:preBuild
+> Task :react-native-ml-kit_text-recognition:preBuild UP-TO-DATE
+> Task :react-native-safe-area-context:generateCodegenSchemaFromJavaScript
+> Task :react-native-safe-area-context:generateCodegenArtifactsFromSchema
+> Task :react-native-safe-area-context:preBuild
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResValues
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :op-engineering_op-sqlite:preDebugBuild
+> Task :op-engineering_op-sqlite:processDebugNavigationResources
+> Task :react-native-get-random-values:preDebugBuild
+> Task :react-native-get-random-values:processDebugNavigationResources
+> Task :react-native-image-picker:preDebugBuild
+> Task :react-native-image-picker:processDebugNavigationResources
+> Task :react-native-keychain:preDebugBuild
+> Task :react-native-keychain:processDebugNavigationResources
+> Task :react-native-ml-kit_text-recognition:preDebugBuild UP-TO-DATE
+> Task :react-native-ml-kit_text-recognition:processDebugNavigationResources
+> Task :react-native-safe-area-context:preDebugBuild
+> Task :react-native-safe-area-context:processDebugNavigationResources
+> Task :app:processDebugNavigationResources
+> Task :op-engineering_op-sqlite:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :op-engineering_op-sqlite:generateDebugBuildConfig
+> Task :op-engineering_op-sqlite:generateDebugResources
+> Task :op-engineering_op-sqlite:packageDebugResources
+> Task :op-engineering_op-sqlite:parseDebugLocalResources
+> Task :react-native-get-random-values:generateDebugBuildConfig
+> Task :op-engineering_op-sqlite:javaPreCompileDebug
+> Task :app:parseDebugLocalResources
+> Task :react-native-get-random-values:generateDebugResources
+> Task :op-engineering_op-sqlite:generateDebugRFile
+> Task :app:generateDebugRFile
+> Task :react-native-get-random-values:packageDebugResources
+> Task :react-native-get-random-values:javaPreCompileDebug
+> Task :react-native-get-random-values:parseDebugLocalResources
+> Task :react-native-image-picker:generateDebugBuildConfig
+> Task :react-native-get-random-values:generateDebugRFile
+> Task :react-native-image-picker:generateDebugResources
+> Task :react-native-get-random-values:compileDebugJavaWithJavac
+> Task :react-native-image-picker:packageDebugResources
+> Task :react-native-get-random-values:bundleLibCompileToJarDebug
+> Task :react-native-keychain:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-image-picker:javaPreCompileDebug
+> Task :react-native-image-picker:parseDebugLocalResources
+> Task :react-native-keychain:generateDebugBuildConfig
+> Task :react-native-image-picker:generateDebugRFile
+> Task :react-native-keychain:generateDebugResources
+
+> Task :react-native-image-picker:compileDebugJavaWithJavac
+Note: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-image-picker\android\src\main\java\com\imagepicker\ImagePickerPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-image-picker:bundleLibCompileToJarDebug
+> Task :react-native-keychain:packageDebugResources
+> Task :react-native-keychain:javaPreCompileDebug
+> Task :react-native-keychain:parseDebugLocalResources
+> Task :react-native-ml-kit_text-recognition:generateDebugResources
+> Task :react-native-keychain:generateDebugRFile
+> Task :react-native-ml-kit_text-recognition:packageDebugResources
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-ml-kit_text-recognition:javaPreCompileDebug
+> Task :react-native-ml-kit_text-recognition:parseDebugLocalResources
+> Task :react-native-safe-area-context:generateDebugBuildConfig
+> Task :react-native-ml-kit_text-recognition:generateDebugRFile
+> Task :react-native-safe-area-context:generateDebugResources
+
+> Task :op-engineering_op-sqlite:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLiteBridge.kt:24:38 'val jsCallInvokerHolder: CallInvokerHolder' is deprecated. Use ReactContext.getJSCallInvokerHolder instead.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/android/src/main/java/com/op/sqlite/OPSQLitePackage.kt:9:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+
+> Task :react-native-ml-kit_text-recognition:compileDebugJavaWithJavac
+Note: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@react-native-ml-kit\text-recognition\android\src\main\java\com\rnmlkit\textrecognition\TextRecognitionPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :op-engineering_op-sqlite:compileDebugJavaWithJavac
+> Task :op-engineering_op-sqlite:bundleLibCompileToJarDebug
+> Task :react-native-ml-kit_text-recognition:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:packageDebugResources
+> Task :react-native-safe-area-context:javaPreCompileDebug
+> Task :react-native-safe-area-context:parseDebugLocalResources
+> Task :app:javaPreCompileDebug
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :op-engineering_op-sqlite:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugRFile
+> Task :op-engineering_op-sqlite:mergeDebugAssets
+> Task :react-native-get-random-values:generateDebugAssets UP-TO-DATE
+> Task :react-native-get-random-values:mergeDebugAssets
+> Task :react-native-image-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-image-picker:mergeDebugAssets
+> Task :react-native-keychain:generateDebugAssets UP-TO-DATE
+> Task :react-native-keychain:mergeDebugAssets
+> Task :react-native-ml-kit_text-recognition:generateDebugAssets UP-TO-DATE
+> Task :react-native-ml-kit_text-recognition:mergeDebugAssets
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:generateDebugGlobalSynthetics
+> Task :op-engineering_op-sqlite:processDebugJavaRes
+> Task :react-native-get-random-values:processDebugJavaRes NO-SOURCE
+> Task :react-native-image-picker:processDebugJavaRes NO-SOURCE
+> Task :react-native-ml-kit_text-recognition:processDebugJavaRes NO-SOURCE
+> Task :app:desugarDebugFileDependencies
+> Task :react-native-ml-kit_text-recognition:bundleLibRuntimeToDirDebug
+> Task :op-engineering_op-sqlite:bundleLibRuntimeToDirDebug
+> Task :react-native-get-random-values:bundleLibRuntimeToDirDebug
+> Task :react-native-get-random-values:writeDebugAarMetadata
+> Task :op-engineering_op-sqlite:writeDebugAarMetadata
+> Task :react-native-image-picker:writeDebugAarMetadata
+> Task :react-native-image-picker:bundleLibRuntimeToDirDebug
+> Task :react-native-keychain:writeDebugAarMetadata
+> Task :react-native-ml-kit_text-recognition:writeDebugAarMetadata
+> Task :react-native-safe-area-context:writeDebugAarMetadata
+
+> Task :react-native-keychain:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/KeychainPackage.kt:11:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageBase.kt:256:40 'val isInsideSecureHardware: Boolean' is deprecated. Deprecated in Java.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesGcm.kt:175:44 'fun setUserAuthenticationValidityDurationSeconds(p0: Int): KeyGenParameterSpec.Builder' is deprecated. Deprecated in Java.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-keychain/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreRsaEcb.kt:200:40 'fun setUserAuthenticationValidityDurationSeconds(p0: Int): KeyGenParameterSpec.Builder' is deprecated. Deprecated in Java.
+
+> Task :app:mapDebugSourceSetPaths
+> Task :app:checkDebugDuplicateClasses
+> Task :app:checkDebugAarMetadata
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaProviderManager.kt:40:19 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:8:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:46:54 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:9:32 'class LayoutShadowNode : ReactShadowNodeImpl' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:110:61 'class NativeViewHierarchyOptimizer : Any' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+
+> Task :react-native-keychain:compileDebugJavaWithJavac
+> Task :react-native-keychain:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+> Task :react-native-safe-area-context:bundleLibCompileToJarDebug
+> Task :react-native-keychain:processDebugJavaRes
+> Task :react-native-safe-area-context:processDebugJavaRes
+> Task :app:compileDebugNavigationResources
+> Task :react-native-safe-area-context:bundleLibRuntimeToDirDebug
+> Task :react-native-keychain:bundleLibRuntimeToDirDebug
+
+> Task :app:compileDebugKotlin
+w: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/android/app/src/main/java/co/gfpsas/gestionfinanciera/MainActivity.kt:21:7 'constructor(activity: ReactActivity, mainComponentName: String, fabricEnabled: Boolean): DefaultReactActivityDelegate' is deprecated. Creating DefaultReactActivityDelegate with flags is deprecated.
+
+> Task :app:mergeDebugResources
+> Task :app:compileDebugJavaWithJavac
+> Task :app:processDebugJavaRes
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :op-engineering_op-sqlite:extractDeepLinksDebug
+> Task :react-native-get-random-values:extractDeepLinksDebug
+> Task :react-native-image-picker:extractDeepLinksDebug
+> Task :react-native-keychain:extractDeepLinksDebug
+> Task :react-native-ml-kit_text-recognition:extractDeepLinksDebug
+> Task :react-native-safe-area-context:extractDeepLinksDebug
+
+> Task :react-native-image-picker:processDebugManifest
+package="com.imagepicker" found in source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-image-picker\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.imagepicker" from the source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-image-picker\android\src\main\AndroidManifest.xml.
+
+> Task :react-native-keychain:processDebugManifest
+package="com.oblador.keychain" found in source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-keychain\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.oblador.keychain" from the source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-keychain\android\src\main\AndroidManifest.xml.
+
+> Task :react-native-ml-kit_text-recognition:processDebugManifest
+package="com.rnmlkit.textrecognition" found in source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@react-native-ml-kit\text-recognition\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.rnmlkit.textrecognition" from the source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@react-native-ml-kit\text-recognition\android\src\main\AndroidManifest.xml.
+
+> Task :react-native-get-random-values:processDebugManifest
+> Task :op-engineering_op-sqlite:processDebugManifest
+> Task :op-engineering_op-sqlite:mapDebugSourceSetPaths
+
+> Task :react-native-safe-area-context:processDebugManifest
+package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\react-native-safe-area-context\android\src\main\AndroidManifest.xml.
+
+> Task :op-engineering_op-sqlite:compileDebugLibraryResources
+> Task :app:mergeLibDexDebug
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :react-native-get-random-values:mapDebugSourceSetPaths
+> Task :app:processDebugManifestForPackage
+> Task :react-native-get-random-values:compileDebugLibraryResources
+> Task :react-native-image-picker:mapDebugSourceSetPaths
+> Task :react-native-keychain:mapDebugSourceSetPaths
+> Task :react-native-image-picker:compileDebugLibraryResources
+> Task :react-native-keychain:compileDebugLibraryResources
+> Task :react-native-ml-kit_text-recognition:mapDebugSourceSetPaths
+> Task :react-native-ml-kit_text-recognition:compileDebugLibraryResources
+> Task :react-native-safe-area-context:mapDebugSourceSetPaths
+> Task :react-native-safe-area-context:compileDebugLibraryResources
+> Task :app:mergeExtDexDebug
+> Task :app:mergeDebugJavaResource
+
+> Task :op-engineering_op-sqlite:configureCMakeDebug[arm64-v8a]
+C/C++: CMake Warning:
+C/C++:   Manually-specified variables were not used by the project:
+C/C++:     USER_DEFINED_TOKENIZERS_HEADER_PATH
+
+> Task :app:processDebugResources
+
+> Task :op-engineering_op-sqlite:configureCMakeDebug[armeabi-v7a]
+C/C++: CMake Warning:
+C/C++:   Manually-specified variables were not used by the project:
+C/C++:     USER_DEFINED_TOKENIZERS_HEADER_PATH
+
+> Task :app:dexBuilderDebug
+> Task :app:mergeProjectDexDebug
+
+> Task :op-engineering_op-sqlite:configureCMakeDebug[x86]
+C/C++: CMake Warning:
+C/C++:   Manually-specified variables were not used by the project:
+C/C++:     USER_DEFINED_TOKENIZERS_HEADER_PATH
+
+> Task :op-engineering_op-sqlite:configureCMakeDebug[x86_64]
+C/C++: CMake Warning:
+C/C++:   Manually-specified variables were not used by the project:
+C/C++:     USER_DEFINED_TOKENIZERS_HEADER_PATH
+
+> Task :op-engineering_op-sqlite:generateJsonModelDebug
+> Task :op-engineering_op-sqlite:prefabDebugConfigurePackage
+> Task :app:configureCMakeDebug[arm64-v8a]
+
+> Task :op-engineering_op-sqlite:buildCMakeDebug[arm64-v8a]
+C/C++: ninja: Entering directory `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@op-engineering\op-sqlite\android\.cxx\Debug\19191i4i\arm64-v8a'
+C/C++: C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/cpp/OPBridge.cpp:94:9: warning: unused variable 'errMsg' [-Wunused-variable]
+C/C++:    94 |   char *errMsg;
+C/C++:       |         ^~~~~~
+C/C++: 1 warning generated.
+
+> Task :op-engineering_op-sqlite:buildCMakeDebug[armeabi-v7a]
+C/C++: ninja: Entering directory `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@op-engineering\op-sqlite\android\.cxx\Debug\19191i4i\armeabi-v7a'
+C/C++: C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/cpp/OPBridge.cpp:94:9: warning: unused variable 'errMsg' [-Wunused-variable]
+C/C++:    94 |   char *errMsg;
+C/C++:       |         ^~~~~~
+C/C++: 1 warning generated.
+
+> Task :op-engineering_op-sqlite:buildCMakeDebug[x86]
+C/C++: ninja: Entering directory `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@op-engineering\op-sqlite\android\.cxx\Debug\19191i4i\x86'
+C/C++: C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/cpp/OPBridge.cpp:94:9: warning: unused variable 'errMsg' [-Wunused-variable]
+C/C++:    94 |   char *errMsg;
+C/C++:       |         ^~~~~~
+C/C++: 1 warning generated.
+
+> Task :op-engineering_op-sqlite:buildCMakeDebug[x86_64]
+C/C++: ninja: Entering directory `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app\node_modules\@op-engineering\op-sqlite\android\.cxx\Debug\19191i4i\x86_64'
+C/C++: C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/node_modules/@op-engineering/op-sqlite/cpp/OPBridge.cpp:94:9: warning: unused variable 'errMsg' [-Wunused-variable]
+C/C++:    94 |   char *errMsg;
+C/C++:       |         ^~~~~~
+C/C++: 1 warning generated.
+
+> Task :op-engineering_op-sqlite:externalNativeBuildDebug
+> Task :op-engineering_op-sqlite:prefabDebugPackage
+> Task :app:buildCMakeDebug[arm64-v8a]
+
+> Task :app:configureCMakeDebug[armeabi-v7a]
+C/C++: CMake Warning in C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/node_modules/react-native-get-random-values/android/build/generated/source/codegen/jni/CMakeLists.txt:
+C/C++:   The object file directory
+C/C++:     C:/Users/juanz/Akiraz/Study/GFP Proyecto/GFP-e02-int/app/android/app/.cxx/Debug/1g561i3s/armeabi-v7a/RNGetRandomValuesSpec_autolinked_build/CMakeFiles/react_codegen_RNGetRandomValuesSpec.dir/./
+C/C++:   has 193 characters.  The maximum full path to an object file is 250
+C/C++:   characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+C/C++:     react/renderer/components/RNGetRandomValuesSpec/ComponentDescriptors.cpp.o
+C/C++:   cannot be safely placed under this directory.  The build may not work
+C/C++:   correctly.
+
+> Task :app:buildCMakeDebug[armeabi-v7a]
+> Task :app:configureCMakeDebug[x86]
+> Task :app:buildCMakeDebug[x86]
+> Task :app:configureCMakeDebug[x86_64]
+> Task :app:buildCMakeDebug[x86_64]
+> Task :app:mergeDebugJniLibFolders
+> Task :op-engineering_op-sqlite:mergeDebugJniLibFolders
+> Task :react-native-get-random-values:mergeDebugJniLibFolders
+> Task :react-native-get-random-values:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-get-random-values:copyDebugJniLibsProjectOnly
+> Task :react-native-image-picker:mergeDebugJniLibFolders
+> Task :react-native-image-picker:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-image-picker:copyDebugJniLibsProjectOnly
+> Task :react-native-keychain:mergeDebugJniLibFolders
+> Task :react-native-keychain:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-keychain:copyDebugJniLibsProjectOnly
+> Task :react-native-ml-kit_text-recognition:mergeDebugJniLibFolders
+> Task :react-native-ml-kit_text-recognition:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-ml-kit_text-recognition:copyDebugJniLibsProjectOnly
+> Task :react-native-safe-area-context:mergeDebugJniLibFolders
+> Task :react-native-safe-area-context:mergeDebugNativeLibs NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectOnly
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :op-engineering_op-sqlite:mergeDebugNativeLibs
+> Task :op-engineering_op-sqlite:checkDebugAarMetadata
+> Task :op-engineering_op-sqlite:extractDebugAnnotations
+> Task :op-engineering_op-sqlite:extractDeepLinksForAarDebug
+> Task :op-engineering_op-sqlite:mergeDebugGeneratedProguardFiles
+> Task :op-engineering_op-sqlite:mergeDebugConsumerProguardFiles
+> Task :op-engineering_op-sqlite:prepareDebugArtProfile
+> Task :op-engineering_op-sqlite:prepareLintJarForPublish
+> Task :op-engineering_op-sqlite:mergeDebugJavaResource
+> Task :react-native-get-random-values:checkDebugAarMetadata
+> Task :op-engineering_op-sqlite:syncDebugLibJars
+> Task :react-native-get-random-values:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-get-random-values:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-get-random-values:extractDebugAnnotations
+> Task :react-native-get-random-values:extractDeepLinksForAarDebug
+> Task :react-native-get-random-values:mergeDebugGeneratedProguardFiles
+> Task :react-native-get-random-values:mergeDebugConsumerProguardFiles
+> Task :react-native-get-random-values:prepareDebugArtProfile
+> Task :op-engineering_op-sqlite:copyDebugJniLibsProjectOnly
+> Task :react-native-get-random-values:prepareLintJarForPublish
+> Task :react-native-get-random-values:mergeDebugJavaResource
+> Task :react-native-image-picker:checkDebugAarMetadata
+> Task :react-native-get-random-values:syncDebugLibJars
+> Task :react-native-get-random-values:bundleDebugAar
+> Task :react-native-get-random-values:assembleDebug
+> Task :react-native-image-picker:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-image-picker:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-image-picker:extractDebugAnnotations
+> Task :react-native-image-picker:extractDeepLinksForAarDebug
+> Task :react-native-image-picker:mergeDebugGeneratedProguardFiles
+> Task :react-native-image-picker:mergeDebugConsumerProguardFiles
+> Task :react-native-image-picker:prepareDebugArtProfile
+> Task :react-native-image-picker:prepareLintJarForPublish
+> Task :react-native-image-picker:mergeDebugJavaResource
+> Task :react-native-image-picker:syncDebugLibJars
+> Task :react-native-keychain:checkDebugAarMetadata
+> Task :react-native-image-picker:bundleDebugAar
+> Task :react-native-image-picker:assembleDebug
+> Task :react-native-keychain:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-keychain:copyDebugJniLibsProjectAndLocalJars
+> Task :op-engineering_op-sqlite:stripDebugDebugSymbols
+> Task :react-native-keychain:extractDeepLinksForAarDebug
+> Task :react-native-keychain:mergeDebugGeneratedProguardFiles
+> Task :react-native-keychain:mergeDebugConsumerProguardFiles
+> Task :react-native-keychain:prepareDebugArtProfile
+> Task :react-native-keychain:prepareLintJarForPublish
+> Task :react-native-keychain:mergeDebugJavaResource
+> Task :react-native-ml-kit_text-recognition:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-ml-kit_text-recognition:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-ml-kit_text-recognition:checkDebugAarMetadata
+> Task :op-engineering_op-sqlite:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-ml-kit_text-recognition:extractDebugAnnotations
+> Task :op-engineering_op-sqlite:bundleDebugAar
+> Task :op-engineering_op-sqlite:assembleDebug
+> Task :react-native-ml-kit_text-recognition:extractDeepLinksForAarDebug
+> Task :react-native-ml-kit_text-recognition:mergeDebugGeneratedProguardFiles
+> Task :react-native-ml-kit_text-recognition:mergeDebugConsumerProguardFiles
+> Task :react-native-ml-kit_text-recognition:prepareDebugArtProfile
+> Task :react-native-ml-kit_text-recognition:prepareLintJarForPublish
+> Task :react-native-ml-kit_text-recognition:mergeDebugJavaResource
+> Task :react-native-safe-area-context:checkDebugAarMetadata
+> Task :react-native-ml-kit_text-recognition:syncDebugLibJars
+> Task :react-native-ml-kit_text-recognition:bundleDebugAar
+> Task :react-native-ml-kit_text-recognition:assembleDebug
+> Task :react-native-safe-area-context:stripDebugDebugSymbols NO-SOURCE
+> Task :react-native-safe-area-context:copyDebugJniLibsProjectAndLocalJars
+> Task :react-native-safe-area-context:extractDebugAnnotations
+> Task :react-native-safe-area-context:extractDeepLinksForAarDebug
+> Task :react-native-safe-area-context:mergeDebugGeneratedProguardFiles
+> Task :react-native-safe-area-context:mergeDebugConsumerProguardFiles
+> Task :react-native-safe-area-context:prepareDebugArtProfile
+> Task :react-native-safe-area-context:prepareLintJarForPublish
+> Task :react-native-safe-area-context:mergeDebugJavaResource
+> Task :react-native-safe-area-context:syncDebugLibJars
+> Task :react-native-safe-area-context:bundleDebugAar
+> Task :react-native-safe-area-context:assembleDebug
+> Task :app:mergeDebugNativeLibs
+> Task :app:stripDebugDebugSymbols
+> Task :react-native-keychain:extractDebugAnnotations
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+> Task :react-native-keychain:extractDebugAnnotations
+Warning: com.oblador.keychain.KeychainModule.AccessControl: The typedef annotation should have @Retention(RetentionPolicy.SOURCE)
+Warning: com.oblador.keychain.KeychainModule.KnownCiphers: The typedef annotation should have @Retention(RetentionPolicy.SOURCE)
+
+> Task :react-native-keychain:syncDebugLibJars
+> Task :react-native-keychain:bundleDebugAar
+> Task :react-native-keychain:assembleDebug
+
+[Incubating] Problems report is available at: file:///C:/Users/juanz/Akiraz/Study/GFP%20Proyecto/GFP-e02-int/app/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 15m 5s
+263 actionable tasks: 263 executed

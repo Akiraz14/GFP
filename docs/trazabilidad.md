@@ -74,9 +74,9 @@ Detalle y decisiones abiertas en `decisiones.md` (secciones "Etapa 02"); veredic
 | E02-C4 | Derivación PBKDF2-HMAC-SHA256 conforme a vectores de referencia | Verificado (emulador); parámetros no aprobados (E02-D1, E02-D2) | `V4/p3-extended.txt`, `V4/p3-benchmark.txt`, `V4/pbkdf2-vectors.txt` |
 | E02-C5 | Viabilidad de cámara, galería y OCR | Verificado solo como viabilidad. La calidad del OCR no está aprobada: no hay umbral (E02-D8) y la imagen 03 dio `similarity=0.355` (E02-OCR) | `V4/p4-batch.txt`; `V4/steps/rmvljbhq6-P4_*` |
 | E02-C6 | Decisiones de la etapa resueltas (plan, "Decisiones pendientes por etapa") | Parcial | Librerías resueltas (E02-LIB); E02-D1 a E02-D5 y E02-D7 a E02-D9 abiertas; E02-D6 con criterios registrados y aprobación pendiente |
-| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Probado; compilación Android de `main` pendiente | Commits `372180c` y `e21ba6b` (E02-INT). Archivos de la aplicación de la Etapa 01 sin cambios respecto a `e10cebf`. `npm ci`, `typecheck`, `lint`, `format:check` y Jest 1/1 con código 0 sobre el árbol `app/` de `main` (`claude-20261023/`). `assembleDebug` de `main` en Windows no ejecutado |
+| E02-C7 | Integración en `main` sin alterar la aplicación de la Etapa 01 | Verificado (compilación Debug en Windows); APK de `main` no instalado | Commits `372180c` y `e21ba6b` (E02-INT). Archivos de la aplicación de la Etapa 01 sin cambios respecto a `e10cebf`. `npm ci`, `typecheck`, `lint`, `format:check` y Jest 1/1 con código 0 en Linux (`claude-20261023/`) y en Windows; `assembleDebug` de `cbef19f` con JDK 17, código 0, SQLCipher activo, APK `0AEF5C75…` con `versionName 1.0` y `co.gfpsas.gestionfinanciera`; APK de la Etapa 01 intactos (`windows-debug-20261025/`) |
 
 Rutas relativas a `evidencias/ETAPA-02/`. Estado del cierre: técnico aceptado con reservas
-(E02-CIERRE), con E02-C6 parcial y E02-C7 sin compilación Android de `main`. Este cierre no
+(E02-CIERRE), con E02-C6 parcial. Este cierre no
 autoriza el inicio de la Etapa 03, que requiere la aprobación explícita del responsable y
 los prerrequisitos de `decisiones.md`.

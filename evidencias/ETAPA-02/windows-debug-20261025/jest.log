@@ -1,0 +1,12 @@
+﻿> [C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-e02-int\app] npx.cmd jest --ci
+npm notice run co.gfpsas.gestionfinanciera@0.0.1 npx
+npm notice run jest --ci
+PASS __tests__/App.test.tsx (6.404 s)
+  App base
+    √ renderiza la pantalla base con el nombre visible GFP (1994 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        7.044 s
+Ran all test suites.

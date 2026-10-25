@@ -29,7 +29,7 @@ planificación y la ejecución por etapas. No modifica los documentos fuente.
 | ID | Discrepancia | Estado |
 |---|---|---|
 | C-01 | El documento de historias de usuario (§2.1) indica que en la fase MVP no se contempla la generación y entrega de un APK instalable. La propuesta comercial, la propuesta VF y la decisión DT-01 establecen el APK como entregable. Según Juan, la redacción del documento de historias responde a una consideración académica de flexibilidad ante la evaluación. **Alcance documental académico:** demostración desde el entorno de desarrollo. **Objetivo técnico del proyecto:** APK instalable y validado (DT-01). El documento de historias no se modifica. | Abierta hasta su formalización documental; no reduce el objetivo técnico. |
-| C-02 | G-03 establece un repositorio solo local, sin remoto publicado, en `C:\Users\juanz\Akiraz\Study\GFP`. El repositorio canónico está en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP` y tiene el remoto `origin` (`https://github.com/Akiraz14/GFP.git`), con `main` publicado en `e10cebf` (`git ls-remote`, 2026-10-23). La WU de cierre de la Etapa 02 autoriza sincronizar `main` con ese remoto. | Abierta: actualización formal de G-03 pendiente del responsable. |
+| C-02 | G-03 establece un repositorio solo local, sin remoto publicado, en `C:\Users\juanz\Akiraz\Study\GFP`. El repositorio canónico está en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP` y tiene el remoto `origin` (`https://github.com/Akiraz14/GFP.git`), y la WU de cierre de la Etapa 02 autorizó sincronizar `main` con ese remoto: `main` y `origin/main` coinciden en `cbef19f` (`git ls-remote`, 2026-10-25). | Abierta: actualización formal de G-03 pendiente del responsable. |
 
 ## Entorno de validación confirmado (G-02)
 
@@ -124,7 +124,8 @@ concepto; no demuestran el comportamiento en producción ni en dispositivos fís
 | Archivos | `app/.eslintrc.js`, `app/package.json`, `app/package-lock.json`, `docs/decisiones.md`, `docs/trazabilidad.md` |
 | Sin cambios respecto a `e10cebf` (comprobado con `git diff --quiet`) | `app/App.tsx`, `app/__tests__/App.test.tsx`, `app/android/` (incluido `versionName "1.0"` e identificador `co.gfpsas.gestionfinanciera`), `app/src/`, `app/app.json`, `app/index.js`, `app/jest.config.js`, `app/jest.setup.js`, `scripts/`, `evidencias/ETAPA-01/` |
 | Validaciones sobre el árbol `app/` de `main` (`b5a0f08`) | Claude, Linux, 2026-10-23: `npm ci`, `typecheck`, `lint`, `format:check` y Jest (1/1) con código 0 (`evidencias/ETAPA-02/claude-20261023/`) |
-| No ejecutado | Compilación Android Debug de `main` integrado en Windows con JDK 17. Las compilaciones Debug y Release de la Etapa 02 se hicieron sobre la rama experimental `6caa2ac`, con las mismas versiones de las dependencias |
+| Compilación Debug de `main` en Windows | Juan, 2026-10-25, worktree desacoplado `GFP Proyecto\GFP-e02-int` en `cbef19f`, JDK 17.0.20.1 solo en el proceso, Gradle 9.4.1: `npm ci`, `typecheck`, `lint`, `format:check`, Jest (1/1) y `assembleDebug` con código 0 (`BUILD SUCCESSFUL in 15m 5s`, `[OP-SQLITE] using sqlcipher.`). APK `0AEF5C750B2B7D53E9162176F054E6CB859C26752292EAB30552B492B17BEBAC` (206057040 bytes): `co.gfpsas.gestionfinanciera`, `versionName 1.0`, `minSdkVersion 29`. Repositorio canónico y APK de la Etapa 01 sin cambios (`evidencias/ETAPA-02/windows-debug-20261025/`) |
+| No ejecutado | Instalación y ejecución del APK Debug de `main` en un emulador o dispositivo; compilación Release de `main` |
 
 ## Etapa 02 — decisiones abiertas
 
@@ -139,7 +140,7 @@ hipótesis de prueba, no parámetros aprobados.
 | E02-D4 | Modelo multiusuario | Abierta | Sin evidencia ni decisión; afecta a HU2-CA11 | Modelo aprobado por el responsable | Sí |
 | E02-D5 | Esquema de base de datos en la Etapa 02 o incremental | Abierta | Sin decidir; afecta a HU8-CA07c | Decisión del responsable sobre el alcance del esquema | Sí |
 | E02-D6 | Criterios y evidencias concretas de cierre de la Etapa 02 (G-06) | Criterios registrados; aprobación pendiente | Criterios E02-C1 a E02-C7 con estado y evidencia en `trazabilidad.md`; veredicto en `cierre-etapa-02.md` | Aprobación explícita del responsable de los criterios y del cierre con reservas | Sí |
-| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Abierta | Observados en el APK Debug del PoC (`permissions-debug.txt`), junto con otros declarados por dependencias | Decisión del responsable con la lista de permisos del APK de `main` (`aapt2`); a más tardar en la Etapa 13, según la observación registrada sobre `INTERNET` | No |
+| E02-D7 | Permisos del APK final: `INTERNET` y los añadidos por `react-native-keychain` (`USE_BIOMETRIC`, `USE_FINGERPRINT`) | Abierta | Observados en el APK Debug del PoC (`permissions-debug.txt`) y en el APK Debug de `main` (`windows-debug-20261025/aapt2-permissions.txt`): `INTERNET`, `USE_BIOMETRIC`, `USE_FINGERPRINT`, `SYSTEM_ALERT_WINDOW`, `ACCESS_LOCAL_NETWORK`, `ACCESS_NETWORK_STATE` y `co.gfpsas.gestionfinanciera.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | Decisión del responsable con la lista de permisos del APK de `main` (`aapt2`); a más tardar en la Etapa 13, según la observación registrada sobre `INTERNET` | No |
 | E02-D8 | Umbral de calidad del OCR | Abierta | Sin umbral aprobado (E02-OCR); la viabilidad demostrada no aprueba la calidad | Umbral y conjunto de pruebas aprobados antes de la Etapa 10 (HU7) | No |
 | E02-D9 | Tratamiento de la vulnerabilidad alta informada por `npm audit` | Abierta | `npm audit` (2026-10-23, `claude-20261023/npm-audit.json`): un único hallazgo alto, `body-parser` 2.3.0 (GHSA-27r3-jxmh-p828, denegación de servicio), dependencia transitiva de la dependencia de desarrollo `@react-native-community/cli` 20.2.0 (`cli-server-api`). Ya figuraba en el `package-lock.json` de `e10cebf`; no la introducen las dependencias de la Etapa 02. `npm audit` informa una corrección disponible. No se ejecutó `npm audit fix` | Decisión del responsable (actualizar, fijar la versión o aceptar el riesgo) y revalidación completa si cambia el lockfile | No |
 
@@ -150,7 +151,7 @@ hipótesis de prueba, no parámetros aprobados.
 - Escenarios de desinstalación y reinstalación no ejecutados (destructivos, sin autorización).
 - Sin validación en dispositivo físico, incluida la cámara.
 - La compilación Release en Windows requiere una ruta corta por el límite de 260 caracteres de Ninja. Procedimiento conocido: compilar desde un worktree en una ruta corta (por ejemplo `C:\gfp-v4-short`) con JDK 17 solo en el proceso. Las pruebas Release se ejecutaron con el APK `DD54C93E…`; el Release `819EF8CC…`, compilado en la ruta corta, solo se instaló y abrió.
-- Compilación Android de `main` integrado (`e21ba6b`) no ejecutada; ver "Etapa 02 — integración en `main`".
+- El APK Debug de `main` se compiló, pero no se instaló ni ejecutó; la compilación Release de `main` no se ejecutó. Ver "Etapa 02 — integración en `main`".
 - Pruebas en un solo emulador (API 34); no se repitieron en el emulador API 29 de la Etapa 01.
 - OCR evaluado solo con 6 imágenes sintéticas; la anomalía `similarity=0.355` (imagen 03) queda como limitación conocida (E02-OCR).
 
