@@ -15,6 +15,11 @@ La aprobación no da por superadas las reservas: E02-C6 sigue parcial, P-D1, P-D
 siguen pendientes y el APK Debug de `main` no se ha instalado. E02-CIERRE recoge el veredicto
 técnico del informe de cierre V4 del 2026-10-23.
 
+**Publicación:** Juan publicó `main` en `origin` el 2026-10-25 con `git push origin main`
+(`a9b86dc..f4dbf56`), sin `--force`. Tras `git fetch origin`, `git status -sb` mostró
+`## main...origin/main` sin commits pendientes y `git rev-parse main origin/main` devolvió
+`f4dbf567d378a45bb22210648da4fa8104504def` para ambas. `git ls-remote origin` lo confirmó.
+
 ## Alcance evaluado
 
 Criterio específico del plan (`plan-etapas.md`): fundamentos críticos con pruebas y
