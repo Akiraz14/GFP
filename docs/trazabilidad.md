@@ -7,7 +7,9 @@ en que aparecen los criterios en cada historia, y registra etapa, estado y
 evidencia. La transcripción literal de cada criterio se incorpora a esta matriz al
 iniciar la etapa de su historia.
 
-Estados: Pendiente · Implementado · Probado · Parcial · Verificado.
+Estados: Pendiente · Implementado · Probado · Parcial · Verificado · Eliminado del alcance (criterio derivado retirado; se conserva el identificador).
+El estado indica la implementación y la verificación; la aprobación de la definición de un
+criterio derivado figura en su columna «Origen».
 
 ## Resumen por historia
 
@@ -51,9 +53,14 @@ modificar sus criterios literales. Detalle en `decisiones-etapa-03.md`.
 |---|---|---|---|
 | E03-D1 — asistente de tres pasos | Los campos de HU1 se distribuyen en tres pasos; «Registrar» queda en el último; «Limpiar» pide confirmación si hay datos; tras el registro se va al inicio de sesión | E03-W01 a E03-W10 | Definida; A-W1 a A-W6 aprobadas por el responsable |
 | E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1; correo, documento y celular forman un espacio de identificadores inequívoco | Obligatoriedad del celular en el paso 2; colisiones entre documento y celular; formatos de documento; celular canónico | Definida; A-ID1 a A-ID4 aprobadas por el responsable; implementación pendiente |
+| E03-D11 — respuestas escritas | Las respuestas de seguridad se escriben y se normalizan con `free-text-folded`; riesgo residual aceptado solo para una demostración académica controlada | E03-V10 | Definida por el responsable; implementación pendiente |
 
 A-ID2 también condiciona HU2 (Etapa 04): el inicio de sesión con celular sin código de
-país solo se acepta si es inequívoco.
+país solo se acepta si es inequívoco. E03-D11 (respuestas escritas, aprobada el 2026-10-25)
+también condiciona HU3 (Etapa 05).
+
+La aprobación de esta documentación no autoriza implementar HU1 ni distribuir el
+producto, limitado a una demostración académica controlada (E03-D11).
 
 ## HU1 — criterios de aceptación (preparación del 2026-10-25)
 
@@ -65,17 +72,17 @@ base de pruebas `node:sqlite`) y E (ejecución en el emulador o en un dispositiv
 | ID interno | Criterio literal | Paso | Decisiones relacionadas | Verificación prevista | Estado |
 |---|---|---|---|---|---|
 | HU1-CA01 | Los campos tipo documento, documento, primer nombre, primer apellido, correo electrónico, contraseña, preguntas y respuestas de seguridad son obligatorios. | 1, 2 y 3 | E03-D2 añade el celular | U, C | Pendiente |
-| HU1-CA02 | El selector "Tipo de documento" debe poblarse con el maestro 'document_types'. | 1 | E03-D4 | I, C | Pendiente |
-| HU1-CA03 | El campo tipo de documento debe mostrar un listado de opciones que deben ser las que estén en el maestro tipos de documentos. | 1 | E03-D4 | I, C | Pendiente |
+| HU1-CA02 | El selector "Tipo de documento" debe poblarse con el maestro 'document_types'. | 1 | E03-D4, E03-V11 | I, C | Pendiente |
+| HU1-CA03 | El campo tipo de documento debe mostrar un listado de opciones que deben ser las que estén en el maestro tipos de documentos. | 1 | E03-D4, E03-V11 | I, C | Pendiente |
 | HU1-CA04 | Los campos primer nombre, segundo nombre, primer apellido, segundo apellido no deben aceptar símbolos o números. | 1 | E03-D7; P-D2 | U, E | Pendiente |
 | HU1-CA05 | La contraseña debe ser una contraseña segura, de mínimo 8 caracteres, entre los cuales debe contener mínimo 1 número, 1 letra, 1 símbolo. | 2 | E03-D10 | U (`passwordPolicy`), C | Pendiente |
 | HU1-CA06 | La aplicación no debe almacenar la contraseña en texto plano. | 3 (al registrar) | E02-D1 | I (contenido de la base), E | Pendiente |
 | HU1-CA07 | La aplicación debe validar las condiciones definidas para la contraseña antes de completar el registro. | 2 y 3 | E03-W02, E03-W05 | C | Pendiente |
 | HU1-CA08 | Para el campo número de celular se debe tener un listado para seleccionar el código de país. | 2 | E03-D8, A-ID2 | U, C | Pendiente |
 | HU1-CA09 | Para el campo correo se debe garantizar la validación del símbolo @ y un dominio; de no contar con estos parámetros, debe indicarse al usuario por mensaje “Verificar correo”. | 2 | — | U, C | Pendiente |
-| HU1-CA10 | Los campos de preguntas de seguridad serán una lista desplegable en la cual se mostrarán las diferentes preguntas disponibles de la base de datos. | 3 | E03-D5, C-03 | I, C | Pendiente |
+| HU1-CA10 | Los campos de preguntas de seguridad serán una lista desplegable en la cual se mostrarán las diferentes preguntas disponibles de la base de datos. | 3 | E03-D5, E03-D11 | I, C | Pendiente |
 | HU1-CA11 | No permitir que se seleccionen preguntas de seguridad similares. | 3 | E03-D6 | U (`securityQuestionPolicy`), C | Pendiente |
-| HU1-CA12 | Las respuestas de seguridad no deben almacenarse en texto plano. | 3 (al registrar) | E02-D1, E03-D9 | I (contenido de la base), E | Pendiente |
+| HU1-CA12 | Las respuestas de seguridad no deben almacenarse en texto plano. | 3 (al registrar) | E02-D1, E03-D9, E03-D11 | I (contenido de la base), E | Pendiente |
 | HU1-CA13 | Se genera un mensaje de error cerca del campo registrado en caso de que el dato no sea acorde a los criterios: “Error en los campos ingresados”. | 1, 2 y 3 | E03-W02 | C | Pendiente |
 | HU1-CA14 | Se genera un mensaje de alerta si el usuario ya se encuentra registrado: “El usuario se encuentra registrado”. | 2 y 3 | E03-D3, A-W3, A-ID1 | I, C | Pendiente |
 | HU1-CA15 | Al presionar el botón de “Registrar”, la información diligenciada es guardada en la base de datos, solo si todo fue diligenciado correctamente y el usuario no está registrado previamente. | 3 | E03-W05, E03-W06, A-W3 | I, C, E | Pendiente |
@@ -87,8 +94,9 @@ base de pruebas `node:sqlite`) y E (ejecución en el emulador o en un dispositiv
 ### Criterios adicionales (no son criterios literales de HU1)
 
 E03-W01 a E03-W10 (asistente) están en `decisiones-etapa-03.md`, sección E03-D1, y se
-derivan de decisiones aprobadas. Los siguientes concretan identificadores, persistencia y
-errores. Ninguno está implementado ni probado.
+derivan de decisiones aprobadas. Los siguientes son criterios derivados que concretan
+identificadores, persistencia, errores y preguntas de seguridad; no sustituyen a ningún
+criterio literal. Ninguno está implementado ni probado.
 
 | ID interno | Criterio | Origen | Verificación prevista | Estado |
 |---|---|---|---|---|
@@ -96,10 +104,13 @@ errores. Ninguno está implementado ni probado.
 | E03-V02 | El documento se compara y es único por su valor normalizado (A-ID3), sin importar el tipo, y se conserva el valor original | A-ID3, E03-D3 (aprobadas) | U, I | Pendiente |
 | E03-V03 | Un documento normalizado igual al celular de otra cuenta, o al revés, se rechaza con «El usuario se encuentra registrado», sin indicar qué identificador coincide | A-ID1 (aprobada) | I | Pendiente |
 | E03-V04 | Dos registros simultáneos con un mismo identificador crean una sola cuenta; el otro recibe «El usuario se encuentra registrado» y no queda ninguna cuenta incompleta | A-W3 (aprobada) | I | Pendiente |
-| E03-V05 | Con el tipo `NIT`, el número exige el dígito de verificación con guion y lo valida según A-ID5 | A-ID5 (pendiente de aprobación) | U | Pendiente |
-| E03-V06 | El número de documento solo admite los caracteres definidos para su tipo | E03-D4 (pendiente de aprobación) | U | Pendiente |
-| E03-V07 | Un fallo técnico al registrar no guarda nada, conserva los datos del asistente y muestra el mensaje general | A-W7 (pendiente de aprobación) | I, C | Pendiente |
-| E03-V08 | Mientras se registra, se muestra el indicador de progreso y los botones del asistente están deshabilitados | A-W8 (pendiente de aprobación) | C | Pendiente |
+| E03-V05 | (Retirado) Validación específica del número con el tipo `NIT` | E03-D4 y A-ID5: el NIT se excluyó del catálogo el 2026-10-25, porque la app es solo para personas naturales | — | Eliminado del alcance |
+| E03-V06 | El número de documento solo admite los caracteres definidos para su tipo | E03-D4 (catálogo aprobado provisionalmente; reglas de caracteres por tipo pendientes de verificación) | U | Pendiente |
+| E03-V07 | Un fallo técnico al registrar no deja ninguna cuenta parcial, conserva los campos no sensibles, no conserva la contraseña ni las respuestas de seguridad y muestra «No fue posible completar el registro. Intenta de nuevo» | A-W7 (aprobada) | I, C | Pendiente |
+| E03-V08 | Mientras se registra, se muestra «Registrando…» y los botones del asistente están deshabilitados, sin admitir un segundo envío | A-W8 (aprobada) | C | Pendiente |
+| E03-V09 | La base se abre y se verifica al iniciar la app; si falla, se muestra «No fue posible abrir la base de datos. Reinicia la aplicación.», no se permiten las funciones que dependen de ella y la base no se borra, no se reinicializa ni se recrea | A-W9 (aprobada) | I, E | Pendiente |
+| E03-V10 | El paso 3 recoge una respuesta escrita por pregunta, rechaza con «Error en los campos ingresados» la que quede vacía o fuera de 3 a 100 puntos de código Unicode tras normalizar, no usa las opciones del catálogo y guarda cada una como verificador con la normalización `free-text-folded` | E03-D11 y E03-D5 (aprobadas) | U, I, C | Pendiente |
+| E03-V11 | El selector de tipo de documento muestra solo los tipos activos de `document_types` (CC, CE, PA y PPT); una migración posterior a la 2 marca el NIT como inactivo; el registro rechaza cualquier tipo de documento inactivo, aunque el intento llegue por una vía distinta al selector, validándolo también en la lógica de registro y no solo en la interfaz, con «Error en los campos ingresados» | E03-D4; definición aprobada por el responsable (2026-10-25); implementación y validación pendientes | U, I, C | Pendiente |
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

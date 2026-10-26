@@ -119,7 +119,7 @@ físico (P-D1, P-D2, P-D3 y P-D7 en `validacion/etapa-02-pruebas-dispositivo.md`
 - APK Debug de `main` compilado en Windows, pero no instalado ni ejecutado; Release de `main` no compilado.
 - Módulo nativo `GfpCrypto` compilado pero no ejecutado en un dispositivo; Jest sustituye el módulo nativo por una implementación de Node.
 - Iteraciones de PBKDF2 provisionales (600 000) hasta medirlas en el dispositivo físico mínimo (P-D1).
-- Las opciones de respuesta de seguridad tienen entropía limitada; la recuperación depende de la limitación de intentos (`arquitectura-identidad.md`, sección 4).
+- Las preguntas de seguridad tienen baja entropía, también con las respuestas escritas decididas en E03-D11; la limitación de intentos depende de la hora del dispositivo (`arquitectura-identidad.md`, sección 4).
 
 ## Decisiones de la etapa
 
@@ -138,7 +138,7 @@ técnicas").
 | E02-D8 | Calidad del OCR | Plan definido; umbrales para la Etapa 10 | No |
 | E02-D9 | Vulnerabilidad `body-parser` | Resuelta (2.4.0) | No |
 
-Discrepancias: C-02 resuelta por G-08; C-03 (respuestas seleccionables) resuelta por la
+Discrepancias: C-02 resuelta por G-08; C-03 (respuestas seleccionables, sustituida por las respuestas escritas de E03-D11 el 2026-10-25) resuelta por la
 WU del 2026-10-25.
 
 ## Riesgos residuales
@@ -151,7 +151,7 @@ usuarios y manipulación del reloj.
 ## Condiciones para autorizar la Etapa 03
 
 1. Aprobación explícita del responsable de este cierre y de los criterios E02-C1 a E02-C8 (E02-D6). Cumplida el 2026-10-25, con reservas.
-2. E03-D1, E03-D2, A-W1 a A-W6 y A-ID1 a A-ID4 están definidas por el responsable (2026-10-25); queda implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`, con sus pruebas), definir A-ID5 (dígito de verificación del NIT) y aprobar el contenido de E03-D4 y E03-D5 (`decisiones-etapa-03.md`).
+2. E03-D1, E03-D2, A-W1 a A-W9 y A-ID1 a A-ID4 están definidas por el responsable (2026-10-25); queda implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`, con sus pruebas), adaptar el código de respuestas a E03-D11 (respuestas escritas, decidida el 2026-10-25) y desactivar el NIT en una migración posterior a la 2, con un selector que muestre solo los tipos activos. E03-D4 (sin NIT; A-ID5 sin objeto) y E03-D5 están definidas, con las reglas de caracteres por tipo pendientes de verificación (`decisiones-etapa-03.md`).
 3. Propuesta pendiente de aprobación: instalar el APK Debug de `main` en API 29 o superior y comprobar que la aplicación de la Etapa 01 sigue funcionando (criterios comunes 4 y 5 del plan).
 4. Autorización explícita del responsable para iniciar la Etapa 03.
 
@@ -161,6 +161,6 @@ Etapa 03.
 
 ## Pendiente del responsable
 
-1. Aprobar o ajustar las propuestas revisadas de E03-D4, E03-D5, A-ID5 (dígito de verificación del NIT) y A-W7 a A-W9 (`decisiones-etapa-03.md`, 2026-10-25); autorizar la implementación de A-ID1 a A-ID4.
+1. Verificar las reglas de caracteres por tipo (E03-D4); autorizar la implementación de A-ID1 a A-ID4 y de E03-D11 (`decisiones-etapa-03.md`, 2026-10-25). E03-D11 limita el uso a una demostración académica controlada.
 2. Autorizar o descartar la instalación del APK Debug de `main` (condición 3). Si se instala en el emulador, reemplaza la aplicación de pruebas de concepto instalada, que usa el mismo identificador.
 3. Decidir si se retiran los worktrees auxiliares (`GFP Proyecto\GFP-e02-int` y `GFP Proyecto\GFP-e02-id`), que se conservan.

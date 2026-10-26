@@ -135,11 +135,16 @@ migración aplicada y `PRAGMA user_version` refleja la versión.
 | Actualización sin pérdida | Solo se aplican las migraciones pendientes; si una falla se revierte entera. Una base con una versión posterior a la de la app (`newer_schema`) o con una migración modificada (`checksum_mismatch`) no se toca y se informa el error |
 | Entidades financieras | No se anticipan. HU4 y HU8 añadirán sus tablas con `user_id` en migraciones posteriores |
 
-Los catálogos de la versión 2 (`document_types` y preguntas con opciones) son
-propuestas pendientes de aprobación (E03-D4 y E03-D5, revisadas el 2026-10-25 en
-`decisiones-etapa-03.md`). Mientras no haya una entrega de
-la Etapa 03, pueden ajustarse editando esa migración; después de entregarse, cualquier
-cambio requiere una migración nueva.
+Los catálogos de la versión 2 (`document_types` y preguntas con opciones) proceden de la
+Etapa 02. El catálogo `document_types` está aprobado provisionalmente con CC, CE, PA y
+PPT (E03-D4). La migración 2 se conserva sin cambios y sigue sembrando el NIT; una migración
+posterior lo marcará como inactivo (`is_active = 0`) y el selector mostrará solo los tipos
+activos (pendiente de implementación). Las 10 preguntas se conservan con respuestas escritas (E03-D5 y E03-D11); las
+opciones se conservan en la migración 2 por compatibilidad, sin renombrarlas ni
+eliminarlas, pero no forman parte del flujo aprobado (`decisiones-etapa-03.md`). La
+migración 2 se conserva; la migración 1 puede modificarse antes de la primera entrega para
+la obligatoriedad del celular y los demás cambios de A-ID1 a A-ID4 (A-ID4). Después de una
+entrega, cualquier cambio de esquema requiere una migración nueva.
 
 ## 3. Credenciales (E02-D1, E02-D2)
 
@@ -173,7 +178,7 @@ Normalización (E02-D2):
 | Regla | Origen | Implementación |
 |---|---|---|
 | Registro con 5 preguntas del catálogo, sin repetir ni elegir preguntas similares | HU1 | `validateRegistrationAnswers()`; dos preguntas son similares si comparten `similarity_group` (E03-D6) |
-| Respuestas seleccionables entre opciones del catálogo | WU 2026-10-25 (C-03) | El verificador se calcula sobre el identificador estable de la opción (`option-id`), así que tildes, mayúsculas o espacios no pueden causar errores |
+| Respuestas escritas | HU1; E03-D11 (2026-10-25), que sustituye a C-03 | El verificador se calcula sobre la respuesta normalizada con `free-text-folded`. El código actual aún implementa las respuestas seleccionables de C-03 (`option-id`); su adaptación está pendiente de autorización |
 | Respuestas no almacenadas en texto claro, con sal propia | HU1, WU | Un verificador PBKDF2 independiente por respuesta, con los mismos parámetros que la contraseña |
 | Identificador primero; error «Identificador incorrecto» | HU3 | `AccountRecoveryService.start()` devuelve `invalid_identifier` |
 | Responder 2 de las 5 preguntas, elegidas al azar | HU3 | Se eligen con `RNGetRandomValues` y se guardan en `recovery_challenges` durante 15 minutos; repetir «Comenzar recuperación» devuelve las mismas preguntas mientras el reto siga vigente, para que no se puedan buscar preguntas más fáciles (E05-D2) |
@@ -185,8 +190,10 @@ Normalización (E02-D2):
 
 Limitaciones que se aceptan expresamente:
 
-- Las opciones de respuesta tienen entropía limitada: con 7 a 11 opciones por pregunta, dos respuestas admiten como mucho 121 combinaciones. Las preguntas de seguridad son un mecanismo de recuperación de menor garantía que un canal externo verificado (correo o SMS), que está fuera del alcance.
-- Con la limitación de intentos de recuperación, quien tenga el dispositivo puede hacer 21 intentos en las primeras 24 horas; si las respuestas fueran equiprobables, cubrirían cerca del 17 % de las 121 combinaciones posibles, y más con respuestas predecibles (E03-D5).
+- **El mecanismo no es seguro.** Las respuestas, también las escritas (E03-D11), tienen baja entropía: pueden ser conocidas por personas cercanas, adivinadas con respuestas comunes u olvidadas. Las preguntas de seguridad son un mecanismo de recuperación de menor garantía que un canal externo verificado (correo o SMS), que está fuera del alcance.
+- La limitación de intentos depende de la hora del dispositivo, así que quien lo tiene puede anularla adelantando el reloj; no hay protección suficiente contra automatización.
+- Fuera de línea, con el archivo de la base y su clave, las respuestas se prueban sin límite de intentos; cada una tiene su propio verificador y se prueba por separado.
+- Uso permitido: solo una demostración académica controlada; no se distribuye a usuarios reales hasta revisar y tratar el mecanismo (E03-D11). Controles, riesgos, mitigaciones futuras y pruebas pendientes en `decisiones-etapa-03.md`.
 - La protección real frente a la adivinación es la limitación de intentos. Quien obtenga el archivo de la base y su clave podría probar todas las combinaciones fuera de línea; PBKDF2 solo lo encarece.
 - El mensaje «Identificador incorrecto», exigido por HU3, permite saber si un identificador está registrado. Se mitiga con la limitación de intentos sobre identificadores inexistentes.
 - El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY`. El alcance del bloqueo (por cuenta o por dispositivo) es E04-D1; la tabla `auth_throttles` admite ambos.
@@ -215,7 +222,7 @@ Limitaciones que se aceptan expresamente:
 | Keystore sin respaldo por hardware demostrado | No se afirma; se registra el nivel declarado |
 | Datos en memoria de JavaScript (contraseña como `string`) | Los arreglos de bytes se borran tras usarse; los `string` de JavaScript no se pueden borrar |
 | Errores de consulta que mezclen usuarios | API de repositorios basada en la sesión, pruebas de aislamiento y revisión obligatoria de cada repositorio nuevo |
-| Reloj del dispositivo manipulado hacia adelante | Puede acortar un bloqueo; es una limitación de una app sin servidor |
+| Reloj del dispositivo manipulado hacia adelante | Acorta o anula el bloqueo de inicio de sesión y de recuperación, de modo que quien tiene el dispositivo no tiene un límite real de intentos; es una limitación de una app sin servidor. Agrava el riesgo de las preguntas de seguridad (E03-D11). Mitigación futura propuesta, no implementada: combinar la hora del sistema con un reloj monótono, con un cambio de código autorizado por separado |
 | Reinstalación y pérdida de la clave sin probar en un dispositivo | Prueba P-D3 en un AVD aislado |
 
 Otras reservas abiertas de la Etapa 02 que no dependen de este diseño: el permiso
