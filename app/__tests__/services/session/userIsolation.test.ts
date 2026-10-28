@@ -109,18 +109,9 @@ describe('already registered users (E03-D3)', () => {
     expect(readInteger(users.rows[0], 'total')).toBe(1);
   });
 
-  test('allows an account without phone and the same national number in another country', async () => {
+  test('allows the same national number in another country', async () => {
     const database = await createMigratedDatabase();
     await createAccount(database, profile());
-    await createAccount(
-      database,
-      profile({
-        documentNumber: '4004',
-        email: 'b@example.com',
-        phoneCountryCode: null,
-        phoneNumber: null,
-      }),
-    );
     await createAccount(
       database,
       profile({
@@ -130,7 +121,7 @@ describe('already registered users (E03-D3)', () => {
       }),
     );
     const users = await database.execute('SELECT count(*) AS total FROM users');
-    expect(readInteger(users.rows[0], 'total')).toBe(3);
+    expect(readInteger(users.rows[0], 'total')).toBe(2);
   });
 
   test('finds users by email, document or phone and refuses ambiguous phones', async () => {
@@ -142,6 +133,9 @@ describe('already registered users (E03-D3)', () => {
     await expect(repository.findUserIdByIdentifier('1001')).resolves.toBe(ana);
     await expect(
       repository.findUserIdByIdentifier('300 111 2233'),
+    ).resolves.toBe(ana);
+    await expect(
+      repository.findUserIdByIdentifier('+57 300 111 2233'),
     ).resolves.toBe(ana);
     await expect(
       repository.findUserIdByIdentifier('nadie@example.com'),

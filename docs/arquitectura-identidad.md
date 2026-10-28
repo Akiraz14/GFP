@@ -61,13 +61,15 @@ erDiagram
     TEXT id PK "UUID v4"
     TEXT status "active | disabled"
     TEXT document_type_code FK
-    TEXT document_number "UNIQUE"
+    TEXT document_number "original"
+    TEXT document_number_normalized "UNIQUE (A-ID3)"
     TEXT first_name
     TEXT middle_name "opcional"
     TEXT last_name
     TEXT second_last_name "opcional"
-    TEXT phone_country_code "obligatorio (E03-D2); NOT NULL pendiente (A-ID4)"
-    TEXT phone_number "UNIQUE con el indicativo"
+    TEXT phone_country_code "NOT NULL (A-ID4)"
+    TEXT phone_number "NOT NULL, solo dígitos"
+    TEXT phone_e164 "UNIQUE (A-ID2)"
     TEXT email
     TEXT email_normalized "UNIQUE"
     INTEGER created_at
@@ -128,7 +130,7 @@ migración aplicada y `PRAGMA user_version` refleja la versión.
 | Aspecto | Decisión |
 |---|---|
 | Tipos | Identificadores y textos `TEXT`; fechas `INTEGER` en milisegundos UTC; sal y verificador `BLOB` con longitud comprobada por `CHECK` |
-| Unicidad | `document_number`, `email_normalized` y (`phone_country_code`, `phone_number`). El celular es obligatorio (E03-D2). Aprobado e implementación pendiente: espacio de identificadores inequívoco entre documento y celular (A-ID1), celular canónico E.164 único (A-ID2), documento normalizado único (A-ID3) y columnas `NOT NULL` en la migración 1, que no se ha distribuido (A-ID4); ver `decisiones-etapa-03.md`. HU2 permite iniciar sesión con cualquiera de los tres, así que cada uno debe identificar una sola cuenta (E03-D3) |
+| Unicidad | `document_number_normalized`, `email_normalized` y `phone_e164` únicos; el documento original se conserva en `document_number`. El celular es obligatorio (`NOT NULL`, A-ID4) y el espacio de identificadores es inequívoco entre documento y celular gracias a disparadores (A-ID1); implementado el 2026-10-26. HU2 permite iniciar sesión con cualquiera de los tres, así que cada uno debe identificar una sola cuenta (E03-D3) |
 | Integridad | Claves foráneas con `ON DELETE CASCADE` desde `users`; `CHECK` sobre algoritmo, iteraciones, longitudes y estados |
 | Transacciones | Cada migración se aplica en una transacción con su registro en `schema_migrations`; la creación de cuenta (usuario, credencial y 5 respuestas) y el cambio de contraseña por recuperación son atómicos |
 | Versionado | Migraciones numeradas, consecutivas e inmutables una vez entregadas; la suma SHA-256 de cada migración aplicada se comprueba en cada apertura |
@@ -139,7 +141,7 @@ Los catálogos de la versión 2 (`document_types` y preguntas con opciones) proc
 Etapa 02. El catálogo `document_types` está aprobado provisionalmente con CC, CE, PA y
 PPT (E03-D4). La migración 2 se conserva sin cambios y sigue sembrando el NIT; una migración
 posterior lo marcará como inactivo (`is_active = 0`) y el selector mostrará solo los tipos
-activos (pendiente de implementación). Las 10 preguntas se conservan con respuestas escritas (E03-D5 y E03-D11); las
+activos (implementado el 2026-10-26 en la migración 3 y el registro). Las 10 preguntas se conservan con respuestas escritas (E03-D5 y E03-D11); las
 opciones se conservan en la migración 2 por compatibilidad, sin renombrarlas ni
 eliminarlas, pero no forman parte del flujo aprobado (`decisiones-etapa-03.md`). La
 migración 2 se conserva; la migración 1 puede modificarse antes de la primera entrega para
@@ -171,7 +173,7 @@ Normalización (E02-D2):
 - Entradas inválidas: se rechazan los caracteres de control y las unidades sustitutas (surrogates) aisladas.
 - Reglas de HU1 y HU3: mínimo 8 caracteres, al menos 1 letra (`\p{L}`), 1 número (`\p{Nd}`) y 1 símbolo (cualquier carácter que no sea letra, marca, dígito ni espacio). Máximo 128 puntos de código tras NFC (E03-D10).
 - Compatibilidad: no existen credenciales almacenadas antes de esta política, así que no hace falta migrarlas. Cada verificador registra `normalization = 'nfc'`; un cambio futuro de política requiere un valor nuevo y la regeneración tras un inicio de sesión correcto, nunca una reinterpretación silenciosa.
-- Si `String.prototype.normalize('NFC')` no funciona en el motor de JavaScript, la operación falla de forma segura (`UnicodeNormalizationUnavailableError`). Su disponibilidad en Hermes se comprueba en P-D2.
+- Si `String.prototype.normalize('NFC')` no funciona en el motor de JavaScript, la operación falla de forma segura (`UnicodeNormalizationUnavailableError`). Su disponibilidad en Hermes se comprueba en P-D2, ejecutada el 2026-10-26 en emulador API 29 con resultado correcto, incluida NFD.
 
 ## 4. Recuperación con preguntas de seguridad
 
@@ -207,7 +209,7 @@ Limitaciones que se aceptan expresamente:
 | Apertura | Clave en formato bruto (`x'…'`); se comprueba `PRAGMA cipher_version`, de modo que sin SQLCipher la app falla en vez de crear una base en claro; después se lee `sqlite_master` para detectar una clave rechazada; se activan las claves foráneas y se migra |
 | Primera ejecución | Sin clave y sin base: se genera la clave, se guarda, se relee para confirmarla y se crea la base |
 | Clave perdida | Sin clave y con base (`key_lost`) o clave rechazada (`key_rejected`): la apertura falla y **no se borra ni se sustituye la base**. Recuperar los datos no es posible; reiniciar la base exigirá una acción explícita del usuario, que se diseñará en la etapa que la necesite |
-| Desinstalación y reinstalación | Android elimina los datos de la app y las claves de Keystore de esa app: la reinstalación empieza de cero (primera ejecución). Comprobación pendiente en un entorno aislado (P-D3) |
+| Desinstalación y reinstalación | Android elimina los datos de la app y las claves de Keystore de esa app: la reinstalación empieza de cero (primera ejecución). Comprobado en el AVD aislado `emulator-5554` el 2026-10-27 (P-D3) |
 | Copias y restauración | `android:allowBackup="false"` y `android:dataExtractionRules` excluyen todos los dominios de la copia en la nube y de la transferencia entre dispositivos, porque la clave de Keystore no se transfiere y una base restaurada sin su clave sería ilegible |
 | Eliminación de cuenta | No cambia la clave: la clave es del dispositivo y la base contiene otras cuentas |
 | Rotación | No se rota periódicamente en el MVP. Si hiciera falta (sospecha de exposición), el procedimiento es generar una clave nueva, guardarla como pendiente, ejecutar `PRAGMA rekey` y promoverla tras comprobar la apertura |
@@ -218,12 +220,12 @@ Limitaciones que se aceptan expresamente:
 | Riesgo | Tratamiento |
 |---|---|
 | Iteraciones de PBKDF2 sin medir en el dispositivo mínimo | Valor provisional versionado; prueba P-D1 y regeneración con `needsRehash()` si cambia |
-| Comportamiento de Hermes con `normalize` y las expresiones `\p{…}` | Comprobación al ejecutar y prueba P-D2 |
+| Comportamiento de Hermes con `normalize` y las expresiones `\p{…}` | Comprobación al ejecutar; P-D2 verificada en emulador API 29 el 2026-10-26 (NFC, NFD y `\p{…}`) |
 | Keystore sin respaldo por hardware demostrado | No se afirma; se registra el nivel declarado |
 | Datos en memoria de JavaScript (contraseña como `string`) | Los arreglos de bytes se borran tras usarse; los `string` de JavaScript no se pueden borrar |
 | Errores de consulta que mezclen usuarios | API de repositorios basada en la sesión, pruebas de aislamiento y revisión obligatoria de cada repositorio nuevo |
 | Reloj del dispositivo manipulado hacia adelante | Acorta o anula el bloqueo de inicio de sesión y de recuperación, de modo que quien tiene el dispositivo no tiene un límite real de intentos; es una limitación de una app sin servidor. Agrava el riesgo de las preguntas de seguridad (E03-D11). Mitigación futura propuesta, no implementada: combinar la hora del sistema con un reloj monótono, con un cambio de código autorizado por separado |
-| Reinstalación y pérdida de la clave sin probar en un dispositivo | Prueba P-D3 en un AVD aislado |
+| Reinstalación y pérdida de la clave sin probar en un dispositivo físico | P-D3 y la pérdida de la clave (E03-V09) verificadas en un AVD aislado el 2026-10-27; falta el dispositivo físico (Etapa 05 o 06) |
 
 Otras reservas abiertas de la Etapa 02 que no dependen de este diseño: el permiso
 `INTERNET` se conserva hasta la prueba P-D7 (E02-D7), y los umbrales de calidad del OCR

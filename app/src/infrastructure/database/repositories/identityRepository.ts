@@ -8,6 +8,13 @@ import type {
 } from '../../../services/authentication/attemptThrottle';
 import type { SecurityQuestion } from '../../../services/authentication/securityQuestionPolicy';
 import {
+  classifyLoginIdentifier,
+  normalizeDocumentNumber,
+  normalizeEmail,
+  phoneDigits,
+  toE164,
+} from '../../../services/authentication/identifiers';
+import {
   readBlob,
   readInteger,
   readOptionalInteger,
@@ -23,10 +30,15 @@ export type NewUserProfile = {
   middleName: string | null;
   lastName: string;
   secondLastName: string | null;
-  phoneCountryCode: string | null;
-  phoneNumber: string | null;
+  phoneCountryCode: string;
+  phoneNumber: string;
   email: string;
 };
+
+export type RegistrationIdentifiers = Pick<
+  NewUserProfile,
+  'documentNumber' | 'phoneCountryCode' | 'phoneNumber' | 'email'
+>;
 
 export type NewAccount = {
   userId: string;
@@ -45,6 +57,13 @@ export type RecoveryChallenge = {
   expiresAt: number;
 };
 
+export type DocumentType = { code: string; name: string };
+
+export type IdentifierLookup =
+  | { status: 'found'; userId: string }
+  | { status: 'not_found' }
+  | { status: 'phone_country_code_required' };
+
 export class AccountAlreadyRegisteredError extends Error {
   constructor() {
     super('an account already uses this document, email or phone');
@@ -52,16 +71,11 @@ export class AccountAlreadyRegisteredError extends Error {
   }
 }
 
-export function normalizeEmail(email: string): string {
-  return email.normalize('NFC').trim().toLowerCase();
-}
-
-export function normalizeDocumentNumber(documentNumber: string): string {
-  return documentNumber.normalize('NFC').trim().toUpperCase();
-}
-
-export function normalizePhoneNumber(phoneNumber: string): string {
-  return phoneNumber.replace(/\D/g, '');
+export class InactiveDocumentTypeError extends Error {
+  constructor() {
+    super('the document type is not active');
+    this.name = 'InactiveDocumentTypeError';
+  }
 }
 
 function toVerifierRecord(row: SqlRow): SecretVerifierRecord {
@@ -75,88 +89,129 @@ function toVerifierRecord(row: SqlRow): SecretVerifierRecord {
   };
 }
 
+function userIds(rows: SqlRow[]): string[] {
+  return rows.map(row => readText(row, 'id'));
+}
+
 export class IdentityRepository {
   constructor(private readonly executor: SqlExecutor) {}
 
-  async findUserIdByIdentifier(identifier: string): Promise<string | null> {
-    const trimmed = identifier.trim();
-    if (trimmed.length === 0) {
-      return null;
-    }
-    let rows: SqlRow[];
-    if (trimmed.includes('@')) {
-      rows = (
-        await this.executor.execute(
-          "SELECT id FROM users WHERE email_normalized = ? AND status = 'active'",
-          [normalizeEmail(trimmed)],
-        )
-      ).rows;
-    } else {
-      rows = (
-        await this.executor.execute(
-          "SELECT id FROM users WHERE document_number = ? AND status = 'active'",
-          [normalizeDocumentNumber(trimmed)],
-        )
-      ).rows;
-      const digits = normalizePhoneNumber(trimmed);
-      if (
-        rows.length === 0 &&
-        digits.length > 0 &&
-        digits === trimmed.replace(/[\s+-]/g, '')
-      ) {
-        rows = (
+  async lookupIdentifier(identifier: string): Promise<IdentifierLookup> {
+    const parsed = classifyLoginIdentifier(identifier);
+    let ids: string[] = [];
+    if (parsed.kind === 'email') {
+      ids = userIds(
+        (
           await this.executor.execute(
-            "SELECT id FROM users WHERE phone_number = ? AND status = 'active'",
-            [digits],
+            "SELECT id FROM users WHERE email_normalized = ? AND status = 'active'",
+            [parsed.email],
           )
-        ).rows;
-      }
+        ).rows,
+      );
+    } else if (parsed.kind === 'e164') {
+      ids = userIds(
+        (
+          await this.executor.execute(
+            "SELECT id FROM users WHERE phone_e164 = ? AND status = 'active'",
+            [parsed.phone],
+          )
+        ).rows,
+      );
+    } else if (parsed.kind === 'document_or_phone') {
+      ids = userIds(
+        (
+          await this.executor.execute(
+            `SELECT id FROM users
+              WHERE status = 'active'
+                AND (document_number_normalized = ? OR phone_number = ?)`,
+            [parsed.document, parsed.nationalNumber],
+          )
+        ).rows,
+      );
     }
-    return rows.length === 1 ? readText(rows[0], 'id') : null;
+    const distinct = [...new Set(ids)];
+    if (distinct.length === 1) {
+      return { status: 'found', userId: distinct[0] };
+    }
+    return distinct.length === 0
+      ? { status: 'not_found' }
+      : { status: 'phone_country_code_required' };
   }
 
-  async isAlreadyRegistered(profile: NewUserProfile): Promise<boolean> {
+  async findUserIdByIdentifier(identifier: string): Promise<string | null> {
+    const lookup = await this.lookupIdentifier(identifier);
+    return lookup.status === 'found' ? lookup.userId : null;
+  }
+
+  async isAlreadyRegistered(
+    identifiers: RegistrationIdentifiers,
+  ): Promise<boolean> {
+    const document = normalizeDocumentNumber(identifiers.documentNumber);
+    const nationalNumber = phoneDigits(identifiers.phoneNumber);
+    const e164 = toE164(identifiers.phoneCountryCode, identifiers.phoneNumber);
     const result = await this.executor.execute(
       `SELECT count(*) AS total FROM users
-        WHERE document_number = ?
+        WHERE document_number_normalized IN (?, ?, ?)
            OR email_normalized = ?
-           OR (? IS NOT NULL AND phone_country_code = ? AND phone_number = ?)`,
+           OR phone_e164 IN (?, ?)
+           OR phone_number = ?`,
       [
-        normalizeDocumentNumber(profile.documentNumber),
-        normalizeEmail(profile.email),
-        profile.phoneNumber,
-        profile.phoneCountryCode,
-        profile.phoneNumber === null
-          ? null
-          : normalizePhoneNumber(profile.phoneNumber),
+        document,
+        nationalNumber,
+        e164,
+        normalizeEmail(identifiers.email),
+        e164,
+        document,
+        document,
       ],
     );
     return readInteger(result.rows[0], 'total') > 0;
   }
 
+  async listActiveDocumentTypes(): Promise<DocumentType[]> {
+    const result = await this.executor.execute(
+      'SELECT code, name FROM document_types WHERE is_active = 1 ORDER BY sort_order',
+    );
+    return result.rows.map(row => ({
+      code: readText(row, 'code'),
+      name: readText(row, 'name'),
+    }));
+  }
+
+  async isActiveDocumentType(code: string): Promise<boolean> {
+    const result = await this.executor.execute(
+      'SELECT count(*) AS total FROM document_types WHERE code = ? AND is_active = 1',
+      [code],
+    );
+    return readInteger(result.rows[0], 'total') === 1;
+  }
+
   async createAccount(account: NewAccount, now: number): Promise<void> {
-    if (await this.isAlreadyRegistered(account.profile)) {
+    const { profile } = account;
+    if (!(await this.isActiveDocumentType(profile.documentTypeCode))) {
+      throw new InactiveDocumentTypeError();
+    }
+    if (await this.isAlreadyRegistered(profile)) {
       throw new AccountAlreadyRegisteredError();
     }
-    const { profile } = account;
     try {
       await this.executor.execute(
-        `INSERT INTO users (id, document_type_code, document_number, first_name, middle_name,
-           last_name, second_last_name, phone_country_code, phone_number, email,
-           email_normalized, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (id, document_type_code, document_number, document_number_normalized,
+           first_name, middle_name, last_name, second_last_name, phone_country_code,
+           phone_number, phone_e164, email, email_normalized, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           account.userId,
           profile.documentTypeCode,
+          profile.documentNumber.normalize('NFC').trim(),
           normalizeDocumentNumber(profile.documentNumber),
           profile.firstName,
           profile.middleName,
           profile.lastName,
           profile.secondLastName,
           profile.phoneCountryCode,
-          profile.phoneNumber === null
-            ? null
-            : normalizePhoneNumber(profile.phoneNumber),
+          phoneDigits(profile.phoneNumber),
+          toE164(profile.phoneCountryCode, profile.phoneNumber),
           profile.email.trim(),
           normalizeEmail(profile.email),
           now,
@@ -164,8 +219,12 @@ export class IdentityRepository {
         ],
       );
     } catch (error) {
-      if (/UNIQUE constraint failed/i.test(String(error))) {
+      const message = String(error);
+      if (/UNIQUE constraint failed|identifier_collision/i.test(message)) {
         throw new AccountAlreadyRegisteredError();
+      }
+      if (/inactive_document_type/i.test(message)) {
+        throw new InactiveDocumentTypeError();
       }
       throw error;
     }
@@ -245,21 +304,13 @@ export class IdentityRepository {
 
   async getSecurityQuestionCatalog(): Promise<SecurityQuestion[]> {
     const questions = await this.executor.execute(
-      'SELECT id, similarity_group FROM security_questions WHERE is_active = 1 ORDER BY sort_order',
+      'SELECT id, prompt, similarity_group FROM security_questions WHERE is_active = 1 ORDER BY sort_order',
     );
-    const options = await this.executor.execute(
-      'SELECT question_id, id FROM security_question_options ORDER BY question_id, sort_order',
-    );
-    return questions.rows.map(row => {
-      const id = readText(row, 'id');
-      return {
-        id,
-        similarityGroup: readText(row, 'similarity_group'),
-        optionIds: options.rows
-          .filter(option => readText(option, 'question_id') === id)
-          .map(option => readText(option, 'id')),
-      };
-    });
+    return questions.rows.map(row => ({
+      id: readText(row, 'id'),
+      prompt: readText(row, 'prompt'),
+      similarityGroup: readText(row, 'similarity_group'),
+    }));
   }
 
   async getThrottle(

@@ -48,6 +48,40 @@ export function validateNewPassword(password: string): PasswordViolation[] {
   return violations;
 }
 
+export const PASSWORD_REQUIREMENTS = [
+  'length',
+  'letter',
+  'number',
+  'symbol',
+  'no_outer_whitespace',
+] as const;
+
+export type PasswordRequirement = (typeof PASSWORD_REQUIREMENTS)[number];
+
+const REQUIREMENT_BY_VIOLATION: Readonly<
+  Record<Exclude<PasswordViolation, 'invalid_characters'>, PasswordRequirement>
+> = {
+  too_short: 'length',
+  too_long: 'length',
+  missing_letter: 'letter',
+  missing_number: 'number',
+  missing_symbol: 'symbol',
+  outer_whitespace: 'no_outer_whitespace',
+};
+
+export function unmetPasswordRequirements(
+  violations: readonly PasswordViolation[],
+): PasswordRequirement[] {
+  const unmet = new Set(
+    violations.flatMap(violation =>
+      violation === 'invalid_characters'
+        ? []
+        : [REQUIREMENT_BY_VIOLATION[violation]],
+    ),
+  );
+  return PASSWORD_REQUIREMENTS.filter(requirement => unmet.has(requirement));
+}
+
 export function isVerifiableCandidate(password: string): boolean {
   return (
     !hasInvalidCodeUnits(password) &&

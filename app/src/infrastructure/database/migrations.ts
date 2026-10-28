@@ -24,23 +24,53 @@ const SCHEMA_V1: readonly string[] = [
     id TEXT PRIMARY KEY CHECK (length(id) = 36),
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'disabled')),
     document_type_code TEXT NOT NULL REFERENCES document_types (code),
-    document_number TEXT NOT NULL CHECK (length(document_number) BETWEEN 1 AND 30),
+    document_number TEXT NOT NULL CHECK (length(document_number) BETWEEN 1 AND 60),
+    document_number_normalized TEXT NOT NULL
+      CHECK (length(document_number_normalized) BETWEEN 1 AND 30),
     first_name TEXT NOT NULL,
     middle_name TEXT,
     last_name TEXT NOT NULL,
     second_last_name TEXT,
-    phone_country_code TEXT,
-    phone_number TEXT,
+    phone_country_code TEXT NOT NULL CHECK (
+      phone_country_code GLOB '+[1-9]*'
+      AND length(phone_country_code) BETWEEN 2 AND 4
+      AND substr(phone_country_code, 2) NOT GLOB '*[^0-9]*'
+    ),
+    phone_number TEXT NOT NULL
+      CHECK (length(phone_number) >= 1 AND phone_number NOT GLOB '*[^0-9]*'),
+    phone_e164 TEXT NOT NULL CHECK (
+      phone_e164 = phone_country_code || phone_number AND length(phone_e164) <= 16
+    ),
     email TEXT NOT NULL,
     email_normalized TEXT NOT NULL,
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL,
-    CHECK ((phone_country_code IS NULL) = (phone_number IS NULL))
+    updated_at INTEGER NOT NULL
   ) STRICT`,
-  'CREATE UNIQUE INDEX ux_users_document_number ON users (document_number)',
+  'CREATE UNIQUE INDEX ux_users_document_number_normalized ON users (document_number_normalized)',
   'CREATE UNIQUE INDEX ux_users_email_normalized ON users (email_normalized)',
-  `CREATE UNIQUE INDEX ux_users_phone ON users (phone_country_code, phone_number)
-    WHERE phone_number IS NOT NULL`,
+  'CREATE UNIQUE INDEX ux_users_phone_e164 ON users (phone_e164)',
+  'CREATE INDEX ix_users_phone_number ON users (phone_number)',
+  `CREATE TRIGGER tr_users_identifier_collision_insert BEFORE INSERT ON users
+    WHEN EXISTS (
+      SELECT 1 FROM users other
+       WHERE other.id <> NEW.id
+         AND (other.phone_number = NEW.document_number_normalized
+           OR other.phone_e164 = NEW.document_number_normalized
+           OR other.document_number_normalized = NEW.phone_number
+           OR other.document_number_normalized = NEW.phone_e164)
+    )
+    BEGIN SELECT RAISE(ABORT, 'identifier_collision'); END`,
+  `CREATE TRIGGER tr_users_identifier_collision_update
+    BEFORE UPDATE OF document_number_normalized, phone_number, phone_e164 ON users
+    WHEN EXISTS (
+      SELECT 1 FROM users other
+       WHERE other.id <> NEW.id
+         AND (other.phone_number = NEW.document_number_normalized
+           OR other.phone_e164 = NEW.document_number_normalized
+           OR other.document_number_normalized = NEW.phone_number
+           OR other.document_number_normalized = NEW.phone_e164)
+    )
+    BEGIN SELECT RAISE(ABORT, 'identifier_collision'); END`,
   `CREATE TABLE credentials (
     user_id TEXT PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,
     algorithm TEXT NOT NULL CHECK (algorithm = 'pbkdf2-hmac-sha256'),
@@ -126,11 +156,33 @@ function seedStatements(): string[] {
   return statements;
 }
 
+const DEACTIVATE_NIT_V3: readonly string[] = [
+  "UPDATE document_types SET is_active = 0 WHERE code = 'NIT'",
+  `CREATE TRIGGER tr_users_active_document_type_insert BEFORE INSERT ON users
+    WHEN NOT EXISTS (
+      SELECT 1 FROM document_types
+       WHERE code = NEW.document_type_code AND is_active = 1
+    )
+    BEGIN SELECT RAISE(ABORT, 'inactive_document_type'); END`,
+  `CREATE TRIGGER tr_users_active_document_type_update
+    BEFORE UPDATE OF document_type_code ON users
+    WHEN NOT EXISTS (
+      SELECT 1 FROM document_types
+       WHERE code = NEW.document_type_code AND is_active = 1
+    )
+    BEGIN SELECT RAISE(ABORT, 'inactive_document_type'); END`,
+];
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'identity-and-security-schema', statements: SCHEMA_V1 },
   {
     version: 2,
     name: 'proposed-identity-catalogs',
     statements: seedStatements(),
+  },
+  {
+    version: 3,
+    name: 'deactivate-nit-document-type',
+    statements: DEACTIVATE_NIT_V3,
   },
 ];

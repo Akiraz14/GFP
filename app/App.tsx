@@ -1,47 +1,36 @@
 import {
+  KeyboardAvoidingView,
   StatusBar,
   StyleSheet,
-  Text,
-  useColorScheme,
   View,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { AppRoot } from './src/presentation/AppRoot';
+import type { AppServices } from './src/services/appServices';
+import { createNativeAppServices } from './src/services/nativeAppServices';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+type AppProps = {
+  createServices?: () => Promise<AppServices>;
+};
 
+function App({ createServices = createNativeAppServices }: AppProps) {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View style={styles.container} testID="app-base">
-        <Text style={[styles.title, isDarkMode && styles.textDark]}>GFP</Text>
-        <Text style={[styles.subtitle, isDarkMode && styles.textDark]}>
-          Gestión Financiera Personal
-        </Text>
-      </View>
+      <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView behavior="padding" style={styles.container}>
+          <View style={styles.container} testID="app-base">
+            <AppRoot createServices={createServices} />
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#111111',
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 16,
-    color: '#333333',
-  },
-  textDark: {
-    color: '#FFFFFF',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
 });
 
 export default App;

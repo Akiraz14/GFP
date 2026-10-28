@@ -23,11 +23,11 @@ export const TEST_PARAMETERS: VerifierParameters = {
 };
 
 export const DEFAULT_ANSWERS: SecurityAnswerInput[] = [
-  { questionId: 'favorite-color', optionId: 'blue' },
-  { questionId: 'first-pet', optionId: 'dog' },
-  { questionId: 'favorite-sport', optionId: 'chess' },
-  { questionId: 'favorite-dish', optionId: 'ajiaco' },
-  { questionId: 'favorite-music-genre', optionId: 'salsa' },
+  { questionId: 'favorite-color', answer: 'Azul' },
+  { questionId: 'first-pet', answer: 'Perro' },
+  { questionId: 'favorite-sport', answer: 'Ajedrez' },
+  { questionId: 'favorite-dish', answer: 'Ajiaco santafereño' },
+  { questionId: 'favorite-music-genre', answer: 'Salsa' },
 ];
 
 export async function createMigratedDatabase(): Promise<SqlDatabase> {
@@ -73,7 +73,11 @@ export async function createAccount(
   for (const answer of answers) {
     securityAnswers.push({
       questionId: answer.questionId,
-      record: await createSecretVerifier(answer.optionId, 'option-id', deps),
+      record: await createSecretVerifier(
+        answer.answer,
+        'free-text-folded',
+        deps,
+      ),
     });
   }
   await database.transaction(executor =>

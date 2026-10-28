@@ -50,7 +50,7 @@ export function createNodeSqliteDatabase(): SqlDatabase {
   };
   const database = new DatabaseSync(':memory:');
   database.exec('PRAGMA foreign_keys = ON');
-  let depth = 0;
+  let queue: Promise<unknown> = Promise.resolve();
   const executor: SqlExecutor = {
     async execute(sql, params = []) {
       const statement = database.prepare(sql);
@@ -63,22 +63,22 @@ export function createNodeSqliteDatabase(): SqlDatabase {
   };
   return {
     execute: executor.execute,
-    async transaction(work) {
-      if (depth > 0) {
-        throw new Error('nested transactions are not supported');
-      }
-      depth++;
-      database.exec('BEGIN');
-      try {
-        const result = await work(executor);
-        database.exec('COMMIT');
-        return result;
-      } catch (error) {
-        database.exec('ROLLBACK');
-        throw error;
-      } finally {
-        depth--;
-      }
+    transaction(work) {
+      // Igual que op-sqlite: las transacciones de una conexión se encolan y se
+      // ejecutan de una en una.
+      const run = queue.then(async () => {
+        database.exec('BEGIN');
+        try {
+          const result = await work(executor);
+          database.exec('COMMIT');
+          return result;
+        } catch (error) {
+          database.exec('ROLLBACK');
+          throw error;
+        }
+      });
+      queue = run.catch(() => undefined);
+      return run;
     },
     close() {
       database.close();

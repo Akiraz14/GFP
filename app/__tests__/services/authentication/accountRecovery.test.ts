@@ -20,11 +20,11 @@ import {
 const MINUTE = 60_000;
 const NEW_PASSWORD = 'Nueva clave 9#';
 
-function answerFor(questionId: string, optionId?: string) {
+function answerFor(questionId: string, answer?: string) {
   const configured = DEFAULT_ANSWERS.find(
-    answer => answer.questionId === questionId,
+    candidate => candidate.questionId === questionId,
   );
-  return { questionId, optionId: optionId ?? configured?.optionId ?? '' };
+  return { questionId, answer: answer ?? configured?.answer ?? '' };
 }
 
 async function setup() {
@@ -39,11 +39,11 @@ async function setup() {
     }),
     'Luis1234!',
     [
-      { questionId: 'favorite-color', optionId: 'red' },
-      { questionId: 'first-pet', optionId: 'cat' },
-      { questionId: 'favorite-sport', optionId: 'tennis' },
-      { questionId: 'favorite-dish', optionId: 'pizza' },
-      { questionId: 'favorite-music-genre', optionId: 'rock' },
+      { questionId: 'favorite-color', answer: 'Rojo' },
+      { questionId: 'first-pet', answer: 'Gato' },
+      { questionId: 'favorite-sport', answer: 'Tenis' },
+      { questionId: 'favorite-dish', answer: 'Pizza' },
+      { questionId: 'favorite-music-genre', answer: 'Rock' },
     ],
   );
   let now = 1_000_000;
@@ -118,7 +118,7 @@ describe('account recovery with security questions (HU3)', () => {
     const questions = await challenge(service);
     const answers = [
       answerFor(questions[0]),
-      answerFor(questions[1], 'other-animal'),
+      answerFor(questions[1], 'Otra respuesta'),
     ];
     const result = await service.complete(
       'ana@example.com',
@@ -135,7 +135,29 @@ describe('account recovery with security questions (HU3)', () => {
     ).resolves.toBe(true);
   });
 
-  test.each(['missing', 'extra', 'unexpected', 'case-changed'])(
+  test('accepts written answers that differ only in accents, case or spaces (E03-D9, E03-D11)', async () => {
+    const { service } = await setup();
+    const questions = await challenge(service);
+    const result = await service.complete(
+      'ana@example.com',
+      questions.map(id => {
+        const configured = answerFor(id).answer;
+        return {
+          questionId: id,
+          answer: `  ${configured
+            .normalize('NFD')
+            .replace(/\p{M}/gu, '')
+            .toUpperCase()
+            .replace(/ /g, '   ')} `,
+        };
+      }),
+      NEW_PASSWORD,
+      NEW_PASSWORD,
+    );
+    expect(result).toEqual({ status: 'password_updated' });
+  });
+
+  test.each(['missing', 'extra', 'unexpected', 'altered'])(
     'rejects %s answers',
     async variant => {
       const { service } = await setup();
@@ -148,9 +170,9 @@ describe('account recovery with security questions (HU3)', () => {
         missing: valid.slice(0, 1),
         extra: [...valid, outside],
         unexpected: [valid[0], outside],
-        'case-changed': valid.map(answer => ({
+        altered: valid.map(answer => ({
           ...answer,
-          optionId: answer.optionId.toUpperCase(),
+          answer: `${answer.answer} x`,
         })),
       }[variant]!;
       await expect(
