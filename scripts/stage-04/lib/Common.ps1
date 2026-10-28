@@ -63,14 +63,22 @@ function Finish-Run {
 }
 function Stop-Blocked([string]$Id, [string]$Reason) { Record 'BLOCKED' $Id $Reason; Finish-Run }
 
-function Invoke-Logged([string]$Name, [string]$Dir, [string]$Command) {
+# El comando se ejecuta en un proceso propio y solo se espera a ese proceso: si se ejecutara
+# dentro de una funcion cuya salida se captura, PowerShell esperaria tambien a los procesos
+# que heredan la salida y siguen vivos (el demonio de Gradle), y no volveria nunca.
+function Invoke-Logged([string]$Name, [string]$Dir, [string]$Command, [int]$TimeoutMinutes = 60) {
   $log = Join-Path $script:Out "$Name.log"
   Set-Content -LiteralPath $log -Value "> [$Dir] $Command" -Encoding UTF8
   $start = Get-Date
-  Push-Location -LiteralPath $Dir
-  cmd /c "$Command >> `"$log`" 2>&1"
-  $code = $LASTEXITCODE
-  Pop-Location
+  $process = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', "$Command >> `"$log`" 2>&1") -WorkingDirectory $Dir -NoNewWindow -PassThru
+  $null = $process.Handle
+  if (-not $process.WaitForExit($TimeoutMinutes * 60000)) {
+    cmd /c "taskkill /PID $($process.Id) /T /F >nul 2>&1"
+    Check $Name $false "(sin terminar tras $TimeoutMinutes min; proceso detenido; $Name.log)"
+    return $false
+  }
+  $process.WaitForExit()
+  $code = $process.ExitCode
   $secs = [int]((Get-Date) - $start).TotalSeconds
   Check $Name ($code -eq 0) "(exit $code, ${secs}s, $Name.log)"
   return ($code -eq 0)
