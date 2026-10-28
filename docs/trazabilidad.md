@@ -15,7 +15,7 @@ criterio derivado figura en su columna «Origen».
 
 | Historia | Criterios | Etapa | Estado |
 |---|---|---|---|
-| HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; sin integrar en `main` |
+| HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
 | HU2 Iniciar sesión | CA01–CA11 | 04 | Pendiente |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Pendiente |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
@@ -52,8 +52,8 @@ modificar sus criterios literales. Detalle en `decisiones-etapa-03.md`.
 | Decisión | Efecto en HU1 | Criterios derivados | Estado |
 |---|---|---|---|
 | E03-D1 — asistente de tres pasos | Los campos de HU1 se distribuyen en tres pasos; «Registrar» queda en el último; «Limpiar» pide confirmación si hay datos; tras el registro se va al inicio de sesión | E03-W01 a E03-W10 | Definida; A-W1 a A-W6 aprobadas por el responsable |
-| E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1; correo, documento y celular forman un espacio de identificadores inequívoco | Obligatoriedad del celular en el paso 2; colisiones entre documento y celular; formatos de documento; celular canónico | Definida; A-ID1 a A-ID4 aprobadas por el responsable; implementación pendiente |
-| E03-D11 — respuestas escritas | Las respuestas de seguridad se escriben y se normalizan con `free-text-folded`; riesgo residual aceptado solo para una demostración académica controlada | E03-V10 | Definida por el responsable; implementación pendiente |
+| E03-D2 — celular obligatorio | El número celular con su código de país se valida como obligatorio, además de los campos de la lista de obligatorios de HU1; correo, documento y celular forman un espacio de identificadores inequívoco | Obligatoriedad del celular en el paso 2; colisiones entre documento y celular; formatos de documento; celular canónico | Definida; A-ID1 a A-ID4 aprobadas por el responsable; implementada (2026-10-26) e integrada en `main` (`14f2c88`) |
+| E03-D11 — respuestas escritas | Las respuestas de seguridad se escriben y se normalizan con `free-text-folded`; riesgo residual aceptado solo para una demostración académica controlada | E03-V10 | Definida por el responsable; implementada (2026-10-26) e integrada en `main` (`14f2c88`) |
 
 A-ID2 también condiciona HU2 (Etapa 04): el inicio de sesión con celular sin código de
 país solo se acepta si es inequívoco. E03-D11 (respuestas escritas, aprobada el 2026-10-25)
