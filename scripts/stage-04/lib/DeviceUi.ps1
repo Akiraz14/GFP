@@ -4,15 +4,32 @@
 Add-Type -AssemblyName System.Drawing
 $script:Metro = $null
 $script:ImeSettingChanged = $false
+# Cada llamada de adb de la interfaz se ejecuta en un proceso propio con un limite de tiempo:
+# si el emulador deja de responder, la ejecucion termina con BLOCKED en lugar de esperar siempre.
+$script:AdbTimeoutSeconds = 60
+$script:DeviceStalled = $false
+function Invoke-Adb([string]$Arguments, [string]$OutputFile = '') {
+  if ($script:DeviceStalled) { return '' }
+  $capture = if ($OutputFile) { "> `"$OutputFile`"" } else { "> `"$(Join-Path $script:Out 'adb-last-output.txt')`" 2>&1" }
+  $process = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', "$($script:Adb) $Arguments $capture") -NoNewWindow -PassThru
+  $null = $process.Handle
+  if (-not $process.WaitForExit($script:AdbTimeoutSeconds * 1000)) {
+    cmd /c "taskkill /PID $($process.Id) /T /F >nul 2>&1"
+    $script:DeviceStalled = $true
+    Stop-Blocked 'DEVICE-RESPONSIVE' "adb $(($Arguments -split ' ' | Select-Object -First 2) -join ' ') no termino en $($script:AdbTimeoutSeconds) s: el emulador dejo de responder; reinicielo con Cold Boot antes de repetir"
+  }
+  if ($OutputFile) { return '' }
+  return [string](Get-Content -LiteralPath (Join-Path $script:Out 'adb-last-output.txt') -Raw)
+}
 # ---------- Interfaz: uiautomator ----------
 $script:ScreenHeight = 1920
 $script:ScreenWidth = 1080
 function Get-Ui {
   for ($i = 0; $i -lt 5; $i++) {
-    $dump = & $Adb shell uiautomator dump /sdcard/gfp-ui.xml 2>&1 | Out-String
+    $dump = Invoke-Adb 'shell uiautomator dump /sdcard/gfp-ui.xml'
     if ($dump -match 'dumped to') {
       $local = Join-Path $Out 'ui-last.xml'
-      & $Adb pull /sdcard/gfp-ui.xml $local 2>&1 | Out-Null
+      $null = Invoke-Adb "pull /sdcard/gfp-ui.xml `"$local`""
       try { return [xml](Get-Content -LiteralPath $local -Encoding UTF8 -Raw) } catch { }
     }
     Start-Sleep -Milliseconds 700
@@ -56,19 +73,19 @@ function Test-Inside($Inner, $Outer) {
 function Swipe([string]$Direction) {
   $x = [int]($script:ScreenWidth / 2)
   $low = [int]($script:ScreenHeight * 0.75); $high = [int]($script:ScreenHeight * 0.35)
-  if ($Direction -eq 'up') { & $Adb shell input swipe $x $low $x $high 350 | Out-Null } else { & $Adb shell input swipe $x $high $x $low 350 | Out-Null }
+  if ($Direction -eq 'up') { $null = Invoke-Adb "shell input swipe $x $low $x $high 350" } else { $null = Invoke-Adb "shell input swipe $x $high $x $low 350" }
   Start-Sleep -Milliseconds 600
 }
 function U([string]$Text) { return [regex]::Unescape($Text) }
 function Get-ImeWindowBlock {
-  $windows = & $Adb shell dumpsys window windows 2>&1 | Out-String
+  $windows = Invoke-Adb 'shell dumpsys window windows'
   return ($windows -split 'Window #' | Where-Object { $_ -match 'Window\{[^}]*\sInputMethod\}' } | Select-Object -First 1)
 }
 # Estado real del teclado: la ventana InputMethod es visible (mViewVisibility=0x0 con superficie).
 # Se registran ademas mInputShown de InputMethodManagerService y los volcados completos.
 function Get-ImeState([string]$Name) {
   $block = Get-ImeWindowBlock
-  $ims = & $Adb shell dumpsys input_method 2>&1 | Out-String
+  $ims = Invoke-Adb 'shell dumpsys input_method'
   if ($Name) {
     $dir = Join-Path $Out 'ime-dumps'
     New-Item -ItemType Directory -Path $dir -Force | Out-Null
@@ -82,7 +99,7 @@ function Test-ImeShown { return (Get-ImeState '').Visible }
 # Tipo de teclado que recibio el IME para el ultimo campo enfocado: linea 'onActivate' del
 # teclado del emulador (Gboard) en logcat, filtrada por el paquete de la app.
 function Get-ImeEditorType {
-  $lines = & $Adb logcat -d -s AndroidIME 2>&1 | Out-String
+  $lines = Invoke-Adb 'logcat -d -s AndroidIME'
   $matches2 = [regex]::Matches($lines, 'onActivate\(\) : EditorInfo = Package = co\.gfpsas\.gestionfinanciera : Type = (\w+)')
   if ($matches2.Count -eq 0) { return '' }
   return $matches2[$matches2.Count - 1].Groups[1].Value
@@ -98,7 +115,7 @@ function Get-ImeTop {
 }
 function Hide-Keyboard {
   $state = Get-ImeState ''
-  if ($state.Visible -or $state.InputShown) { & $Adb shell input keyevent 4 | Out-Null; Start-Sleep -Milliseconds 700 }
+  if ($state.Visible -or $state.InputShown) { $null = Invoke-Adb 'shell input keyevent 4'; Start-Sleep -Milliseconds 700 }
 }
 # uiautomator sustituye cada unidad sustituta UTF-16 por '.', asi que la bandera (dos simbolos
 # indicadores regionales) llega como '....'; la bandera concreta se comprueba en Jest y en las capturas.
@@ -124,7 +141,7 @@ function Locate([scriptblock]$Finder) {
   }
   return $null
 }
-function Tap-Node($Node) { $c = Get-Center $Node; & $Adb shell input tap $c[0] $c[1] | Out-Null; Start-Sleep -Milliseconds 900 }
+function Tap-Node($Node) { $c = Get-Center $Node; $null = Invoke-Adb "shell input tap $($c[0]) $($c[1])"; Start-Sleep -Milliseconds 900 }
 function Tap-Text([string]$Text) {
   Hide-Keyboard
   $node = Locate { param($ui) Find-Text $ui $Text }
@@ -140,12 +157,12 @@ function Choose([string]$SelectLabel, [string]$OptionText) {
 }
 function Send-Text([string]$Value) {
   $escaped = $Value.Replace(' ', '%s')
-  & $Adb shell "input text '$escaped'" | Out-Null
+  $null = Invoke-Adb "shell `"input text '$escaped'`""
   Start-Sleep -Milliseconds 500
 }
 function Clear-Focused {
-  & $Adb shell input keyevent 123 | Out-Null
-  & $Adb shell input keyevent (@(67) * 40) | Out-Null
+  $null = Invoke-Adb 'shell input keyevent 123'
+  $null = Invoke-Adb ('shell input keyevent ' + ((@(67) * 40) -join ' '))
 }
 function Type-Into([string]$Label, [string]$Value, [switch]$Clear) {
   Hide-Keyboard
@@ -169,12 +186,12 @@ function Wait-Text([string]$Text, [int]$Seconds = 30) {
   return $false
 }
 function Screenshot([string]$Name) {
-  cmd /c "$Adb exec-out screencap -p > `"$(Join-Path $Out "$Name.png")`""
+  $null = Invoke-Adb 'exec-out screencap -p' (Join-Path $Out "$Name.png")
   return (Join-Path $Out "$Name.png")
 }
 function Restart-App {
-  & $Adb shell am force-stop $Pkg | Out-Null
-  & $Adb shell am start -n "$Pkg/.MainActivity" 2>&1 | Out-File (Join-Path $Out 'am-start.log') -Append -Encoding UTF8
+  $null = Invoke-Adb "shell am force-stop $Pkg"
+  Add-Content -LiteralPath (Join-Path $Out 'am-start.log') -Value (Invoke-Adb "shell am start -n $Pkg/.MainActivity") -Encoding UTF8
 }
 function Get-FocusedId($Ui) {
   $node = Get-Nodes $Ui | Where-Object { $_.class -eq 'android.widget.EditText' -and $_.focused -eq 'true' } | Select-Object -First 1
@@ -199,8 +216,6 @@ function Get-LineRows([string]$Png, $Bounds) {
   } finally { $bitmap.Dispose() }
 }
 
-
-$Rules     = Join-Path $Root 'hu1-document-rules.patch'
 function Run-As([string]$Command) { return (& $Adb shell "run-as $Pkg sh -c '$Command'" 2>&1 | Out-String).Trim() }
 function Db-State([string]$Name) {
   $listing = Run-As 'ls -l databases files/datastore shared_prefs 2>/dev/null'
@@ -252,7 +267,7 @@ function Initialize-Device([string]$Serial) {
   Note ('INFO dispositivo ' + ((Get-Content (Join-Path $script:Out 'device.txt')) -join ' | '))
   $size = (& $script:Adb shell wm size | Out-String)
   if ($size -match '(\d+)x(\d+)') { $script:ScreenWidth = [int]$Matches[1]; $script:ScreenHeight = [int]$Matches[2] }
-  $script:Cleanup += { & $script:Adb reverse --remove tcp:8081 2>&1 | Out-Null }
+  $script:Cleanup += { $null = Invoke-Adb 'reverse --remove tcp:8081' }
 }
 
 function Start-Metro([string]$AppDir) {

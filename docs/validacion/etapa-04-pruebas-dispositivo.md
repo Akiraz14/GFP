@@ -32,6 +32,10 @@ no cumplida, la ejecución se detiene) y `NOT RUN`. Código de salida: 0 sin fal
 minutos (HU2-CA06); el paso 4 la reinstala. Ninguno de los scripts hace commit, push ni cambia
 archivos versionados; cada uno comprueba al terminar que el estado de Git no cambió.
 
+Cada llamada de `adb` que maneja la interfaz tiene un límite de 60 s. Si el emulador deja de
+responder, el script registra `BLOCKED DEVICE-RESPONSIVE`, detiene Metro y termina; hay que
+reiniciar el emulador con *Cold Boot* antes de repetir la ejecución.
+
 ## Comprobaciones en dispositivo
 
 | ID | Criterio | Resultado esperado |
