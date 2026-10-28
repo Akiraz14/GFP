@@ -2,7 +2,7 @@ import type {
   SessionManager,
   UserSession,
 } from '../../../services/session/sessionManager';
-import { readOptionalText, readText, type SqlExecutor } from '../sqlDatabase';
+import { readText, type SqlExecutor } from '../sqlDatabase';
 import { OwnedRepository } from './ownedRepository';
 
 export type UserProfile = {
@@ -12,8 +12,8 @@ export type UserProfile = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneCountryCode: string | null;
-  phoneNumber: string | null;
+  phoneCountryCode: string;
+  phoneNumber: string;
 };
 
 export class UserProfileRepository extends OwnedRepository {
@@ -40,8 +40,8 @@ export class UserProfileRepository extends OwnedRepository {
       firstName: readText(row, 'first_name'),
       lastName: readText(row, 'last_name'),
       email: readText(row, 'email'),
-      phoneCountryCode: readOptionalText(row, 'phone_country_code'),
-      phoneNumber: readOptionalText(row, 'phone_number'),
+      phoneCountryCode: readText(row, 'phone_country_code'),
+      phoneNumber: readText(row, 'phone_number'),
     };
   }
 }

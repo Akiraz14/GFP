@@ -15,6 +15,7 @@ import {
   type ThrottlePolicy,
 } from './attemptThrottle';
 import { validateNewPassword, type PasswordViolation } from './passwordPolicy';
+import { serializedByDatabase } from '../databaseQueue';
 import {
   createSecretVerifier,
   verifySecret,
@@ -28,20 +29,6 @@ import {
 
 export const RECOVERY_CHALLENGE_TTL_MS = 15 * 60_000;
 export const UNKNOWN_IDENTIFIER_SUBJECT = 'unknown-identifier';
-
-// Una cola por base de datos: cada intento lee el contador que dejó el anterior, así
-// que los intentos simultáneos no pueden superar el límite.
-const recoveryQueues = new WeakMap<object, Promise<unknown>>();
-
-function serialized<T>(key: object, work: () => Promise<T>): Promise<T> {
-  const previous = recoveryQueues.get(key) ?? Promise.resolve();
-  const run = previous.then(work, work);
-  recoveryQueues.set(
-    key,
-    run.catch(() => undefined),
-  );
-  return run;
-}
 
 export type RecoveryStartResult =
   | { status: 'challenge'; questionIds: [string, string] }
@@ -99,7 +86,7 @@ export class AccountRecoveryService {
   }
 
   start(identifier: string): Promise<RecoveryStartResult> {
-    return serialized(this.dependencies.database, () =>
+    return serializedByDatabase(this.dependencies.database, () =>
       this.startSerialized(identifier),
     );
   }
@@ -110,7 +97,7 @@ export class AccountRecoveryService {
     newPassword: string,
     confirmation: string,
   ): Promise<RecoveryCompletionResult> {
-    return serialized(this.dependencies.database, () =>
+    return serializedByDatabase(this.dependencies.database, () =>
       this.completeSerialized(identifier, answers, newPassword, confirmation),
     );
   }
@@ -195,11 +182,7 @@ export class AccountRecoveryService {
         allCorrect = false;
         continue;
       }
-      const correct = await verifySecret(
-        answer?.optionId ?? '',
-        record,
-        engine,
-      );
+      const correct = await verifySecret(answer?.answer ?? '', record, engine);
       allCorrect = allCorrect && answer !== undefined && correct;
     }
     if (!allCorrect) {

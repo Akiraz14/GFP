@@ -15,9 +15,9 @@ autorización explícita.
 | G-07 | Tratamiento de navegaciones hacia pantallas de etapas futuras | Resuelta |
 | E03-D1 | Formulario único (texto) vs. asistente de 3 pasos (prototipo) | Definida por el responsable (2026-10-25): asistente de 3 pasos; A-W1 a A-W6 aprobadas por el responsable |
 | E03-D2 | Celular obligatorio u opcional | Definida por el responsable (2026-10-25): obligatorio; A-ID1 a A-ID4 aprobadas por el responsable |
-| E03-D3 | Criterio de usuario ya registrado | Resuelta; ampliada por A-ID1 a A-ID3 (implementación pendiente) |
-| E03-D4 | Contenido de `document_types` | Aprobada provisionalmente por el responsable (2026-10-25): CC, CE, PA y PPT; sin TI ni NIT (la app es solo para personas naturales); migración 2 sin cambios y desactivación del NIT en una migración posterior (pendiente de implementación); reglas de caracteres por tipo pendientes de verificación |
-| E03-D5 | Catálogo de preguntas de seguridad | Definida por el responsable (2026-10-25): se conservan las 10 preguntas y sus grupos; respuestas escritas de 3 a 100 puntos de código Unicode tras normalizar (E03-D11); opciones conservadas sin uso. Adaptación del código pendiente de autorización |
+| E03-D3 | Criterio de usuario ya registrado | Resuelta; ampliada por A-ID1 a A-ID3 (implementada el 2026-10-26) |
+| E03-D4 | Contenido de `document_types` | Aprobada provisionalmente por el responsable (2026-10-25): CC, CE, PA y PPT; sin TI ni NIT (la app es solo para personas naturales); migración 2 sin cambios y desactivación del NIT en la migración 3 (implementada el 2026-10-26); reglas de caracteres definitivas del 2026-10-27: CC, CE y PPT solo dígitos y PA letras y dígitos, sin longitud fija |
+| E03-D5 | Catálogo de preguntas de seguridad | Definida por el responsable (2026-10-25): se conservan las 10 preguntas y sus grupos; opciones conservadas sin uso. Respuestas escritas de 2 a 100 puntos de código Unicode tras normalizar (E03-D11); el mínimo pasó de 3 a 2 por decisión del responsable del 2026-10-26. Código adaptado (2026-10-26) |
 | E03-D6 | Definición de "preguntas similares" | Resuelta (implementada) |
 | E03-D7 | Caracteres permitidos en nombres | Resuelta |
 | E03-D8 | Lista de códigos de país | Resuelta |
@@ -27,7 +27,7 @@ autorización explícita.
 
 ## G-07 — Tratamiento de navegaciones hacia pantallas de etapas futuras
 
-- **Requisito:** HU1 exige que «Cancelar» regrese «a la vista de inicio de sesión», que pertenece a HU2 (Etapa 04). `trazabilidad.md` ya prevé HU1-CA18 como parcial, con la prueba de que se emite la navegación.
+- **Requisito:** HU1 exige que «Cancelar» regrese «a la vista de inicio de sesión», que pertenece a HU2 (Etapa 04). `trazabilidad.md` ya prevé HU1-CA18 como parcial, con la prueba de que se emite la navegación. Revisión del 2026-10-27: el criterio exige regresar a la vista de inicio de sesión, no autenticar; se verifica con la pantalla provisional de G-07 y se repite como regresión en E04.
 - **Alternativas:** (a) no navegar hasta que exista el destino; (b) registrar desde el principio las rutas de todas las pantallas, con una pantalla provisional para los destinos futuros; (c) implementar antes la pantalla de destino.
 - **Decisión:** (b). Un registro central de rutas declara los nombres de las rutas de HU1 a HU10. Una ruta cuya historia no esté implementada apunta a una pantalla provisional mínima, sin funcionalidad, que se sustituye al implementar la historia. Las pruebas verifican que el botón emite la navegación hacia la ruta correcta. (a) incumpliría el criterio de HU1 en tiempo de ejecución y (c) adelantaría trabajo de otra etapa.
 - **Impacto y pruebas:** criterios parciales según `trazabilidad.md`; prueba de navegación en E03 y verificación definitiva en E04.
@@ -63,9 +63,9 @@ pasos 2 y 3; «Limpiar» y «Cancelar» en los tres pasos; «Registrar» solo en
 
 | Paso | Validación | Mensaje |
 |---|---|---|
-| 1 | Obligatorios; tipo de documento del maestro `document_types`; nombres y apellidos sin símbolos ni números (E03-D7) | «Error en los campos ingresados», cerca del campo |
-| 2 | Obligatorios, incluido el celular (E03-D2); código de país de la lista (E03-D8); correo con `@` y un dominio; contraseña de 8 a 128 caracteres con al menos 1 letra, 1 número y 1 símbolo (E03-D10) | «Verificar correo» para el correo; «Error en los campos ingresados» para el resto |
-| 3 | 5 preguntas distintas y no similares (E03-D6), cada una con una respuesta escrita de 3 a 100 puntos de código tras la normalización `free-text-folded` (E03-D5, E03-D11) | «Error en los campos ingresados», cerca del campo |
+| 1 | Obligatorios; tipo de documento del maestro `document_types`; documento con la regla de su tipo (CC solo dígitos; CE, PA y PPT letras y dígitos; E03-D4); nombres y apellidos sin símbolos ni números (E03-D7) | «Error en los campos ingresados», cerca del campo, seguido de la causa concreta (por ejemplo, «Para la cédula de ciudadanía, ingresa solo números.») |
+| 2 | Obligatorios, incluido el celular (E03-D2); código de país de la lista (E03-D8); correo con `@` y un dominio; contraseña de 8 a 128 caracteres con al menos 1 letra, 1 número y 1 símbolo (E03-D10) | «Verificar correo» para el correo; «Error en los campos ingresados» para el resto; en ambos casos seguidos de la causa concreta. La contraseña muestra además, desde el inicio, la lista de requisitos de `passwordPolicy` y marca los cumplidos |
+| 3 | 5 preguntas distintas y no similares (E03-D6), cada una con una respuesta escrita de 2 a 100 puntos de código tras la normalización `free-text-folded` (E03-D5, E03-D11) | «Error en los campos ingresados», cerca del campo, seguido de la causa (por ejemplo, «Ingresa una respuesta de al menos 2 caracteres.») |
 | Final del paso 2 | Comprobación previa de usuario ya registrado con documento, celular y correo (A-W3) | «El usuario se encuentra registrado» |
 | Al registrar | Todas las validaciones de los pasos 1 a 3 y comprobación definitiva y atómica de usuario ya registrado (A-W3) | «El usuario se encuentra registrado» |
 
@@ -189,18 +189,18 @@ formato, longitud ni dígito de verificación del NIT, y se retira el análisis 
 (aplazamiento de la validación y recomendación de exigir el dígito). El identificador se
 conserva para mantener la trazabilidad.
 
-### Implementación pendiente
+### Implementación (2026-10-26)
 
-Estas decisiones no están implementadas. Su implementación, junto con sus pruebas, es un
-cambio de código que requiere autorización y precede a la UI de HU1:
+Implementadas con autorización del responsable, con sus pruebas (`trazabilidad.md`,
+«HU1 — evidencias de la implementación»):
 
-| Elemento | Situación actual | Cambio previsto |
-|---|---|---|
-| `users` (migración 1) | `phone_country_code` y `phone_number` opcionales; sin documento normalizado ni celular canónico | Columnas `NOT NULL`; `document_number_normalized` único; `phone_e164` único |
-| Espacio de identificadores (A-ID1) | Sin restricción entre documento y celular | Restricción en la base de datos, con disparadores que rechacen un documento igual al celular de otra cuenta y viceversa, comprobada en la transacción de registro |
-| `normalizeDocumentNumber()` | Solo recorta y pasa a mayúsculas | Regla A-ID3 |
-| `findUserIdByIdentifier()` | Documento primero y celular por número nacional; un número ambiguo no resuelve | Reglas de A-ID2, con el resultado «se necesita el código de país» |
-| Pruebas | `userIsolation.test.ts` cubre el comportamiento actual | Colisiones entre documento y celular, formatos de documento, celular canónico y ambiguo, `NOT NULL` y registros simultáneos |
+| Elemento | Implementación |
+|---|---|
+| `users` (migración 1) | `document_number` original y `document_number_normalized` único; `phone_country_code`, `phone_number` y `phone_e164` `NOT NULL`, con `phone_e164` único y comprobaciones de formato |
+| Espacio de identificadores (A-ID1) | Disparadores `tr_users_identifier_collision_*` que rechazan un documento igual al celular de otra cuenta y viceversa; el repositorio lo comprueba antes en la transacción |
+| `normalizeDocumentNumber()` | Regla A-ID3, en `services/authentication/identifiers.ts` |
+| `lookupIdentifier()` y `findUserIdByIdentifier()` | Reglas de A-ID2, con el resultado `phone_country_code_required` para un número nacional ambiguo |
+| Migración 3 | Marca el NIT como inactivo y añade disparadores que rechazan tipos inactivos; la migración 2 no cambia (suma de comprobación fijada en `migrator.test.ts`) |
 
 ## E03-D3 — Criterio de usuario ya registrado
 
@@ -214,7 +214,7 @@ cambio de código que requiere autorización y precede a la UI de HU1:
 - **Requisito:** HU1 exige poblar el selector con el maestro `document_types` (HU1-CA02 y CA03) e indica en su lista de campos «Ingresar documento (DNI/NIT)». No enumera los tipos ni define su formato; el glosario define DNI como el documento nacional de identidad de un ciudadano en su país.
 - **Aprobada provisionalmente por el responsable (2026-10-25): CC, CE, PA y PPT.** La aplicación se dirige exclusivamente a personas naturales; no se contempla el registro de empresas ni de personas jurídicas, así que el NIT se excluye. La aprobación del catálogo no cierra las reglas de validación por tipo. El identificador estable es `document_types.code` (clave primaria), que se guarda en `users.document_type_code`; el nombre se muestra en el selector.
 
-| Código | Nombre visible | Origen | Caracteres por tipo (recomendación pendiente de verificación; no se aplica) |
+| Código | Nombre visible | Origen | Caracteres por tipo (recomendación inicial del 2026-10-25; la regla aplicada está en la tabla siguiente) |
 |---|---|---|---|
 | `CC` | Cédula de ciudadanía | Interpretación de «DNI» (HU1 y glosario) en el contexto colombiano del proyecto (+57 en E03-D8, formato monetario de HU6) | Solo dígitos |
 | `CE` | Cédula de extranjería | Recomendación nueva | Letras y dígitos |
@@ -223,7 +223,15 @@ cambio de código que requiere autorización y precede a la UI de HU1:
 
 - **Exigido por HU1:** un selector poblado con el maestro (HU1-CA02 y CA03) y la obligatoriedad del tipo y del número (HU1-CA01). `CC` es la interpretación de «DNI»; `CE`, `PA` y `PPT` son extensiones aprobadas para residentes extranjeros en Colombia.
 - **Discrepancia con el texto de HU1 (C-04), resuelta (2026-10-25):** la lista de campos del documento fuente de HU1 dice «Ingresar documento (DNI/NIT)». La especificación de la Etapa 03 describe el campo sin el NIT (sección E03-D1). El documento fuente queda fuera del repositorio y no se modifica (D-FUENTES), así que conserva la mención; prevalece la decisión registrada. Los criterios HU1-CA01 a HU1-CA19 no mencionan el NIT y no cambian.
-- **Reglas de caracteres por tipo:** **pendientes de verificación.** No se encontró una fuente oficial que las respalde para cada tipo, así que no se presentan como reglas oficiales ni se aplican. Evidencia que falta: la especificación oficial del formato de cada documento (Registraduría Nacional para la CC, Migración Colombia para la CE y el PPT, y el formato del pasaporte). Hasta verificarlas, la única regla aplicable es la técnica: tras A-ID3 solo quedan letras y dígitos, de 1 a 30 caracteres (límite del esquema), y cualquier otro carácter se rechaza con «Error en los campos ingresados».
+- **Reglas de caracteres por tipo (decisión definitiva del 2026-10-27, E03-V06):** HU1 captura un identificador; no verifica su autenticidad ante las autoridades. Se aplica la regla más estricta que respaldan las fuentes en cuanto al juego de caracteres y no se impone longitud, porque ninguna fuente fija una longitud general del documento. Rige el límite técnico de la app (30 caracteres normalizados y 60 escritos).
+
+| Código | Regla aplicada | Fuentes y alcance | Certeza y límites |
+|---|---|---|---|
+| `CC` | Solo dígitos `0-9` | **Regla oficial de identificación:** Registraduría, Resolución 3571 de 2003, art. 1 («10 dígitos numéricos»; estructura «estrictamente numérica») y art. 6 (quien ya tenía cédula conserva su número). **Especificación sectorial:** MinSalud, Circular 24 de 2019 (RUAF-ND): numérico, longitud 10 | Juego de caracteres confirmado. Longitud no impuesta: los números anteriores al NUIP son más cortos y la longitud 10 de la circular es la del campo de ese sistema |
+| `CE` | Solo dígitos `0-9` | **Especificación sectorial oficial:** MinSalud, Circular 24 de 2019, para el certificado de nacido vivo y el de defunción en RUAF-ND: «Numérico», longitud 6. **Convención privada:** la guía de Verifik describe números de 6 o 7 dígitos. No se encontró una norma de Migración Colombia sobre el formato del número | Juego de caracteres respaldado por una especificación oficial sectorial y coherente con la convención privada; no hay fuente que muestre letras. La longitud 6 es la de ese sistema y la guía privada la contradice (6 o 7), así que no se impone |
+| `PA` | Letras y dígitos (regla técnica común) | **Regla oficial de expedición:** Cancillería, preguntas frecuentes: el número del pasaporte electrónico y con zona de lectura mecánica «es alfanumérico, contiene letras y números». **Especificación sectorial:** Circular 24 de 2019: «Alfanumérico», longitud 16 para el pasaporte de extranjeros. **Referencia internacional:** OACI Doc 9303: el número lo asigna cada Estado emisor; la zona de lectura mecánica lo codifica con `A-Z`, `0-9` y `<` en 9 posiciones | Juego de caracteres confirmado (letras y números). No se aplican la regla ni las 9 posiciones de la zona de lectura mecánica, porque describen la codificación en esa zona y no el número que escribe el usuario; tampoco la longitud 16 del sistema sectorial |
+| `PPT` | Solo dígitos `0-9` | **Especificación sectorial oficial:** MinSalud, Resolución 572 de 2022, art. 2, para las bases de datos del Sistema de Protección Social: número «Numérico» de 1 a 8 caracteres; los considerandos indican que Migración Colombia anunció que el cupo podía crecer (antes eran 7). **Documento:** Migración Colombia, Resolución 2289 de 2021, arts. 2 y 3: el PPT lleva «el número del PPT asignado al titular» y, en el reverso, una «numeración alfanumérica de seguimiento consecutivo», que es otro dato; no define el formato del número y su art. 13 declara orientadores los aspectos técnicos. **Convención privada:** Verifik, hasta 7 dígitos | Juego de caracteres respaldado por la especificación oficial sectorial, basada en información de Migración Colombia. La longitud no se impone porque el máximo de 8 es el de esos sistemas y la propia fuente prevé que crezca. El PPT no es un pasaporte ni el PEP |
+La normalización A-ID3 no cambia: NFC, sin espacios, puntos ni guiones, en mayúsculas, con los ceros iniciales y el valor original conservados. La reserva que queda es documental: CE y PPT se apoyan en especificaciones oficiales sectoriales y no en una norma de Migración Colombia sobre el formato del número; si esa norma se publica, la regla se revisa.
 - **Compatibilidad:** el número normalizado es único sin importar el tipo, porque HU2 inicia sesión solo con el número (E03-D3, A-ID1 y A-ID3); ningún tipo propuesto usa espacios, puntos ni guiones para distinguir documentos. Las reglas por tipo se definen en el código, indexadas por `code`, sin cambiar el esquema del catálogo.
 - **Tarjeta de identidad (TI) — excluida provisionalmente por el responsable (2026-10-25)** mientras el requisito no defina el registro de menores. La TI es el documento de los menores de edad, y ni HU1 ni ningún documento del proyecto establece que el sistema los admita; incluirla supondría decidir que la app registra menores, con implicaciones sobre el tratamiento de sus datos personales que requerirían revisión. Si el requisito llega a definirlo, la TI se añade al catálogo antes de la primera entrega o en una migración nueva.
 - **Otros tipos no propuestos:** registro civil y permiso especial de permanencia, por las mismas razones de alcance; se añadirían solo por decisión del responsable.
@@ -256,9 +264,9 @@ cambio de código que requiere autorización y precede a la UI de HU1:
 - **Estabilidad y ambigüedad:** 8 de las 10 preguntas son de preferencia y su respuesta puede cambiar. Las preguntas se redactaron para responder con opciones; con texto, algunas admiten respuestas de distinto nivel de detalle (por ejemplo, «Europa» o «Francia» en `dream-destination`, «Bus» o «Bus escolar» en `school-transport`), lo que puede hacer fallar la recuperación aunque la persona recuerde su elección. Es un riesgo de uso conocido; las preguntas no se cambian.
 - **Opciones del catálogo (decisión del responsable, 2026-10-25):** la tabla `security_question_options` y sus datos de la migración 2 se conservan por compatibilidad con las migraciones y los datos del proyecto, pero no forman parte del flujo funcional aprobado: no se usan en las respuestas escritas, no se eliminan, no se renombran sus identificadores y la migración 2 no se modifica. Sustituye a la nota anterior que dejaba su retirada para la implementación. Se retira también la recomendación de renombrar `avena`.
 - **Compatibilidad del esquema:** el esquema no exige las opciones para guardar una respuesta escrita: `security_answers` referencia `security_questions` (no las opciones) y su columna `normalization` admite `free-text-folded`. La dependencia de las opciones está en el código (siguiente punto).
-- **Inconsistencia registrada entre la documentación y el código de la Etapa 02:** el código vigente implementa respuestas seleccionables (C-03): `SecurityAnswerInput.optionId`, la violación `unknown_option` de `validateRegistrationAnswers()`, la verificación `answer?.optionId` de `AccountRecoveryService.complete()` y sus pruebas. La documentación de HU1 describe ahora respuestas escritas. **Impacto:** el flujo de respuestas escritas no puede completarse con ese código. Adaptar esos tipos, la validación del paso 3, la verificación de la recuperación (también de HU3, Etapa 05) y sus pruebas es una tarea futura que requiere autorización expresa; la normalización `free-text-folded` y el valor del esquema ya existen. Mientras no se autorice, el código no refleja E03-D11.
+- **Adaptación del código de la Etapa 02 (resuelta el 2026-10-26):** `SecurityAnswerInput` lleva ahora la respuesta escrita (`answer`), `validateRegistrationAnswers()` valida la longitud en lugar de las opciones y `AccountRecoveryService.complete()` verifica la respuesta escrita con la normalización guardada. Las pruebas de la recuperación (HU3) se adaptaron y siguen pasando.
 - **Desacoplamiento:** el catálogo vive en `security_questions`; la autenticación usa `question_id` y `similarity_group` y no contiene textos de preguntas. Una pregunta se retira con `is_active = 0` sin borrar las respuestas de quienes ya la configuraron.
-- **Longitud de las respuestas (decisión del responsable, 2026-10-25):** de 3 a 100 puntos de código Unicode, ambos incluidos, contados después de la normalización `free-text-folded` (la misma unidad que E03-D7 y E03-D10); una respuesta vacía o fuera de ese rango se rechaza con «Error en los campos ingresados».
+- **Longitud de las respuestas (decisión del responsable, 2026-10-25; mínimo modificado el 2026-10-26):** de 2 a 100 puntos de código Unicode, ambos incluidos (el mínimo era 3 hasta el 2026-10-26), contados después de la normalización `free-text-folded` (la misma unidad que E03-D7 y E03-D10); una respuesta vacía o fuera de ese rango se rechaza con «Error en los campos ingresados».
 
 ## E03-D11 — Respuestas de las preguntas de seguridad y riesgo residual
 
@@ -294,7 +302,7 @@ artificial sin ampliar el alcance. No convierten las preguntas en una verificaci
 | Control existente y verificado | Serialización de `start()` y `complete()` por base de datos (`a592e1b`) | Implementado, con pruebas de regresión |
 | Control existente y verificado | Reto persistente de 2 preguntas durante 15 minutos | Implementado |
 | Control existente y verificado | Resultado único («Datos ingresados incorrectos») que no indica qué respuesta falló; se verifican siempre las dos | Implementado |
-| Control existente y verificado | Verificadores PBKDF2 con sal propia por respuesta; nada en texto plano | Implementado para respuestas con opciones; las respuestas escritas requieren el cambio de código descrito en E03-D5 |
+| Control existente y verificado | Verificadores PBKDF2 con sal propia por respuesta; nada en texto plano | Implementado para respuestas escritas (`free-text-folded`); verificado en Jest y en la base cifrada del emulador (2026-10-26) |
 | Riesgo conocido | El bloqueo depende de la hora del dispositivo (`remainingLockMs` compara con `Date.now()`): adelantar el reloj lo anula, así que quien tiene el dispositivo no tiene un límite real de intentos | Abierto |
 | Riesgo conocido | No hay protección suficiente contra automatización: los controles anteriores son los únicos y dependen del reloj | Abierto |
 | Riesgo conocido | Con el archivo de la base y su clave, las respuestas se prueban fuera de línea | Abierto |
@@ -302,13 +310,13 @@ artificial sin ampliar el alcance. No convierten las preguntas en una verificaci
 | Riesgo conocido | Respuestas conocidas, adivinables, cambiantes u olvidadas; preguntas redactadas para opciones (E03-D5) | Abierto |
 | Mitigación futura propuesta | Combinar la hora del sistema con un reloj monótono en el límite de intentos | No implementada; cambio de código que requiere autorización |
 | Mitigación futura propuesta | Mecanismo de mayor garantía: código de recuperación de alta entropía mostrado una vez al registrarse, o un canal verificado si algún día existe un servidor | Fuera del alcance actual; requiere modificar HU1 y HU3 |
-| Prueba pendiente | Pruebas de registro y recuperación con respuestas escritas (normalización, respuesta vacía, longitud de 3 a 100 puntos de código, tildes, mayúsculas y espacios) | Tras autorizar la implementación |
-| Prueba pendiente | P-D2 comprueba NFC, `\p{L}`, `\p{M}` y `\p{Nd}`, pero no `normalize('NFD')`, que usa `free-text-folded`; la comprobación en Hermes debe incluirlo | Pendiente; el procedimiento de P-D2 no se modifica en esta tarea |
-| Prueba pendiente | P-D1 y ejecución del módulo nativo en un dispositivo | Pendiente (Etapa 02) |
+| Prueba ejecutada (2026-10-26) | Pruebas de registro y recuperación con respuestas escritas (normalización, respuesta vacía, longitud de 2 a 100 puntos de código con 1, 2 y 100 en NFC y NFD, tildes, mayúsculas y espacios; recuperación HU3 con «Te») | Pasan en Jest (216 pruebas, 2026-10-27); respuesta de 1 carácter rechazada y «Te» aceptada en el emulador (`hu1-fixes2-20261027-144924`) |
+| Prueba ejecutada (2026-10-26) | P-D2 ampliada con `normalize('NFD')` y el plegado `free-text-folded` en Hermes | 15 PASS en el emulador API 29 (paquete de evidencias `GFP-e03-evidencias`, carpeta `p-d2-20261026-150452/`, fuera del repositorio). El procedimiento manual de P-D2 de la Etapa 02 no se modificó |
+| Prueba pendiente | P-D1 y ejecución del módulo nativo en un dispositivo físico | Aplazada por el responsable hasta la Etapa 05 o 06 (2026-10-27); el módulo nativo ya se ejecutó en emuladores |
 
 **Consecuencias:**
 
-- El paso 3 pide una respuesta escrita por pregunta, de 3 a 100 puntos de código tras normalizar (E03-D5); una respuesta vacía o fuera de ese rango se rechaza con «Error en los campos ingresados».
+- El paso 3 pide una respuesta escrita por pregunta, de 2 a 100 puntos de código tras normalizar (E03-D5); una respuesta vacía o fuera de ese rango se rechaza con «Error en los campos ingresados» seguido de la causa.
 - La normalización `free-text-folded` (NFC, eliminación de tildes y diacríticos, minúsculas, espacios internos reducidos a uno y sin espacios externos) hace iguales «Bogotá» y «bogota». También iguala «ñ» y «n», porque elimina la virgulilla. No elimina la puntuación: «D.C.» y «DC» son distintas. La normalización no cambia.
 - HU3 (Etapa 05) recibirá respuestas escritas con la misma normalización (E05-D3).
 - El código de la Etapa 02 debe adaptarse (E05-D3 y la inconsistencia registrada en E03-D5).
@@ -364,9 +372,9 @@ controlada (E03-D11). Clasificación de las fuentes:
 | Clase | Contenido |
 |---|---|
 | Requisito literal de HU1 | Campos, botones y los 19 criterios HU1-CA01 a CA19 (`trazabilidad.md`) |
-| Decisión aprobada por el responsable | E03-D1 y E03-D2; A-W1 a A-W9, con sus textos; A-ID1 a A-ID4; E03-D4 (catálogo provisional CC, CE, PA y PPT, sin TI ni NIT, con desactivación del NIT en una migración posterior y selector de tipos activos); E03-D5 (preguntas conservadas, respuestas de 3 a 100 puntos de código, opciones conservadas sin uso); E03-D11; alcance de las migraciones (aclaración del 2026-10-25); textos de interfaz aprobados |
+| Decisión aprobada por el responsable | E03-D1 y E03-D2; A-W1 a A-W9, con sus textos; A-ID1 a A-ID4; E03-D4 (catálogo provisional CC, CE, PA y PPT, sin TI ni NIT, con desactivación del NIT en una migración posterior y selector de tipos activos); E03-D5 (preguntas conservadas, respuestas de 2 a 100 puntos de código desde el 2026-10-26, opciones conservadas sin uso); E03-D11; alcance de las migraciones (aclaración del 2026-10-25); textos de interfaz aprobados |
 | Decisión técnica resuelta, respaldada por los requisitos | G-07; E03-D3; E03-D6 a E03-D10 |
-| Pendiente de decisión o de evidencia | Reglas de caracteres por tipo (E03-D4, pendientes de verificación); criterio E03-V06 |
+| Reserva documental | Norma de Migración Colombia sobre el formato del número de CE y PPT, no publicada; las reglas aplicadas se apoyan en especificaciones oficiales sectoriales (E03-D4) |
 
 ### Flujo del asistente
 
@@ -384,26 +392,26 @@ CA19). Distribución, validaciones por paso y mensajes: sección E03-D1.
 
 | Necesidad | Regla | Estado |
 |---|---|---|
-| Creación atómica | `IdentityRepository.createAccount()` se invoca dentro de `database.transaction()`; un fallo revierte usuario, credencial y respuestas | Implementado en el repositorio; la invocación transaccional desde HU1 está pendiente (revisión consolidada, `decisiones.md`) |
-| Unicidad respaldada por la base | Índices únicos de documento, correo y celular; documento normalizado (A-ID3) y celular E.164 (A-ID2) únicos; colisión documento–celular rechazada por disparadores (A-ID1); una violación de restricción por un registro simultáneo se traduce en «El usuario se encuentra registrado» | Índices actuales implementados; A-ID1 a A-ID3 aprobados, implementación pendiente |
-| Celular obligatorio | Código de país, número nacional y canónico `NOT NULL` (A-ID4) | Aprobado, implementación pendiente |
-| Migraciones | **Migración 1:** se permite modificarla antes de la primera entrega para incorporar la obligatoriedad del celular en el esquema y los demás cambios de A-ID1 a A-ID4 (A-ID4). **Migración 2:** se conserva sin modificar, con sus datos, sus preguntas y las opciones de respuesta, por compatibilidad (E03-D4, E03-D5). **Migración posterior:** marca el NIT como inactivo (E03-D4). Aclaraciones del responsable del 2026-10-25; no autorizan modificar código ni bases de datos | Decisión documentada; cambios pendientes de autorización |
-| Secretos | Contraseña y respuestas solo como verificadores PBKDF2 con sal propia (E02-D1, HU1-CA06 y CA12); las respuestas, normalizadas con `free-text-folded` (E03-D11); nunca en registros, mensajes ni almacenamiento temporal; descartados de la memoria al terminar (E03-W08) | Verificadores implementados; respuestas escritas y manejo en la UI pendientes |
+| Creación atómica | `IdentityRepository.createAccount()` se invoca dentro de `database.transaction()`; un fallo revierte usuario, credencial y respuestas; los registros se serializan por base de datos | Implementado y probado (2026-10-26) |
+| Unicidad respaldada por la base | Índices únicos de documento, correo y celular; documento normalizado (A-ID3) y celular E.164 (A-ID2) únicos; colisión documento–celular rechazada por disparadores (A-ID1); una violación de restricción por un registro simultáneo se traduce en «El usuario se encuentra registrado» | Implementado y probado; colisión verificada en emulador (2026-10-26) |
+| Celular obligatorio | Código de país, número nacional y canónico `NOT NULL` (A-ID4) | Implementado y probado (2026-10-26) |
+| Migraciones | **Migración 1:** se permite modificarla antes de la primera entrega para incorporar la obligatoriedad del celular en el esquema y los demás cambios de A-ID1 a A-ID4 (A-ID4). **Migración 2:** se conserva sin modificar, con sus datos, sus preguntas y las opciones de respuesta, por compatibilidad (E03-D4, E03-D5). **Migración posterior:** marca el NIT como inactivo (E03-D4). Aclaraciones del responsable del 2026-10-25; no autorizan modificar código ni bases de datos | Implementado (2026-10-26): migración 1 modificada, migración 3 creada, migración 2 sin cambios |
+| Secretos | Contraseña y respuestas solo como verificadores PBKDF2 con sal propia (E02-D1, HU1-CA06 y CA12); las respuestas, normalizadas con `free-text-folded` (E03-D11); nunca en registros, mensajes ni almacenamiento temporal; descartados de la memoria al terminar (E03-W08) | Implementado; verificado en Jest y en el emulador (2026-10-26) |
 | Aislamiento de cuentas | El registro no abre una sesión (`SessionManager`) ni lee datos privados; la sesión la crea solo el inicio de sesión de HU2 tras autenticar | Regla de diseño |
-| Apertura de la base | Se abre y se verifica al iniciar la app; si falla, se bloquean las funciones que dependen de ella y no se borra, reinicializa ni recrea (A-W9) | Decisión aprobada; implementación pendiente |
+| Apertura de la base | Se abre y se verifica al iniciar la app; si falla, se bloquean las funciones que dependen de ella y no se borra, reinicializa ni recrea (A-W9) | Implementado; apertura correcta verificada en emulador, fallo probado en Jest (2026-10-26) |
 
 ### Dependencias de HU1 y reservas de la Etapa 02
 
 | Reserva | Relación con HU1 | ¿Bloquea HU1? | Momento de resolución |
 |---|---|---|---|
 | Entropía de las preguntas (E03-D11) | Decidida: respuestas escritas con riesgo residual aceptado solo para la demostración académica. El riesgo sigue abierto | No como decisión. Implementarla exige adaptar código de la Etapa 02 (E03-D5) | Riesgo documentado; revisión obligatoria antes de cualquier distribución |
-| P-D2 — NFC y `\p{…}` en Hermes | La contraseña se normaliza con NFC; la validación de nombres (HU1-CA04, E03-D7) usa `\p{L}` y `\p{M}`; las respuestas escritas usan `normalize('NFD')` y `\p{M}`, y P-D2 no comprueba NFD | Bloquea la validación de nombres y la normalización de respuestas: un fallo cambiaría su implementación | Al empezar la implementación, antes de la UI, incluyendo NFD |
-| P-D3 y ejecución del módulo nativo (E02-C8) | HU1 es la primera historia que abre la base y usa `GfpCrypto` en ejecución (primera ejecución, generación de la clave, BLOB de `op-sqlite`) | No bloquea el inicio; sí la verificación de HU1 en el emulador | Durante la Etapa 03, antes de su cierre |
-| P-D1 — calibración de PBKDF2 | El registro deriva 6 verificadores; el tiempo de espera depende de las iteraciones (A-W8) | No: el parámetro está versionado | Antes del cierre de la Etapa 03 (E02-D1) |
-| P-D7 — permiso `INTERNET` | HU1 no usa la red | No | Reserva documentada (E02-D7) |
+| P-D2 — NFC y `\p{…}` en Hermes | La contraseña se normaliza con NFC; la validación de nombres (HU1-CA04, E03-D7) usa `\p{L}` y `\p{M}`; las respuestas escritas usan `normalize('NFD')` y `\p{M}` | Ya no: ejecutada | Verificada en emulador API 29 el 2026-10-26, incluida NFD (15 PASS) |
+| P-D3 y ejecución del módulo nativo (E02-C8) | HU1 es la primera historia que abre la base y usa `GfpCrypto` en ejecución | No | Módulo nativo y `op-sqlite` ejecutados en emulador durante el registro (2026-10-26); P-D3 verificada en `emulator-5554` el 2026-10-27 (paquete de evidencias `GFP-e03-evidencias`, carpeta `hu1-closure-20261027-160501/`, fuera del repositorio) |
+| P-D1 — calibración de PBKDF2 | El registro deriva 6 verificadores; el tiempo de espera depende de las iteraciones (A-W8) | No: el parámetro está versionado | Aplazada por el responsable hasta la Etapa 05 o 06 (2026-10-27); no bloquea el cierre de HU1 en emuladores |
+| P-D7 — permiso `INTERNET` | HU1 no usa la red | No | Diferida: exige el flujo de OCR de HU7 (Etapa 10) en un Release sin `INTERNET` (E02-D7) |
 | E02-D8 — umbrales del OCR | Pertenece a HU7 (Etapa 10) | No | Etapa 10 |
 | Keystore sin respaldo por hardware demostrado | Protege la clave de la base donde se guardarán los datos de HU1; no cambia el diseño | No | Reserva documentada; no se afirma protección por hardware |
-| E02-C6 parcial | Sus pendientes son P-D1, P-D7 y E02-D8 | No | Parcial hasta que se resuelvan; P-D1 antes del cierre de la Etapa 03 |
+| E02-C6 parcial | Sus pendientes son P-D1, P-D7 y E02-D8 | No | Parcial hasta que se resuelvan; P-D1 aplazada hasta la Etapa 05 o 06 (2026-10-27) |
 
 Ninguna reserva se da por resuelta.
 
@@ -416,10 +424,10 @@ saber si un identificador ya existe. El mensaje es literal de HU1 y HU3 ya lo pe
 El responsable formalizó el cierre de la revisión documental de la Etapa 03
 (E03-REVISION). **El cierre es solo documental: no autoriza ni inicia HU1.**
 
-- **Decisiones aprobadas:** asistente de tres pasos (E03-D1) con A-W1 a A-W9 y sus textos; celular obligatorio (E03-D2) y espacio de identificadores A-ID1 a A-ID4, con la posibilidad de modificar la migración 1 antes de la primera entrega; app solo para personas naturales, con CC, CE, PA y PPT, sin TI ni NIT (E03-D4; A-ID5 sin objeto); migración 2 sin modificaciones; desactivación del NIT en una migración posterior y selector de tipos activos; rechazo de tipos inactivos también en la lógica de registro (E03-V11); respuestas de seguridad escritas de 3 a 100 puntos de código tras `free-text-folded`, con las 10 preguntas conservadas (E03-D5, E03-D11); «Error en los campos ingresados» para campos inválidos; sin canal de soporte y mensaje «No fue posible abrir la base de datos. Reinicia la aplicación.» (A-W9). Las decisiones técnicas resueltas (G-07, E03-D3, E03-D6 a E03-D10) se mantienen.
+- **Decisiones aprobadas:** asistente de tres pasos (E03-D1) con A-W1 a A-W9 y sus textos; celular obligatorio (E03-D2) y espacio de identificadores A-ID1 a A-ID4, con la posibilidad de modificar la migración 1 antes de la primera entrega; app solo para personas naturales, con CC, CE, PA y PPT, sin TI ni NIT (E03-D4; A-ID5 sin objeto); migración 2 sin modificaciones; desactivación del NIT en una migración posterior y selector de tipos activos; rechazo de tipos inactivos también en la lógica de registro (E03-V11); respuestas de seguridad escritas de 2 a 100 puntos de código tras `free-text-folded` (mínimo de 3 hasta el 2026-10-26), con las 10 preguntas conservadas (E03-D5, E03-D11); «Error en los campos ingresados» para campos inválidos; sin canal de soporte y mensaje «No fue posible abrir la base de datos. Reinicia la aplicación.» (A-W9). Las decisiones técnicas resueltas (G-07, E03-D3, E03-D6 a E03-D10) se mantienen.
 - **Criterios:** HU1-CA01 a HU1-CA19 se conservan literalmente. E03-W01 a E03-W10 y E03-V01 a E03-V11 están definidos; E03-V05 está eliminado del alcance; todos los demás siguen pendientes de implementación y validación.
 - **Pendientes técnicos:** implementar A-ID1 a A-ID4 (migración 1 e `IdentityRepository`); adaptar a respuestas escritas el código de la Etapa 02 que usa opciones (E03-D5); crear la migración que desactiva el NIT y filtrar los tipos activos (E03-V11); verificar las reglas de caracteres por tipo de documento (E03-V06); ampliar la comprobación de Hermes a `normalize('NFD')`.
-- **Reservas heredadas de la Etapa 02:** P-D1, P-D2, P-D3 y P-D7; E02-D8; protección de claves por hardware no demostrada; E02-C6 parcial.
+- **Reservas heredadas de la Etapa 02:** P-D1, P-D2, P-D3 y P-D7; E02-D8; protección de claves por hardware no demostrada; E02-C6 parcial. Actualización del 2026-10-26: P-D2 verificada en emulador. Actualización del 2026-10-27: P-D3 verificada en `emulator-5554`; P-D1 aplazada hasta la Etapa 05 o 06; P-D7 diferida hasta HU7.
 - **Riesgos de la recuperación por preguntas de seguridad (E03-D11):** bloqueo eludible cambiando el reloj del dispositivo, protección insuficiente contra automatización, prueba de respuestas fuera de línea con la base y su clave, y respuestas que pueden ser conocidas, adivinadas, cambiar u olvidarse. Uso limitado a una demostración académica controlada.
 - **Siguiente paso:** autorización expresa del responsable para implementar HU1.
 

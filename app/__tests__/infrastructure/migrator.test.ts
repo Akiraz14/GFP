@@ -15,9 +15,9 @@ import {
 describe('schema migrations (E02-D5)', () => {
   test('creates the identity schema and catalogs from an empty database', async () => {
     const database = createNodeSqliteDatabase();
-    await expect(migrateDatabase(database, () => 1)).resolves.toBe(2);
+    await expect(migrateDatabase(database, () => 1)).resolves.toBe(3);
     const version = await database.execute('PRAGMA user_version');
-    expect(readInteger(version.rows[0], 'user_version')).toBe(2);
+    expect(readInteger(version.rows[0], 'user_version')).toBe(3);
     const tables = await database.execute(
       "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name",
     );
@@ -40,20 +40,20 @@ describe('schema migrations (E02-D5)', () => {
 
   test('is idempotent', async () => {
     const database = await createMigratedDatabase();
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(2);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(3);
     const applied = await database.execute(
       'SELECT count(*) AS total FROM schema_migrations',
     );
-    expect(readInteger(applied.rows[0], 'total')).toBe(2);
+    expect(readInteger(applied.rows[0], 'total')).toBe(3);
   });
 
-  test('upgrades version 1 to version 2 without losing data', async () => {
+  test('upgrades version 1 to the latest version without losing data', async () => {
     const database = createNodeSqliteDatabase();
     await migrateDatabase(database, () => 1, MIGRATIONS.slice(0, 1));
     await database.execute(
       "INSERT INTO document_types (code, name, sort_order) VALUES ('ZZ', 'Prueba', 99)",
     );
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(2);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(3);
     const kept = await database.execute(
       "SELECT name FROM document_types WHERE code = 'ZZ'",
     );
@@ -85,7 +85,7 @@ describe('schema migrations (E02-D5)', () => {
     const broken = [
       ...MIGRATIONS,
       {
-        version: 3,
+        version: 4,
         name: 'broken',
         statements: ['CREATE TABLE partial (id TEXT) STRICT', 'INVALID SQL'],
       },
@@ -96,7 +96,33 @@ describe('schema migrations (E02-D5)', () => {
     );
     expect(readInteger(partial.rows[0], 'total')).toBe(0);
     const version = await database.execute('PRAGMA user_version');
-    expect(readInteger(version.rows[0], 'user_version')).toBe(2);
+    expect(readInteger(version.rows[0], 'user_version')).toBe(3);
+  });
+
+  test('keeps migration 2 identical to the published version (E03-D5)', () => {
+    expect(migrationChecksum(MIGRATIONS[1])).toBe(
+      'e2ac5c96997edcf2df08e603656920d0fe4d3eb812a050247796a9aa4ea87791',
+    );
+  });
+
+  test('upgrades a version 2 database by deactivating NIT without deleting it (E03-D4)', async () => {
+    const database = createNodeSqliteDatabase();
+    await migrateDatabase(database, () => 1, MIGRATIONS.slice(0, 2));
+    const before = await database.execute(
+      'SELECT code, is_active FROM document_types ORDER BY sort_order',
+    );
+    expect(before.rows.map(row => row.is_active)).toEqual([1, 1, 1, 1, 1]);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(3);
+    const after = await database.execute(
+      'SELECT code, is_active FROM document_types ORDER BY sort_order',
+    );
+    expect(after.rows).toEqual([
+      { code: 'CC', is_active: 1 },
+      { code: 'CE', is_active: 1 },
+      { code: 'PA', is_active: 1 },
+      { code: 'PPT', is_active: 1 },
+      { code: 'NIT', is_active: 0 },
+    ]);
   });
 
   test('enforces verifier shape, referential integrity and cascades', async () => {
@@ -109,9 +135,11 @@ describe('schema migrations (E02-D5)', () => {
         [userId, new Uint8Array(16), new Uint8Array(32)],
       ),
     ).rejects.toThrow();
+    const withoutTypeTriggers = createNodeSqliteDatabase();
+    await migrateDatabase(withoutTypeTriggers, () => 1, MIGRATIONS.slice(0, 2));
     await expect(
-      database.execute(
-        "INSERT INTO users (id, document_type_code, document_number, first_name, last_name, email, email_normalized, created_at, updated_at) VALUES ('00000000-0000-4000-8000-000000000000', 'XX', '9', 'A', 'B', 'c@d.co', 'c@d.co', 1, 1)",
+      withoutTypeTriggers.execute(
+        "INSERT INTO users (id, document_type_code, document_number, document_number_normalized, first_name, last_name, phone_country_code, phone_number, phone_e164, email, email_normalized, created_at, updated_at) VALUES ('00000000-0000-4000-8000-000000000000', 'XX', '9', '9', 'A', 'B', '+57', '3001', '+573001', 'c@d.co', 'c@d.co', 1, 1)",
       ),
     ).rejects.toThrow(/FOREIGN KEY/);
     await database.execute('DELETE FROM users WHERE id = ?', [userId]);

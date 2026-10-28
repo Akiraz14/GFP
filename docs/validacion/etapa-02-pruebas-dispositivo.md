@@ -1,7 +1,7 @@
 # Pruebas pendientes en dispositivo — Etapa 02
 
-Pruebas acotadas que no pueden ejecutarse en el entorno de Claude ni en Jest. Ningún
-resultado está registrado todavía; cada prueba indica dónde se archiva su evidencia.
+Pruebas acotadas que no pueden ejecutarse en el entorno de Claude ni en Jest. Cada prueba
+indica dónde se archiva su evidencia y, cuando existe, su resultado.
 Ejecutor: Juan (G-02).
 
 ## P-D1 — Calibración de PBKDF2 (E02-D1)
@@ -13,7 +13,7 @@ derivación tarde aproximadamente un segundo en el dispositivo mínimo compatibl
 rendimiento disponible para el proyecto. El emulador solo sirve como referencia: no
 sustituye esta prueba.
 
-**Procedimiento (no instala la app ni toca sus datos):**
+**Procedimiento (no instala la app ni toca sus datos), desde la raíz del repositorio:**
 
 ```powershell
 adb devices
@@ -37,6 +37,8 @@ mide 5 derivaciones de 32 bytes.
 **Evidencia:** salida completa, modelo, versión de Android y fecha en
 `evidencias/ETAPA-02/dispositivo-<YYYYMMDD>/p-d1.txt`.
 
+**Estado (2026-10-27):** aplazada por el responsable hasta la Etapa 05 o 06.
+
 ## P-D2 — Normalización Unicode en Hermes (E02-D2)
 
 **Objetivo:** confirmar que Hermes ofrece `String.prototype.normalize('NFC')` y las
@@ -57,6 +59,8 @@ bloquea HU1 hasta sustituir la función afectada.
 
 **Evidencia:** captura o copia de la consola en `evidencias/ETAPA-02/dispositivo-<YYYYMMDD>/p-d2.txt`.
 
+**Resultado (2026-10-26):** ejecutada en el emulador API 29 con el inspector de Metro, ampliada con NFD: 15 PASS (paquete de evidencias `GFP-e03-evidencias`, carpeta `p-d2-20261026-150452/`, fuera del repositorio).
+
 ## P-D3 — Clave SQLCipher ante reinstalación (E02-D3)
 
 **Objetivo:** confirmar que, tras desinstalar y reinstalar, la app empieza de cero sin
@@ -72,7 +76,10 @@ la base; desinstalar con `adb uninstall co.gfpsas.gestionfinanciera`; reinstalar
 **Criterio de aceptación:** tras reinstalar, `openEncryptedDatabase` crea una clave y una
 base nuevas sin error. La base anterior no existe.
 
-**Evidencia:** `evidencias/ETAPA-03/<fecha>/p-d3/`.
+**Evidencia:** resumen de la ejecución, estados de la base (`database-states.txt`) y capturas
+`p-d3-*`, conservados en el paquete de evidencias de la etapa, fuera del repositorio.
+
+**Resultado (2026-10-27):** ejecutada en el AVD aislado `emulator-5554` (AVD `Pixel_4`, Android 14, API 34), sin la app instalada antes de la prueba. Cumple el criterio. Evidencia fuera del repositorio, en el paquete de evidencias `GFP-e03-evidencias`, carpeta `hu1-closure-20261027-160501/` (`database-states.txt`, `p-d3-*`).
 
 ## P-D7 — Retirada de `INTERNET` (E02-D7)
 
@@ -91,3 +98,5 @@ ninguna `SecurityException` ni cierre. Si se cumple, se propone retirar `INTERNE
 Release; si no, se conserva con su motivo.
 
 **Evidencia y momento:** al implementar HU7 (Etapa 10) o, a más tardar, en la Etapa 13.
+
+**Estado (2026-10-27):** diferida. La app aún no tiene flujo de OCR (HU7), condición necesaria del procedimiento.
