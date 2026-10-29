@@ -179,11 +179,37 @@ Comprobaciones hechas por Claude (Linux, JDK 21; el proveedor es `SunJCE`, no el
 sal aleatoria, 1–3000 y 600 000 iteraciones, 1–64 bytes) idénticos entre la implementación
 anterior y la nueva; `typecheck`, `lint`, `format:check` y Jest 265/265 sin cambios en JavaScript.
 
-Pendiente en Windows y en los emuladores: compilación del APK nuevo, `Pbkdf2Calibration` y E3
-con el APK nuevo, la cuenta creada con el APK anterior (`Invoke-Pbkdf2UpgradeCheck.ps1`), y los
-recorridos de HU2, regresión de HU1 y P-D2 en Android 10 y 14.
+### Resultados de la validación (2026-10-28 y 2026-10-29)
+
+Rama `e04/hu2-login-pbkdf2`; APK Debug corregido `26D3F94F578D631119652FDF22FC4B057F23DFA1643BC4474029E8DAC540045F`
+(compilado con `2e5fd6c`); APK anterior `B9544684B05B5AA05A469E465FE9F18F7ED617749633BACB6108174A42D86F28`.
+Entre `2e5fd6c` y `1df52d8` solo cambia `Invoke-Pbkdf2UpgradeCheck.ps1`.
+
+| Comprobación | Commit | Evidencia | Resultado |
+|---|---|---|---|
+| Análisis sintáctico de los scripts | `1df52d8` | Salida de terminal | 9 archivos sin errores |
+| Controles estáticos (Windows) | `2e5fd6c` | `hu2-static-windows-20261028-235504` | PASS=8 FAIL=0; Jest 265/265 |
+| Compilación | `2e5fd6c` | `hu2-build-windows-20261028-235608` | PASS=4 FAIL=0; APK `26D3F94F…045F` |
+| E1 y E3 con el APK corregido, Android 10 | — | `diag-e3-pbkdf2-nuevo-emulator-5554-sdk29-20261029-000508` | Vectores 13/13 y rechazos 6/6 (`BC` 1.61); mediana 8445 ms (E1) y 6372 ms (E3); memoria nativa máxima 1,9–2,0 MB en paralelo |
+| E1 y E3 con el APK corregido, Android 14 | — | `diag-e3-pbkdf2-nuevo-emulator-5554-sdk34-20261029-003237` | Vectores 13/13 y rechazos 6/6 (`BC` 1.68); mediana 1056 ms (E1) y 1215 ms (E3); memoria nativa máxima 1,4 MB en paralelo |
+| HU2, Android 10 | `2e5fd6c` | `hu2-device-emulator-5554-20261029-001949` | PASS=26 FAIL=0 BLOCKED=0; sin `lowmemorykiller` |
+| Regresión de HU1 / P-D2, Android 10 | `2e5fd6c` | `hu2-hu1-regression-…-20261029-002709`, `hu2-p-d2-…-20261029-003054` | PASS=30 / PASS=15 |
+| HU2, Android 14 | `2e5fd6c` | `hu2-device-emulator-5554-20261029-003847` | PASS=26 FAIL=0 BLOCKED=0; sin `Scudo OOM` ni `lowmemorykiller` |
+| Regresión de HU1 / P-D2, Android 14 | `2e5fd6c` | `hu2-hu1-regression-…-20261029-004840`, `hu2-p-d2-…-20261029-010313` | PASS=30 / PASS=15 |
+| Cuenta creada con el APK anterior, Android 10 | `1df52d8` | `hu2-pbkdf2-upgrade-emulator-5554-20261029-011328` | **PASS=14 FAIL=0 BLOCKED=0 NOT RUN=1** |
+
+Detalle de la cuenta creada con el APK anterior (Android 10):
+
+- El APK instalado era el anterior (SHA-256 de `base.apk`); la cuenta se registró («El registro fue exitoso») y la app anterior se detuvo con `am force-stop` sin pulsar «Aceptar» (`UPGRADE-OLD-STOPPED`). El inicio de sesión con el APK anterior quedó `NOT RUN`, omitido deliberadamente con autorización del responsable (2026-10-29).
+- `adb install -r` con el APK nuevo: misma instalación (`firstInstallTime` igual, `lastUpdateTime` nuevo) y `base.apk` con el SHA-256 del APK nuevo.
+- La base `gfp.db` tiene el mismo SHA-256 antes y después (`579f2fac…efbe`, `database-states.txt`) y el archivo de la clave sigue presente. Que la clave es la misma se demuestra porque el APK nuevo abrió esa base y autenticó la cuenta; su contenido no se compara para no exponerlo.
+- Con el APK nuevo: contraseña incorrecta rechazada con el mensaje literal; inicio de sesión correcto con el correo y con el documento; la contraseña no aparece en `logcat` y no hay `FATAL EXCEPTION`.
+
+Ejecuciones anteriores de esta prueba que no cuentan como resultado: `hu2-pbkdf2-upgrade-emulator-5554-20261029-001552` (Android 10: la cuenta se registró, pero la app anterior se cerró con `SIGABRT` en el hilo de dibujo, con el montón Java a 152/158 MB y `lowmemorykiller` activo, antes de llegar a la actualización) y `…-20261029-003453` (Android 14: la app anterior se cerró durante el registro, con 37 eventos de `Scudo OOM` o `lowmemorykiller`). Ambos cierres son del APK anterior.
+
+Limitaciones: solo emuladores (no hay dispositivo físico; P-D1 sigue aplazada); la prueba con una cuenta real solo pudo hacerse en Android 10, porque en Android 14 el APK anterior no consigue registrar; la versión de Conscrypt de Android 10 no quedó registrada; la mediana en Android 10 (6,4–8,4 s por derivación) es del emulador x86 de 32 bits y no representa un dispositivo.
 
 ## 10. Siguiente paso
 
-Ejecutar la validación pendiente de la sección 9 y registrar sus resultados antes de recomendar
-la integración.
+Revisión de integración por el responsable: la corrección está en `fix/pbkdf2-memory` (desde `main`) y
+en `e04/hu2-login-pbkdf2` (desde `e04/hu2-login`). No se ha integrado ni publicado.
