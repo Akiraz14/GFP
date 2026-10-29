@@ -238,9 +238,11 @@ de `app/` que difieren de `b5b4140`.
 Transcripción literal de los 11 criterios de HU2, en el orden del documento fuente.
 Verificación: U, C e I como en HU1; E (ejecución en el emulador). Implementación en la rama
 `e04/hu2-login`; decisiones E04-D1 a E04-D8 en `decisiones-etapa-04.md`, pendientes de
-ratificación. Estado al 2026-10-28: Jest en Linux y en Windows (19 suites, 264 pruebas) y
-recorrido completo en los emuladores de Android 10 (API 29) y Android 14 (API 34) sin fallos;
-resultados y evidencias en `validacion/etapa-04-pruebas-dispositivo.md`.
+ratificación. Estado al 2026-10-28: con el commit `438a9f6`, Jest en Linux y en Windows (19
+suites, 264 pruebas) y recorrido completo en los emuladores de Android 10 (API 29) y Android 14
+(API 34) sin fallos; resultados y evidencias en `validacion/etapa-04-pruebas-dispositivo.md`.
+El commit `a4831e9` corrige el doble envío del formulario (HU2-CA06) y añade una prueba (265 en
+Linux); su repetición en Windows y en los emuladores está pendiente.
 
 | ID | Criterio (literal) | Implementación | Pruebas automatizadas | Comprobación en dispositivo prevista | Estado |
 |---|---|---|---|---|---|

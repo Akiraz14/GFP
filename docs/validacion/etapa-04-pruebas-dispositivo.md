@@ -75,6 +75,13 @@ etapa y este documento, no el código de la app.
 Todas las comprobaciones de la tabla «Comprobaciones en dispositivo» pasaron en ambos
 emuladores, y en ninguna ejecución cambió el estado de Git del worktree.
 
+**Pendiente con `a4831e9`.** Ese commit cambia `LoginScreen.tsx`: dos envíos del formulario
+antes de que la pantalla se actualice contaban dos intentos (HU2-CA06). En Linux pasan
+`typecheck`, `lint`, `format:check` y Jest (265 pruebas). Faltan los pasos 1 y 3 en Windows y en
+ambos emuladores. El APK Debug no incluye el JavaScript (lo sirve Metro desde el árbol), así que
+el paso 2 no es necesario para probar el cambio; los pasos 4 y 5 no dependen de la pantalla de
+inicio de sesión más allá de su carga, que el paso 3 comprueba.
+
 Ejecuciones anteriores que no cuentan como resultado:
 
 - `hu2-build-windows-20261028-145142`: la compilación terminó (`BUILD SUCCESSFUL` en
