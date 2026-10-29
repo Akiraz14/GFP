@@ -32,6 +32,12 @@ no cumplida, la ejecución se detiene) y `NOT RUN`. Código de salida: 0 sin fal
 minutos (HU2-CA06); el paso 4 la reinstala. Ninguno de los scripts hace commit, push ni cambia
 archivos versionados; cada uno comprueba al terminar que el estado de Git no cambió.
 
+Desde la corrección de los scripts posterior a `5b975ee`, `Invoke-Hu2DeviceTests.ps1` comprueba el estado de la app en
+cada punto de control: el proceso abierto por el script sigue vivo, no se ha reabierto por otra
+vía y su actividad está en primer plano. Si no, registra `BLOCKED APP-STATE` y se detiene; un
+registro fallido detiene el recorrido sin pulsar «Aceptar», y las esperas dejan de deslizar la
+pantalla si la app ya no está en ejecución.
+
 Cada llamada de `adb` que maneja la interfaz tiene un límite de 60 s. Si el emulador deja de
 responder, el script registra `BLOCKED DEVICE-RESPONSIVE`, detiene Metro y termina; hay que
 reiniciar el emulador con *Cold Boot* antes de repetir la ejecución.

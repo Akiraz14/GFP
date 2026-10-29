@@ -47,9 +47,12 @@ function Login-Succeeds([string]$CheckId, [string]$Id) {
   Fill-Login $Id $secret
   $reached = Wait-Text (U 'Pantalla provisional: se implementa con HU5.') 120
   Screenshot ("$CheckId-destino".ToLower()) | Out-Null
+  Assert-AppState $CheckId
   Check $CheckId $reached "inicio de sesion correcto con $(($Id -replace '\d', '#')): destino provisional de HU5"
   Restart-App
-  Check "$CheckId-RESTART" (Wait-Login 120) 'al reabrir la app la sesion no se conserva: vuelve el inicio de sesion (E04-D4, HU2-CA10)'
+  $back = Wait-Login 120
+  Assert-AppState "$CheckId-RESTART"
+  Check "$CheckId-RESTART" $back 'al reabrir la app la sesion no se conserva: vuelve el inicio de sesion (E04-D4, HU2-CA10)'
 }
 
 # Primera apertura: inicio de sesion
@@ -86,6 +89,7 @@ $back = Wait-Login 30
 $ui = Get-Ui; Save-Ui 'hu1-ca18-inicio-sesion'
 Screenshot 'hu1-ca18-inicio-sesion' | Out-Null
 $idField = Find-Input $ui $Identifier
+Assert-AppState 'HU1-CA18'
 Check 'HU1-CA18' ($back -and $idField -and ([string]$idField.text) -eq '' -and -not (Find-Text $ui 'Paso 1 de 3')) 'Cancelar en el registro vuelve al inicio de sesion real de HU2 con los campos vacios'
 
 # Cuenta sintetica por la interfaz (regresion del registro de HU1)
@@ -116,17 +120,26 @@ $null = Tap-Text 'Registrar'
 $registered = Wait-Text 'El registro fue exitoso' 240
 Screenshot 'hu2-04-registro' | Out-Null
 Check 'HU1-REGISTER' $registered 'registro de una cuenta sintetica completo'
+if (-not $registered) {
+  Assert-AppState 'HU1-REGISTER'
+  Stop-Blocked 'REGISTER' 'sin cuenta registrada no se pueden probar los inicios de sesion'
+}
 $null = Tap-Text 'Aceptar'
-Check 'HU1-REGISTER-LOGIN' (Wait-Login 30) 'tras el registro se vuelve al inicio de sesion (A-W4)'
-if (-not $registered) { Stop-Blocked 'REGISTER' 'sin cuenta registrada no se pueden probar los inicios de sesion' }
+$backToLogin = Wait-Login 30
+Assert-AppState 'HU1-REGISTER-LOGIN'
+Check 'HU1-REGISTER-LOGIN' $backToLogin 'tras el registro se vuelve al inicio de sesion (A-W4)'
 
 # HU2-CA05 (2 fallos: contrasena incorrecta e identificador inexistente)
 Fill-Login $email ('Mala' + $run + '!x')
 Screenshot 'hu2-05-credenciales' | Out-Null
-Check 'HU2-CA05-PASSWORD' (Find-Message $Invalid) 'contrasena incorrecta: mensaje literal de alerta'
+$found = Find-Message $Invalid
+Assert-AppState 'HU2-CA05-PASSWORD'
+Check 'HU2-CA05-PASSWORD' $found 'contrasena incorrecta: mensaje literal de alerta'
 Accept-Dialog
 Fill-Login "nadie.$run@example.com" $secret
-Check 'HU2-CA05-UNKNOWN' (Find-Message $Invalid) 'identificador inexistente: el mismo mensaje literal'
+$found = Find-Message $Invalid
+Assert-AppState 'HU2-CA05-UNKNOWN'
+Check 'HU2-CA05-UNKNOWN' $found 'identificador inexistente: el mismo mensaje literal'
 Accept-Dialog
 
 # HU2-CA01, CA07 y CA10 (cada exito reinicia el contador)
@@ -141,17 +154,22 @@ for ($i = 1; $i -le 3; $i++) {
   if ($i -lt 3) { $null = Find-Message $Invalid; Accept-Dialog }
 }
 Screenshot 'hu2-06-tercer-fallo' | Out-Null
-Check 'HU2-CA06-THIRD' (Find-Both $Invalid $LockText) 'el tercer fallo muestra el mensaje literal y el bloqueo de 15 minutos'
+$found = Find-Both $Invalid $LockText
+Assert-AppState 'HU2-CA06-THIRD'
+Check 'HU2-CA06-THIRD' $found 'el tercer fallo muestra el mensaje literal y el bloqueo de 15 minutos'
 Accept-Dialog
 Fill-Login $email $secret
 Screenshot 'hu2-07-bloqueado' | Out-Null
 $lockedNow = (Find-Both 'Superaste los intentos permitidos.' 'bloqueado durante') -and -not (Find-Text (Get-Ui) (U 'Pantalla provisional: se implementa con HU5.'))
+Assert-AppState 'HU2-CA06'
 Check 'HU2-CA06' $lockedNow 'con la contrasena correcta el acceso sigue bloqueado'
 Accept-Dialog
 Restart-App
 $null = Wait-Login 120
 Fill-Login $email $secret
-Check 'HU2-CA06-RESTART' (Find-Both 'Superaste los intentos permitidos.' 'bloqueado durante') 'el bloqueo se mantiene al reabrir la app'
+$found = Find-Both 'Superaste los intentos permitidos.' 'bloqueado durante'
+Assert-AppState 'HU2-CA06-RESTART'
+Check 'HU2-CA06-RESTART' $found 'el bloqueo se mantiene al reabrir la app'
 Accept-Dialog
 
 # HU2-CA03: sin la contrasena en claro en la base ni en logcat

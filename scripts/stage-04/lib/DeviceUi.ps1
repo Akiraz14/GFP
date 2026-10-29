@@ -134,7 +134,10 @@ function Pick-Option([string]$Text) {
 function Locate([scriptblock]$Finder) {
   $moves = @('none', 'up', 'up', 'up', 'up', 'down', 'down', 'down', 'down', 'down', 'down', 'down', 'down')
   foreach ($m in $moves) {
-    if ($m -ne 'none') { Swipe $m }
+    if ($m -ne 'none') {
+      if (-not (Test-AppProcess)) { return $null }
+      Swipe $m
+    }
     $ui = Get-Ui
     $node = & $Finder $ui
     if ($node -and (Test-Visible $node)) { return $node }
@@ -181,7 +184,10 @@ function Wait-Text([string]$Text, [int]$Seconds = 30) {
     $ui = Get-Ui
     if (Find-Text $ui $Text) { return $true }
     $attempt++
-    if ($attempt % 3 -eq 0) { Swipe 'down' } else { Start-Sleep -Milliseconds 800 }
+    if ($attempt % 3 -eq 0) {
+      if (-not (Test-AppProcess)) { return $false }
+      Swipe 'down'
+    } else { Start-Sleep -Milliseconds 800 }
   }
   return $false
 }
@@ -191,7 +197,24 @@ function Screenshot([string]$Name) {
 }
 function Restart-App {
   $null = Invoke-Adb "shell am force-stop $Pkg"
-  Add-Content -LiteralPath (Join-Path $Out 'am-start.log') -Value (Invoke-Adb "shell am start -n $Pkg/.MainActivity") -Encoding UTF8
+  Add-Content -LiteralPath (Join-Path $Out 'am-start.log') -Value (Invoke-Adb "shell am start -W -n $Pkg/.MainActivity") -Encoding UTF8
+  $script:AppPid = Get-AppPid
+}
+# Estado de la app entre pasos: el proceso que abrio Restart-App sigue vivo y su actividad esta
+# en primer plano. Un cierre inesperado o una reapertura ajena al script detienen el recorrido
+# (BLOCKED APP-STATE) para que ninguna comprobacion posterior se registre como PASS.
+$script:AppPid = ''
+function Get-AppPid { return ([string](Invoke-Adb "shell pidof $Pkg")).Trim() }
+function Test-AppProcess { return (-not $script:AppPid) -or ((Get-AppPid) -eq $script:AppPid) }
+function Test-AppResumed {
+  return ([string](Invoke-Adb 'shell dumpsys activity activities')) -match "ResumedActivity[:=] ?ActivityRecord\{[^}]*$([regex]::Escape($Pkg))/"
+}
+function Assert-AppState([string]$Step) {
+  if (-not $script:AppPid) { return }
+  $current = Get-AppPid
+  if (-not $current) { Stop-Blocked 'APP-STATE' "${Step}: la app ya no esta en ejecucion (cierre inesperado; ver logcat-on-failure.txt)" }
+  if ($current -ne $script:AppPid) { Stop-Blocked 'APP-STATE' "${Step}: la app se reabrio sin que el script la reiniciara (pid $($script:AppPid) -> $current)" }
+  if (-not (Test-AppResumed)) { Stop-Blocked 'APP-STATE' "${Step}: la actividad de la app no esta en primer plano" }
 }
 function Get-FocusedId($Ui) {
   $node = Get-Nodes $Ui | Where-Object { $_.class -eq 'android.widget.EditText' -and $_.focused -eq 'true' } | Select-Object -First 1
