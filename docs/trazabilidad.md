@@ -241,8 +241,10 @@ Verificación: U, C e I como en HU1; E (ejecución en el emulador). Implementaci
 ratificación. Estado al 2026-10-28: con el commit `438a9f6`, Jest en Linux y en Windows (19
 suites, 264 pruebas) y recorrido completo en los emuladores de Android 10 (API 29) y Android 14
 (API 34) sin fallos; resultados y evidencias en `validacion/etapa-04-pruebas-dispositivo.md`.
-El commit `a4831e9` corrige el doble envío del formulario (HU2-CA06) y añade una prueba (265 en
-Linux); su repetición en Windows y en los emuladores está pendiente.
+El commit `a4831e9` corrige el doble envío del formulario (HU2-CA06) y añade una prueba. Con
+`d91dfbc` pasaron Jest en Linux y en Windows (265 pruebas) y los tres recorridos en Android 10;
+en Android 14 pasaron la regresión de HU1 y P-D2, y el recorrido de HU2 quedó bloqueado en el
+registro de la cuenta sintética, con la app fuera del primer plano; su repetición está pendiente.
 
 | ID | Criterio (literal) | Implementación | Pruebas automatizadas | Comprobación en dispositivo prevista | Estado |
 |---|---|---|---|---|---|

@@ -75,12 +75,31 @@ etapa y este documento, no el código de la app.
 Todas las comprobaciones de la tabla «Comprobaciones en dispositivo» pasaron en ambos
 emuladores, y en ninguna ejecución cambió el estado de Git del worktree.
 
-**Pendiente con `a4831e9`.** Ese commit cambia `LoginScreen.tsx`: dos envíos del formulario
-antes de que la pantalla se actualice contaban dos intentos (HU2-CA06). En Linux pasan
-`typecheck`, `lint`, `format:check` y Jest (265 pruebas). Faltan los pasos 1 y 3 en Windows y en
-ambos emuladores. El APK Debug no incluye el JavaScript (lo sirve Metro desde el árbol), así que
-el paso 2 no es necesario para probar el cambio; los pasos 4 y 5 no dependen de la pantalla de
-inicio de sesión más allá de su carga, que el paso 3 comprueba.
+**Repetición con `d91dfbc`** (incluye `a4831e9`, que cambia `LoginScreen.tsx`: dos envíos del
+formulario antes de que la pantalla se actualice contaban dos intentos, HU2-CA06). El APK Debug
+no incluye el JavaScript (lo sirve Metro desde el árbol), así que se instaló el mismo APK.
+
+| Paso | Dispositivo | Carpeta de evidencias | Resultado |
+|---|---|---|---|
+| 1 | Windows | `hu2-static-windows-20261028-200646` | PASS=8 FAIL=0 (Jest 265/265) |
+| 3 | Android 10 (API 29) | `hu2-device-emulator-5554-20261028-200912` | PASS=26 FAIL=0 BLOCKED=0 |
+| 4 | Android 10 (API 29) | `hu2-hu1-regression-emulator-5554-20261028-202055` | PASS=30 FAIL=0 BLOCKED=0 |
+| 5 | Android 10 (API 29) | `hu2-p-d2-emulator-5554-20261028-202412` | PASS=15 FAIL=0 BLOCKED=0 |
+| 3 | Android 14 (API 34) | `hu2-device-emulator-5554-20261028-202817` | **PASS=8 FAIL=2 BLOCKED=1** |
+| 4 | Android 14 (API 34) | `hu2-hu1-regression-emulator-5554-20261028-204402` | PASS=30 FAIL=0 BLOCKED=0 |
+| 5 | Android 14 (API 34) | `hu2-p-d2-emulator-5554-20261028-204840` | PASS=15 FAIL=0 BLOCKED=0 |
+
+Fallo del paso 3 en Android 14: las 8 comprobaciones hasta HU1-CA18 pasaron; el registro de la
+cuenta sintética no mostró «El registro fue exitoso» en 240 s (`HU1-REGISTER` y
+`HU1-REGISTER-LOGIN` en FAIL) y la ejecución se detuvo (`BLOCKED REGISTER`), así que HU2-CA01,
+CA03, CA05, CA06, CA07 y CA10 no se comprobaron en esa ejecución. La captura
+`hu2-04-registro.png` y `ui-last.xml` muestran el panel de ajustes rápidos de Android abierto
+sobre la pantalla; la app no estaba en primer plano. No hay `logcat` de esa ejecución (el script
+solo lo guardaba al terminar sin bloqueo) y el siguiente script lo borró, así que se desconoce
+por qué la app dejó el primer plano. El registro lo hace `RegistrationWizard`, que `a4831e9` no
+cambia, y el mismo recorrido pasó en Android 10 con `d91dfbc` y en Android 14 con `438a9f6`.
+Desde `628a2d3` los scripts guardan `logcat-on-failure.txt` y `final-on-failure.png` cuando
+una ejecución termina con FAIL o BLOCKED. El paso 3 en Android 14 está pendiente de repetir.
 
 Ejecuciones anteriores que no cuentan como resultado:
 

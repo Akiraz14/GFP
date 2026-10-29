@@ -62,7 +62,9 @@ Base: `b59948c` (`main`, cierre de la Etapa 03).
 | `438a9f6` | fix(scripts) | Límite de tiempo en `adb` | No |
 | `b2d9a19` | docs | Resultados de Windows y de los emuladores | No |
 | `a4831e9` | fix(login) | Un único intento por envío del formulario; prueba de regresión | Sí: `LoginScreen.tsx` |
-| (este documento) | docs | Borrador de cierre | No |
+| `d91dfbc` | docs | Borrador de cierre | No |
+| `628a2d3` | fix(scripts) | `logcat` y captura cuando una ejecución falla | No |
+| (siguiente) | docs | Resultados con `d91dfbc` | No |
 
 ## Relación entre commits, compilación y evidencias
 
@@ -132,11 +134,15 @@ Observaciones que no son defectos y no se han modificado:
 
 ## Validación pendiente
 
-| Paso | Por qué | Cómo |
-|---|---|---|
-| Controles estáticos en Windows con `a4831e9` | Cambia `LoginScreen.tsx` y el número de pruebas (265) | `Invoke-StaticChecks.ps1` |
-| HU2 en Android 10 y Android 14 con `a4831e9` | Cambia la pantalla de inicio de sesión | `Invoke-Hu2DeviceTests.ps1` en cada emulador |
-| Regresión de HU1 y P-D2 con `a4831e9` (recomendada) | No dependen del cambio, pero dejan las tres pruebas en el mismo commit | `Invoke-Hu1DeviceRegression.ps1` e `Invoke-HermesUnicodeCheck.ps1` |
+Repetición con `d91dfbc` (incluye `a4831e9`), detallada en
+`validacion/etapa-04-pruebas-dispositivo.md`:
+
+| Paso | Resultado |
+|---|---|
+| Controles estáticos en Windows | Hecho: PASS=8 FAIL=0, Jest 265/265 (`hu2-static-windows-20261028-200646`) |
+| HU2, regresión de HU1 y P-D2 en Android 10 | Hecho: 26, 30 y 15 PASS, sin FAIL ni BLOCKED |
+| Regresión de HU1 y P-D2 en Android 14 | Hecho: 30 y 15 PASS, sin FAIL ni BLOCKED |
+| HU2 en Android 14 | **Pendiente**: la ejecución `hu2-device-emulator-5554-20261028-202817` terminó con FAIL=2 y BLOCKED=1 en el registro de la cuenta sintética; la app no estaba en primer plano y no hay `logcat` para saber por qué. Hay que repetirla con los scripts de `628a2d3`, que guardan `logcat` y una captura si vuelve a fallar |
 
 No hace falta compilar otra vez: el cambio es solo de JavaScript (sección anterior).
 
@@ -176,9 +182,9 @@ En Linux, desde `app/`: `npm ci`, `npm run typecheck`, `npm run lint`, `npm run 
 |---|---|---|
 | 1 | Cada criterio literal figura en `trazabilidad.md` con estado y evidencia | Cumplido: HU2-CA01 a HU2-CA11, con su texto literal sin cambios |
 | 2 | Solo quedan parciales los criterios de «Criterios parciales previstos» | Cumplido: HU2-CA09, HU2-CA10 y HU2-CA11 |
-| 3 | Pruebas automatizadas ejecutadas con resultados reales | Cumplido con `438a9f6` (Windows y Linux); con `a4831e9`, solo en Linux |
+| 3 | Pruebas automatizadas ejecutadas con resultados reales | Cumplido con `d91dfbc` en Linux y Windows (Jest 265/265) |
 | 4 | Compilación e instalación en Android 10 (API 29) o superior | Cumplido: APK `B9544684…6F28` instalado en API 29 y API 34 |
-| 5 | Regresión de las etapas anteriores sin fallos | Cumplido con `438a9f6`; pendiente de repetir con `a4831e9` |
+| 5 | Regresión de las etapas anteriores sin fallos | Cumplido con `d91dfbc` en Android 10 y, para HU1 y P-D2, en Android 14; falta repetir el recorrido de HU2 en Android 14 |
 | 6 | Decisiones de la etapa resueltas | **No cumplido**: E04-D1 a E04-D8 pendientes de ratificación |
 | 7 | Informe de cierre y pausa obligatoria | Este borrador; pendiente de revisión y aprobación |
 
