@@ -1,9 +1,12 @@
 # Diagnóstico: cierre de la app en Android 14 durante el registro (Etapa 04)
 
-**Estado: diagnóstico en curso. La causa raíz NO está demostrada.** Las evidencias existentes
-son muy consistentes con una hipótesis concreta (sección 3), pero falta el experimento
-controlado de la sección 5. No se ha modificado `GfpCrypto` ni el algoritmo (E02-D1); el
-responsable autorizó solo el diagnóstico (2026-10-28).
+**Estado (2026-10-28, tras E1 a E3): causa demostrada a nivel de implementación; el detalle
+interno de Conscrypt sigue siendo una inferencia.** En un proceso aislado, sin la app ni la
+interfaz, la implementación actual con seis derivaciones en paralelo hizo crecer la memoria
+nativa hasta 410–561 MB (Android 14) y 1,9–2,0 GB (Android 10), con `Scudo OOM` y
+`lowmemorykiller`; en secuencia, el pico fue de unos 50 MB; con `SecretKeyFactory`, de unos 2 MB en
+ambos modos (sección 8). No se ha modificado `GfpCrypto` ni el algoritmo (E02-D1); el
+responsable autorizó solo el diagnóstico y E3 (2026-10-28).
 
 Evidencias en `GFP-e04-evidencias\` (fuera del repositorio). Horas de `logcat` en la zona
 horaria del emulador (UTC); las de `summary.txt`, en la del equipo (UTC−5).
@@ -84,7 +87,7 @@ comprobar que la app sigue en primer plano (`dumpsys activity`) antes de seguir;
 «Aceptar» ni deslizar si no está; y no contar como PASS el inicio de sesión que aparece tras un
 cierre de la app.
 
-## 5. Experimentos que faltan
+## 5. Experimentos definidos (ejecutados; resultados en las secciones 7 y 8)
 
 **E1 — Derivación aislada, sin la app ni la interfaz (sin cambios de código).** Ejecutar en
 cada emulador la clase existente `Pbkdf2Calibration` del APK con `app_process` (como en P-D1),
@@ -114,7 +117,54 @@ NFD (4096, resultados distintos entre sí, como corresponde), `clave😀ñ!` (fu
 básico), la respuesta plegada `pena bogota` y un texto CJK. Esto no prueba nada sobre Android:
 allí el proveedor es otro y su conversión de `char[]` a bytes debe comprobarse en E3.
 
-## 7. Siguiente paso
+## 7. Auditoría de E1 y E2 en Android 14 (`diag-pbkdf2-memory-sdk34-20261028-215553`)
 
-El responsable decide si autoriza E3 y, con los resultados de E1 a E3, la alternativa de
-corrección. Hasta entonces, el recorrido de HU2 en Android 14 sigue pendiente.
+`Pbkdf2Calibration` en secuencia: vectores V1–V7 correctos; mediana de 377 ms (100 000) y
+2030 ms (600 000); `VmRSS` estable en 150–154 MB en ambas. **Esta medición no confirmaba la
+hipótesis**, y tenía limitaciones: el pico de `VmHWM` (206–207 MB) se alcanza al arrancar el
+proceso y es igual en ambas, `VmRSS` incluye páginas compartidas, el muestreo era de 1 s y ART
+solo registra recolecciones largas. E3 corrige el método: memoria nativa y Java medida dentro del
+proceso cada 100 ms y `RssAnon` cada 0,2 s, en secuencia y en paralelo. E2: imagen
+`UE1A.230829.036.A4`, Conscrypt `com.google.android.conscrypt` 340818082.
+
+## 8. Resultados de E3 (2026-10-28)
+
+Clase `gfpdiag.Pbkdf2Diagnostic` fuera del repositorio y del APK (SHA-256 del código
+`49FC9DAA…CDFF7`, del dex `C1B16AB5…7E25F`), ejecutada con `app_process` junto al APK Debug
+`B9544684…6F28`, cuya clase `Pbkdf2HmacSha256` es la implementación actual. La alternativa
+decodifica estrictamente los bytes UTF-8 a `char[]` y usa `PBEKeySpec`.
+
+| | Android 14 (`diag-e3-pbkdf2-emulator-5554-sdk34-20261028-221432`) | Android 10 (`diag-e3-pbkdf2-emulator-5554-sdk29-20261028-222139`) |
+|---|---|---|
+| Proveedor actual / alternativo | `AndroidOpenSSL` (Conscrypt) / `BC` 1.68 | `AndroidOpenSSL` / `BC` 1.61 |
+| Vectores (V1–V7, tildes, NFC, NFD, emoji, CJK, combinados; 13) | 13/13 en ambas, idénticas entre sí | 13/13 en ambas, idénticas entre sí |
+| UTF-8 mal formado | Actual: deriva; alternativa: `MalformedInputException` | Igual |
+| Compatibilidad de verificadores (4 contraseñas, 600 000, sal aleatoria; en ambos sentidos y rechazo de la incorrecta) | 4/4 | 4/4 |
+| Mediana de 600 000 iteraciones: actual / alternativa | 2040 ms / 972 ms | 16 679 ms (7,7–17,3 s) / 6410 ms |
+| Memoria nativa máxima, 6 × 600 000 en secuencia: actual / alternativa | 52,0 y 51,9 MB / 1,3 y 1,3 MB | 47,8 y 48,1 MB / 1,7 y 1,6 MB |
+| Memoria nativa máxima, 6 × 600 000 en paralelo (4 hilos): actual / alternativa | **561 y 410 MB** / 1,4 y 1,4 MB | **1933 y 2049 MB** / 2,0 y 1,9 MB |
+| `RssAnon` máximo en paralelo: actual / alternativa | 700 y 526 MB / 45 y 40 MB | 1443 y 1442 MB / 24 y 22 MB |
+| Montón Java máximo en paralelo: actual / alternativa | 87 y 91 MB / 10 y 6 MB | 285 y 301 MB / 7 y 6 MB |
+| `logcat` en paralelo con la actual | `Scudo OOM` 2 y 1; `lowmemorykiller` 2 y 0 | `lowmemorykiller` 60 y 144 (otros procesos) |
+
+Conclusiones:
+
+1. **Demostrado:** con la implementación actual, seis derivaciones en paralelo agotan la memoria
+   en ambos emuladores fuera de la app; en secuencia el pico queda acotado (~50 MB), y la
+   alternativa no acumula memoria en ningún modo. Las dos repeticiones dan el mismo resultado.
+2. **Coherente, no demostrado:** que la memoria corresponda a los contextos HMAC que Conscrypt
+   crea en cada `doFinal()` y libera al finalizar (sección 3). No hay pila de llamadas.
+3. Android 10 también está afectado; en las ejecuciones de la app no se observó porque la app
+   tiene otros límites de montón que `app_process` (`maxMemory` de 192 MB en Android 14 y 512 MB
+   en Android 10 en este proceso) y otra presión de recolección. Esto es una hipótesis.
+
+Limitaciones: emuladores, no un dispositivo físico (P-D1 sigue aplazada); `app_process` no
+reproduce los límites de montón de la app; el muestreo es periódico; en Android 10 no se pudo
+registrar la versión de Conscrypt (`pm list packages --apex-only` no produjo `apex.txt`); la
+compatibilidad se probó con verificadores simulados, no con una cuenta guardada en la base de
+la app.
+
+## 9. Siguiente paso
+
+El responsable decide si autoriza una corrección de producción con los resultados de la
+sección 8. Hasta entonces, el recorrido de HU2 en Android 14 sigue pendiente.
