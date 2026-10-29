@@ -55,6 +55,35 @@ reiniciar el emulador con *Cold Boot* antes de repetir la ejecución.
 
 ## Estado
 
-Al 2026-10-28 los scripts de esta etapa no se han ejecutado en Windows ni en los emuladores;
-todas las comprobaciones de este documento están **NOT RUN**. Los resultados se registrarán
-aquí y en `trazabilidad.md` cuando el responsable los ejecute.
+Ejecuciones del 2026-10-28 en Windows, con las evidencias en `GFP-e04-evidencias\` (fuera del
+repositorio). Las pruebas en dispositivo usaron el commit `438a9f6`; el APK se compiló con
+`35a8150` y el análisis estático con `a13bddc`. Entre esos commits solo cambian scripts de esta
+etapa y este documento, no el código de la app.
+
+| Paso | Dispositivo | Carpeta de evidencias | Resultado |
+|---|---|---|---|
+| 0 | Windows | (salida de terminal, commit `35a8150`) | 8 archivos sin errores; la repetición con `438a9f6` no se capturó |
+| 1 | Windows | `hu2-static-windows-20261028-144946` | PASS=8 FAIL=0 (Jest 264/264) |
+| 2 | Windows | `hu2-build-windows-20261028-162954` | PASS=4 FAIL=0; APK SHA-256 `B9544684…6F28` |
+| 3 | Android 14 (API 34) | `hu2-device-emulator-5554-20261028-181257` | PASS=26 FAIL=0 BLOCKED=0 |
+| 4 | Android 14 (API 34) | `hu2-hu1-regression-emulator-5554-20261028-182906` | PASS=30 FAIL=0 BLOCKED=0 |
+| 5 | Android 14 (API 34) | `hu2-p-d2-emulator-5554-20261028-183403` | PASS=15 FAIL=0 BLOCKED=0 |
+| 3 | Android 10 (API 29) | `hu2-device-emulator-5554-20261028-190159` | PASS=26 FAIL=0 BLOCKED=0 |
+| 4 | Android 10 (API 29) | `hu2-hu1-regression-emulator-5554-20261028-191251` | PASS=30 FAIL=0 BLOCKED=0 |
+| 5 | Android 10 (API 29) | `hu2-p-d2-emulator-5554-20261028-191606` | PASS=15 FAIL=0 BLOCKED=0 |
+
+Todas las comprobaciones de la tabla «Comprobaciones en dispositivo» pasaron en ambos
+emuladores, y en ninguna ejecución cambió el estado de Git del worktree.
+
+Ejecuciones anteriores que no cuentan como resultado:
+
+- `hu2-build-windows-20261028-145142`: la compilación terminó (`BUILD SUCCESSFUL` en
+  `gradle-assembleDebug.log`), pero el script se quedó esperando al demonio de Gradle y se
+  detuvo a mano; corregido en `35a8150`.
+- `hu2-device-emulator-5554-20261028-164615` (Android 14): el emulador dejó de responder en el
+  paso 3 del registro y hubo que reiniciarlo con *Cold Boot*; el script esperó sin límite y se
+  detuvo a mano. Las ocho comprobaciones previas pasaron. Se desconoce la causa del bloqueo
+  del emulador; desde `438a9f6` las llamadas de `adb` tienen límite de tiempo.
+
+En `Invoke-HermesUnicodeCheck.ps1` la línea «PASS conexion WebSocket» es informativa y no entra
+en el recuento: el resumen tiene 16 líneas `PASS` y el resultado indica `PASS=15`.
