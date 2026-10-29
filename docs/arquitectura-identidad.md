@@ -158,13 +158,17 @@ entrega, cualquier cambio de esquema requiere una migración nueva.
 | Iteraciones | **600 000, provisional** (`PROVISIONAL_PBKDF2_ITERATIONS`), versionado en cada registro. Pendiente de la calibración P-D1 |
 | Comparación | Tiempo constante (`constantTimeEqual`) |
 | Formato | Columnas `algorithm`, `iterations`, `salt`, `verifier`, `normalization` y `format_version` (1). `needsRehash()` detecta registros con parámetros antiguos para regenerarlos tras un inicio de sesión correcto |
-| Implementación | Módulo nativo `GfpCrypto` (TurboModule de la app): `Pbkdf2HmacSha256.java` sobre `javax.crypto.Mac("HmacSHA256")` de la plataforma, con su propio grupo de hilos |
+| Implementación | Módulo nativo `GfpCrypto` (TurboModule de la app): `Pbkdf2HmacSha256.java` sobre `SecretKeyFactory("PBKDF2WithHmacSHA256")` de la plataforma (BouncyCastle de Android: 1.61 en Android 10 y 1.68 en Android 14), con su propio grupo de hilos. Sustituye a la implementación sobre `Mac("HmacSHA256")`, que agotaba la memoria nativa con derivaciones en paralelo; el algoritmo, los parámetros y el formato no cambian (nota de implementación de E02-D1 en `decisiones.md`) |
 
 **Por qué no JavaScript:** `@noble/hashes` en Hermes tardó 70,9 s (mediana) en
 600 000 iteraciones en el emulador (`evidencias/ETAPA-02/V4/p3-benchmark.txt`), unas
 8 500 iteraciones por segundo. Un segundo por derivación con ese rendimiento no es un
 parámetro defendible. La implementación nativa recibe los bytes UTF-8 exactos, no un
-`String` de Java, para que la normalización dependa solo de la política de la app.
+`String` de Java, para que la normalización dependa solo de la política de la app. Los
+decodifica estrictamente a `char[]`, sin crear un `String`, para `PBEKeySpec`, cuyo proveedor
+vuelve a codificarlos en UTF-8; una secuencia UTF-8 no válida se rechaza. La equivalencia con
+los bytes originales se comprueba con vectores que incluyen tildes, NFC, NFD, emoji, CJK y signos
+combinados.
 
 Normalización (E02-D2):
 

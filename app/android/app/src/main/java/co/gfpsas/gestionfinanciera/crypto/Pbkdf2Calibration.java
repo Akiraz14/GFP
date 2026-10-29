@@ -16,9 +16,41 @@ public final class Pbkdf2Calibration {
       "348c89dbcbd32b2f32d814b8116e84cf2b17347ebc1800181c4e2a1fb8dd53e1c635518c7dac47e9"},
     {"V7", "contrase\u00f1a-\u00f1\u20ac\u2713", "sal-\u00f1-0001", "600000", "32",
       "4cff0013b242c0afbee327b6bfc8a603e3171e9073794380051563880abb066f"},
+    {"U1", "Contrase\u00f1a-Jos\u00e9!1", "sal-u1", "4096", "32",
+      "283759da08ad9e5c6a664b82aae6dadf512e68892624044a5ed9030489e77488"},
+    {"U2", "Jos\u00e9 Mar\u00eda \u00d1and\u00fa", "sal-u2", "4096", "32",
+      "f6d4010d309db6891dea9a9b3348eb07c173aa6537065919bef3da720f457e93"},
+    {"U3", "Jose\u0301 Mari\u0301a N\u0303andu\u0301", "sal-u2", "4096", "32",
+      "b3e4c52d4a72da340606bb372ef72ce87caa447b67ba9c62c1cc45582e7ed170"},
+    {"U4", "clave\ud83d\ude00\ud83c\udde8\ud83c\uddf4!", "sal-u4", "4096", "32",
+      "1fbc3accdc721fed0f9998753ddd6aa4017bc3ab5311f74a8adcffda4b492b39"},
+    {"U5", "\u5bc6\u7801\u30d1\u30b9\uc554\ud638!9", "sal-u5", "4096", "32",
+      "8214d2de28cfa9f1163efb26fe8a368153baed3de664b5027159c96ce20d103f"},
+    {"U6", "pena bogota", "sal-u6", "4096", "32",
+      "ea0092dbb132544e2e581040fe18902cfdc5779cbcf325424746a5efa6f0264d"},
+    {"U7", "a\u0301\u0302\u0323z", "sal-u7", "4096", "32",
+      "bfe4941d067c4091f268562dd6b0ddc9c4777f5e064b470f9d16e34b35bf693b"},
+    {"U8", "contrase\u00f1a\ud83d\ude00", "sal-u8", "600000", "32",
+      "58eddde93cac0456fcff6020c116e03b079c06783ad50434055a26835fc06ed5"},
   };
 
   private Pbkdf2Calibration() {}
+
+  private static boolean rejects(byte[] password, byte[] salt, int iterations, int keyLength) {
+    try {
+      Pbkdf2HmacSha256.derive(password, salt, iterations, keyLength);
+      return false;
+    } catch (IllegalArgumentException expected) {
+      return true;
+    } catch (Exception unexpected) {
+      return false;
+    }
+  }
+
+  private static int check(String name, boolean passed) {
+    System.out.println("GFP-PBKDF2|check|" + name + "|" + (passed ? "OK" : "FAIL"));
+    return passed ? 0 : 1;
+  }
 
   public static void main(String[] args) throws Exception {
     int iterations = args.length > 0 ? Integer.parseInt(args[0]) : 600_000;
@@ -41,6 +73,18 @@ public final class Pbkdf2Calibration {
       System.out.println("GFP-PBKDF2|vector|" + vector[0] + "|" + (matches ? "OK" : "FAIL"));
     }
     System.out.println("GFP-PBKDF2|vectors_result|" + (failures == 0 ? "OK" : "FAIL") + "|failed=" + failures);
+    byte[] checkSalt = "salt".getBytes(StandardCharsets.UTF_8);
+    int checkFailures = 0;
+    checkFailures += check("rejects-malformed-utf8", rejects(new byte[] {0x61, (byte) 0xC3, 0x28, 0x62}, checkSalt, 10, 32));
+    checkFailures += check("rejects-empty-password", rejects(new byte[0], checkSalt, 10, 32));
+    checkFailures += check("rejects-empty-salt", rejects(new byte[] {0x61}, new byte[0], 10, 32));
+    checkFailures += check("rejects-zero-iterations", rejects(new byte[] {0x61}, checkSalt, 0, 32));
+    checkFailures += check("rejects-key-length-65", rejects(new byte[] {0x61}, checkSalt, 10, 65));
+    byte[] right = Pbkdf2HmacSha256.derive("password".getBytes(StandardCharsets.UTF_8), checkSalt, 4096, 32);
+    byte[] wrong = Pbkdf2HmacSha256.derive("passwore".getBytes(StandardCharsets.UTF_8), checkSalt, 4096, 32);
+    checkFailures += check("wrong-password-differs", !java.security.MessageDigest.isEqual(right, wrong));
+    System.out.println("GFP-PBKDF2|checks_result|" + (checkFailures == 0 ? "OK" : "FAIL") + "|failed=" + checkFailures);
+    failures += checkFailures;
     byte[] password = "GFP-calibration-password".getBytes(StandardCharsets.UTF_8);
     byte[] salt = new byte[16];
     Pbkdf2HmacSha256.derive(password, salt, 1000, 32);
@@ -58,7 +102,7 @@ public final class Pbkdf2Calibration {
     System.out.println(
         "GFP-PBKDF2|summary|iterations=" + iterations + "|samples=" + samples + "|medianMs="
             + sorted[samples / 2] + "|minMs=" + sorted[0] + "|maxMs=" + sorted[samples - 1]
-            + "|provider=" + javax.crypto.Mac.getInstance("HmacSHA256").getProvider().getName());
+            + "|provider=" + javax.crypto.SecretKeyFactory.getInstance(Pbkdf2HmacSha256.ALGORITHM).getProvider().getName());
     System.exit(failures == 0 ? 0 : 1);
   }
 }
