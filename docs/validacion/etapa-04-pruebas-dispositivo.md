@@ -99,7 +99,23 @@ solo lo guardaba al terminar sin bloqueo) y el siguiente script lo borró, así 
 por qué la app dejó el primer plano. El registro lo hace `RegistrationWizard`, que `a4831e9` no
 cambia, y el mismo recorrido pasó en Android 10 con `d91dfbc` y en Android 14 con `438a9f6`.
 Desde `628a2d3` los scripts guardan `logcat-on-failure.txt` y `final-on-failure.png` cuando
-una ejecución termina con FAIL o BLOCKED. El paso 3 en Android 14 está pendiente de repetir.
+una ejecución termina con FAIL o BLOCKED.
+
+Repetición del paso 3 en Android 14 con `7db7f06` (`hu2-device-emulator-5554-20261028-205503`):
+PASS=9 FAIL=1 BLOCKED=1, otra vez en el registro de la cuenta sintética. `logcat-on-failure.txt`
+muestra la causa del cierre: tras pulsar «Registrar», el proceso de la app agotó la memoria
+nativa (`Scudo OOM: The process has exhausted 256M for size class 144`; unos 3,4 millones de
+bloques de 144 y 176 bytes en uso) y `lowmemorykiller` lo terminó con 1,6 GB de RSS
+(`oom_score_adj 0`, app en primer plano). El registro deriva seis verificadores PBKDF2 en
+paralelo (contraseña y cinco respuestas, 600 000 iteraciones cada uno) con
+`Pbkdf2HmacSha256.java`, que llama a `Mac.doFinal()` de la plataforma en cada iteración; el
+número de bloques en uso es del orden de las llamadas a `doFinal()` hechas, y la recolección se
+dispara por asignaciones nativas (`NativeAlloc concurrent copying GC`). Esto indica que cada
+llamada deja memoria nativa que solo se libera con la recolección de basura, y que en Android 14
+la recolección no la libera a tiempo. Afecta al módulo nativo de la Etapa 02 (E02-D1), no al
+código de HU2, y es intermitente: el mismo recorrido pasó en Android 14 con `438a9f6`. La
+corrección cambia la implementación aprobada en `arquitectura-identidad.md` y está pendiente de
+decisión del responsable. El paso 3 en Android 14 sigue pendiente.
 
 Ejecuciones anteriores que no cuentan como resultado:
 
