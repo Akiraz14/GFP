@@ -1,10 +1,10 @@
 # Etapa 04 (HU2): controles automatizados en Windows sobre el clon o worktree que contiene
 # este script: prerequisitos, estado de Git, npm ci (con el package-lock.json sin cambios),
 # typecheck, lint, format:check y Jest. No modifica archivos versionados ni hace commit.
-# Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 [-ExpectedBranch e04/hu2-login] [-ExpectedTests 264] [-EvidenceRoot <carpeta fuera del repositorio>]
+# Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 [-ExpectedBranch e04/hu2-login] [-ExpectedTests 265] [-EvidenceRoot <carpeta fuera del repositorio>]
 param(
   [string]$ExpectedBranch = 'e04/hu2-login',
-  [int]$ExpectedTests = 264,
+  [int]$ExpectedTests = 265,
   [string]$EvidenceRoot = '',
   [switch]$SkipNpmCi
 )

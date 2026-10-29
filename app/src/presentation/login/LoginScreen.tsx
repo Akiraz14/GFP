@@ -68,6 +68,7 @@ export function LoginScreen({
   const [dialog, setDialog] = useState<string | null>(null);
   const passwordRef = useRef<TextInputInstance>(null);
   const mounted = useRef(true);
+  const submitting = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -77,7 +78,7 @@ export function LoginScreen({
   }, []);
 
   async function handleLogin() {
-    if (busy) {
+    if (submitting.current) {
       return;
     }
     const localErrors = validateLoginInput(identifier, password);
@@ -86,8 +87,10 @@ export function LoginScreen({
     if (Object.keys(localErrors).length > 0) {
       return;
     }
+    submitting.current = true;
     setBusy(true);
     const result = await gateway.login(identifier, password);
+    submitting.current = false;
     if (!mounted.current) {
       return;
     }

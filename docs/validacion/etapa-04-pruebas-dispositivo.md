@@ -22,7 +22,7 @@ no cumplida, la ejecución se detiene) y `NOT RUN`. Código de salida: 0 sin fal
 | Orden | Script | Qué comprueba | Interacción |
 |---|---|---|---|
 | 0 | `Test-ScriptSyntax.ps1` | Análisis sintáctico de todos los scripts, sin ejecutarlos | Ninguna |
-| 1 | `Invoke-StaticChecks.ps1` | Node, rama y árbol limpio, `npm ci`, `typecheck`, `lint`, `format:check` y Jest (264 pruebas esperadas) | Ninguna |
+| 1 | `Invoke-StaticChecks.ps1` | Node, rama y árbol limpio, `npm ci`, `typecheck`, `lint`, `format:check` y Jest (265 pruebas esperadas) | Ninguna |
 | 2 | `Invoke-AndroidBuild.ps1` | `assembleDebug` con JDK 17 solo en el proceso; SHA-256 del APK | Ninguna |
 | 3 | `Invoke-Hu2DeviceTests.ps1 -Serial <emulador>` | Instalación limpia; HU2-CA01 a HU2-CA10, regresión HU1-CA18 y registro de una cuenta sintética por la interfaz; base cifrada y `logcat` sin la contraseña | Automática; reinstala la app con `-AllowAppReset` |
 | 4 | `Invoke-Hu1DeviceRegression.ps1 -Serial <emulador>` | P-D3, E03-V09 (clave ausente y rechazada), E03-V06 y E03-V13 con la app que empieza en el inicio de sesión | Automática; reinstala la app con `-AllowAppReset` |

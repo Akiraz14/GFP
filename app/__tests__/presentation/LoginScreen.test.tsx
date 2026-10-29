@@ -192,6 +192,18 @@ describe('HU2 login screen', () => {
     expect(screen.queryByText('Ingresando…')).toBeNull();
   });
 
+  test('HU2-CA06: two submissions before the screen updates make a single attempt', async () => {
+    const login = jest.fn(() => new Promise<LoginResult>(() => undefined));
+    await setup({ login });
+    await type('login-identifier', 'ana@example.com');
+    await type('login-password', 'Clave123!');
+    await act(async () => {
+      screen.getByTestId('login-password').props.onSubmitEditing();
+      screen.getByTestId('login-password').props.onSubmitEditing();
+    });
+    expect(login).toHaveBeenCalledTimes(1);
+  });
+
   test('HU2-CA08: «Registrar» goes to the registration form', async () => {
     const { onNavigate } = await setup();
     await fireEvent.press(screen.getByTestId('login-register'));
