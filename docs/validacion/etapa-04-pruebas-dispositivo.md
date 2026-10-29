@@ -27,6 +27,7 @@ no cumplida, la ejecución se detiene) y `NOT RUN`. Código de salida: 0 sin fal
 | 3 | `Invoke-Hu2DeviceTests.ps1 -Serial <emulador>` | Instalación limpia; HU2-CA01 a HU2-CA10, regresión HU1-CA18 y registro de una cuenta sintética por la interfaz; base cifrada y `logcat` sin la contraseña | Automática; reinstala la app con `-AllowAppReset` |
 | 4 | `Invoke-Hu1DeviceRegression.ps1 -Serial <emulador>` | P-D3, E03-V09 (clave ausente y rechazada), E03-V06 y E03-V13 con la app que empieza en el inicio de sesión | Automática; reinstala la app con `-AllowAppReset` |
 | 5 | `Invoke-HermesUnicodeCheck.ps1 -Serial <emulador>` | P-D2 en Hermes con la app de la rama | Automática; usa la app instalada por el paso 4 |
+| 6 | `Invoke-Pbkdf2UpgradeCheck.ps1 -Serial <emulador> -OldApk <APK anterior>` | Cuenta registrada con el APK anterior a la corrección de PBKDF2; actualización con `adb install -r` sin borrar datos (misma instalación, APK nuevo, base y clave intactas); inicio de sesión con correo y documento y rechazo de una contraseña incorrecta con el APK nuevo | Automática; reinstala la app con `-AllowAppReset` |
 
 `Invoke-Hu2DeviceTests.ps1` deja la app con una cuenta sintética y el acceso bloqueado 15
 minutos (HU2-CA06); el paso 4 la reinstala. Ninguno de los scripts hace commit, push ni cambia

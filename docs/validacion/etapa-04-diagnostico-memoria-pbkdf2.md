@@ -164,7 +164,26 @@ registrar la versión de Conscrypt (`pm list packages --apex-only` no produjo `a
 compatibilidad se probó con verificadores simulados, no con una cuenta guardada en la base de
 la app.
 
-## 9. Siguiente paso
+## 9. Corrección candidata (WU del 2026-10-28)
 
-El responsable decide si autoriza una corrección de producción con los resultados de la
-sección 8. Hasta entonces, el recorrido de HU2 en Android 14 sigue pendiente.
+El responsable autorizó implementar `SecretKeyFactory("PBKDF2WithHmacSHA256")` y validarlo, sin
+integración, publicación ni cierre de E04.
+
+| Rama | Commit | Contenido |
+|---|---|---|
+| `fix/pbkdf2-memory` (desde `main`, `b59948c`) | `40cda90` | Corrección de `Pbkdf2HmacSha256.java`, vectores U1–U8 y comprobaciones de rechazo en `Pbkdf2Calibration.java`, nota de implementación en `decisiones.md`, `arquitectura-identidad.md` y `etapa-02-pruebas-dispositivo.md` |
+| `e04/hu2-login-pbkdf2` (desde `e04/hu2-login`, `37858de`) | `6564d95` | El mismo cambio aplicado con `cherry-pick`, para validar HU1 y HU2 con la corrección; más el script `Invoke-Pbkdf2UpgradeCheck.ps1` y esta documentación |
+
+Comprobaciones hechas por Claude (Linux, JDK 21; el proveedor es `SunJCE`, no el de Android):
+`Pbkdf2Calibration` con 13/13 vectores y 6/6 comprobaciones; 303 casos aleatorios (Unicode,
+sal aleatoria, 1–3000 y 600 000 iteraciones, 1–64 bytes) idénticos entre la implementación
+anterior y la nueva; `typecheck`, `lint`, `format:check` y Jest 265/265 sin cambios en JavaScript.
+
+Pendiente en Windows y en los emuladores: compilación del APK nuevo, `Pbkdf2Calibration` y E3
+con el APK nuevo, la cuenta creada con el APK anterior (`Invoke-Pbkdf2UpgradeCheck.ps1`), y los
+recorridos de HU2, regresión de HU1 y P-D2 en Android 10 y 14.
+
+## 10. Siguiente paso
+
+Ejecutar la validación pendiente de la sección 9 y registrar sus resultados antes de recomendar
+la integración.
