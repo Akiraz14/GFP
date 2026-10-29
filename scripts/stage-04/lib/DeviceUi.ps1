@@ -267,6 +267,12 @@ function Initialize-Device([string]$Serial) {
   Note ('INFO dispositivo ' + ((Get-Content (Join-Path $script:Out 'device.txt')) -join ' | '))
   $size = (& $script:Adb shell wm size | Out-String)
   if ($size -match '(\d+)x(\d+)') { $script:ScreenWidth = [int]$Matches[1]; $script:ScreenHeight = [int]$Matches[2] }
+  $script:Cleanup += {
+    if (($script:Counts['FAIL'] + $script:Counts['BLOCKED']) -gt 0) {
+      $null = Invoke-Adb 'logcat -d -v time' (Join-Path $script:Out 'logcat-on-failure.txt')
+      $null = Screenshot 'final-on-failure'
+    }
+  }
   $script:Cleanup += { $null = Invoke-Adb 'reverse --remove tcp:8081' }
 }
 
