@@ -2,7 +2,10 @@
 # el APK Debug anterior (-OldApk), registra una cuenta sintetica por la interfaz, conserva la
 # base cifrada y la clave, actualiza la app con el APK Debug de este arbol (adb install -r, sin
 # borrar datos) y comprueba que la cuenta inicia sesion y que una contrasena incorrecta se
-# rechaza. La contrasena de prueba se genera en cada ejecucion y no se escribe en los resumenes.
+# rechaza. Tras el registro, la app anterior se detiene sin pulsar Aceptar ni iniciar sesion
+# con ella (autorizado por el responsable el 2026-10-29): su defecto de memoria puede cerrarla
+# y la prueba no lo necesita. La contrasena de prueba se genera en cada ejecucion y no se
+# escribe en los resumenes.
 # Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-Pbkdf2UpgradeCheck.ps1 -Serial emulator-5554 -OldApk <APK anterior> [-AllowAppReset] [-EvidenceRoot <carpeta>]
 param(
   [Parameter(Mandatory = $true)][string]$Serial,
@@ -29,6 +32,12 @@ Initialize-Device $Serial
 Start-Metro $App
 & $Adb logcat -c 2>&1 | Out-Null
 Install-FreshApp $OldApk -AllowAppReset:$AllowAppReset
+function Get-InstalledApkHash {
+  $path = (([string](Invoke-Adb "shell pm path $Pkg")) -split "`n" | Where-Object { $_ -match 'base\.apk' } | Select-Object -First 1) -replace '^package:', ''
+  return (([string](Invoke-Adb "shell sha256sum $($path.Trim())")).Trim() -replace '\s.*$', '').ToUpper()
+}
+$installedOld = Get-InstalledApkHash
+Check 'UPGRADE-OLD-APK-INSTALLED' ($installedOld -eq $oldHash) "el APK instalado es el anterior (base.apk sha256=$installedOld)"
 
 $Identifier = 'Identificador'
 $Password = U 'Contrase\u00f1a'
@@ -89,23 +98,19 @@ if (-not $registered) {
   Assert-AppState 'UPGRADE-OLD-REGISTER'
   Stop-Blocked 'OLD-REGISTER' 'sin cuenta creada con el APK anterior no se puede probar la compatibilidad'
 }
-$null = Tap-Text 'Aceptar'
-$back = Wait-Login 30
-Assert-AppState 'UPGRADE-OLD-REGISTER-LOGIN'
-Check 'UPGRADE-OLD-REGISTER-LOGIN' $back 'tras el registro se vuelve al inicio de sesion'
-Fill-Login $email $secret
-$reached = Wait-Text $HomeText 120
-Assert-AppState 'UPGRADE-OLD-LOGIN'
-Check 'UPGRADE-OLD-LOGIN' $reached 'la cuenta inicia sesion con el APK anterior'
-
-# 2. Estado antes de actualizar
+Assert-AppState 'UPGRADE-OLD-STOP'
 $null = Invoke-Adb "shell am force-stop $Pkg"
 $script:AppPid = ''
+Check 'UPGRADE-OLD-STOPPED' (-not (Get-AppPid)) 'la app anterior se detuvo con am force-stop justo despues del registro'
+Skip 'UPGRADE-OLD-LOGIN' 'omitido deliberadamente: iniciar sesion con el APK anterior no es parte de la prueba y su defecto de memoria puede cerrarlo antes de la actualizacion'
+
+# 2. Estado antes de actualizar
 $dbBefore = Db-State 'antes-de-actualizar'
 $keysBefore = (Keychain-Files) -join ','
 $timesBefore = Get-PackageTimes
 Note "INFO antes: base sha256=$dbBefore clave=$keysBefore firstInstallTime=$($timesBefore[0]) lastUpdateTime=$($timesBefore[1])"
 if (-not $dbBefore) { Stop-Blocked 'DB-BEFORE' 'no se pudo leer el hash de la base antes de actualizar' }
+if (-not $keysBefore) { Stop-Blocked 'KEY-BEFORE' 'no se encontro la clave de la base antes de actualizar' }
 
 # 3. Actualizacion sin borrar datos
 Start-Sleep -Seconds 2
@@ -114,9 +119,8 @@ Check 'UPGRADE-INSTALL' ((Get-Content (Join-Path $script:Out 'install-upgrade.lo
 $timesAfter = Get-PackageTimes
 Note "INFO despues: firstInstallTime=$($timesAfter[0]) lastUpdateTime=$($timesAfter[1])"
 Check 'UPGRADE-IN-PLACE' ($timesAfter[0] -eq $timesBefore[0] -and $timesAfter[1] -ne $timesBefore[1]) 'actualizacion sobre la instalacion existente: firstInstallTime igual, lastUpdateTime nuevo'
-$installedPath = (([string](Invoke-Adb "shell pm path $Pkg")) -split "`n" | Where-Object { $_ -match 'base\.apk' } | Select-Object -First 1) -replace '^package:', ''
-$installedHash = ([string](Invoke-Adb "shell sha256sum $($installedPath.Trim())")).Trim() -replace '\s.*$', ''
-Check 'UPGRADE-APK-IS-NEW' ($installedHash.ToUpper() -eq $newHash) "el APK instalado es el nuevo (base.apk sha256=$installedHash)"
+$installedHash = Get-InstalledApkHash
+Check 'UPGRADE-APK-IS-NEW' ($installedHash -eq $newHash) "el APK instalado es el nuevo (base.apk sha256=$installedHash)"
 $dbAfter = Db-State 'despues-de-actualizar'
 $keysAfter = (Keychain-Files) -join ','
 Check 'UPGRADE-DB-PRESERVED' ($dbAfter -and $dbAfter -eq $dbBefore) 'la base cifrada no cambio con la actualizacion (database-states.txt)'
