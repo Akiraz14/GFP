@@ -2,6 +2,7 @@
 # compilado en este clon o worktree y el JavaScript servido por Metro desde el mismo arbol.
 # Instala la app desde cero (con -AllowAppReset si ya esta instalada), registra una cuenta
 # sintetica por la interfaz y comprueba HU2-CA01 a HU2-CA10 y la regresion HU1-CA18.
+# Desde la Etapa 05, HU2-CA09 espera el formulario de recuperacion de HU3.
 # La contrasena de prueba se genera en cada ejecucion y no se escribe en los resumenes.
 # Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-Hu2DeviceTests.ps1 -Serial emulator-5554 [-AllowAppReset] [-EvidenceRoot <carpeta fuera del repositorio>]
 param(
@@ -74,9 +75,12 @@ Fill-Login 'ana@example' $secret
 Screenshot 'hu2-03-verificar-identificacion' | Out-Null
 Check 'HU2-CA04' (Find-Message (U 'Verificar identificaci\u00f3n')) 'correo sin dominio: Verificar identificacion'
 
-# HU2-CA09
+# HU2-CA09 (desde la Etapa 05 el enlace abre el formulario de HU3, no la pantalla provisional)
 $null = Tap-Text (U 'Olvid\u00e9 mi contrase\u00f1a')
-Check 'HU2-CA09' (Wait-Text (U 'Pantalla provisional: se implementa con HU3.') 20) 'el enlace lleva a la ruta de recuperacion (pantalla provisional de HU3)'
+$recovery = Wait-Text (U 'Comenzar recuperaci\u00f3n') 20
+Screenshot 'hu2-03b-recuperacion' | Out-Null
+Assert-AppState 'HU2-CA09'
+Check 'HU2-CA09' ($recovery -and [bool](Find-Text (Get-Ui) (U 'Recuperar contrase\u00f1a'))) 'el enlace abre el formulario de recuperacion de HU3 (Recuperar contrasena, Comenzar recuperacion)'
 Restart-App
 $null = Wait-Login 120
 
