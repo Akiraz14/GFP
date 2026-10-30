@@ -56,7 +56,7 @@ texto y prototipo se decide individualmente; no existe regla general de preceden
 | 03 (antes) | Tratamiento de navegaciones hacia pantallas de etapas futuras (G-07) |
 | 03 — HU1 | D1 formulario único (texto) vs. asistente de 3 pasos (prototipo); D2 celular obligatorio u opcional; D3 criterio de usuario ya registrado; D4 contenido de `document_types`; D5 catálogo de preguntas de seguridad; D6 definición de "preguntas similares"; D7 caracteres permitidos en nombres; D8 lista de códigos de país; D9 normalización de respuestas; D10 longitud máxima de contraseña |
 | 04 — HU2 | D1 alcance y persistencia del bloqueo; D2 distinción documento/celular/correo; D3 pantalla destino tras iniciar sesión; D4 cierre y duración de sesión (no definido) |
-| 05 — HU3 | D1 límite de intentos de respuesta; D2 re-aleatorización de preguntas; D3 normalización (= E03-D9) |
+| 05 — HU3 | D1 límite de intentos de respuesta; D2 re-aleatorización de preguntas; D3 normalización (= E03-D9). Adoptadas con E05-D4 a E05-D9 en `decisiones-etapa-05.md`, pendientes de ratificación; HU3 implementada en `e05/hu3-recuperar-contrasena` (2026-10-30), pendiente de validación en emulador, revisión e integración |
 | 06 — HU8 | D1 categorías personalizadas por usuario o globales; D2 tipo de las categorías del sistema; D3 reasignación de categorías de ingreso a "Otros"; D4 acceso a la pantalla Categorías; D5 catálogo de íconos |
 | 07 — HU4 | D1 filtrado de categorías por tipo; D2 nombres de botones; D3 destino de Cancelar y "vista principal"; D4 limpiar formulario vs. pantalla "¡Operación exitosa!"; D5 decimales y monto máximo |
 | 08 — HU5 | D1 borrado físico vs. lógico; D2 nombre del botón de foto; D3 validación del rango de fechas |
