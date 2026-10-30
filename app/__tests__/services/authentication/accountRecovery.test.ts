@@ -4,7 +4,14 @@ import {
   AccountRecoveryService,
   RECOVERY_CHALLENGE_TTL_MS,
 } from '../../../src/services/authentication/accountRecovery';
+import { AccountLoginService } from '../../../src/services/authentication/accountLogin';
 import { verifySecret } from '../../../src/services/authentication/secretVerifier';
+import { SessionManager } from '../../../src/services/session/sessionManager';
+import type { SqlDatabase } from '../../../src/infrastructure/database/sqlDatabase';
+import {
+  toHex,
+  utf8Encode,
+} from '../../../src/infrastructure/security/encoding';
 import {
   nodePbkdf2Engine,
   nodeRandomBytes,
@@ -341,7 +348,7 @@ describe('account recovery with security questions (HU3)', () => {
         NEW_PASSWORD,
         NEW_PASSWORD,
       ),
-    ).resolves.toEqual({ status: 'invalid_data' });
+    ).resolves.toEqual({ status: 'challenge_expired' });
     const luisQuestions = await challenge(service, 'luis@example.com');
     await expect(
       service.complete(
@@ -366,5 +373,152 @@ describe('account recovery with security questions (HU3)', () => {
         nodePbkdf2Engine,
       ),
     ).resolves.toBe(true);
+  });
+
+  test('HU3-CA03: an empty or malformed identifier is rejected without counting an attempt', async () => {
+    const { service } = await setup();
+    for (const identifier of [
+      '',
+      '   ',
+      'ana@',
+      'ana@example',
+      '@example.com',
+    ]) {
+      await expect(service.start(identifier)).resolves.toEqual({
+        status: 'invalid_identifier',
+      });
+    }
+    await expect(service.start('ana@example.com')).resolves.toMatchObject({
+      status: 'challenge',
+    });
+  });
+
+  test('HU3-CA02: starts with the email, the document or the phone number', async () => {
+    const { service } = await setup();
+    for (const identifier of [
+      'ANA@example.com',
+      '1001',
+      '+573001112233',
+      '+57 300 111 2233',
+      '3001112233',
+    ]) {
+      await expect(service.start(identifier)).resolves.toMatchObject({
+        status: 'challenge',
+      });
+    }
+  });
+
+  test('A-ID2: an ambiguous national number asks for the country code without counting an attempt', async () => {
+    const { database, service } = await setup();
+    await createAccount(
+      database,
+      profile({
+        documentNumber: '3003',
+        email: 'eva@example.com',
+        phoneCountryCode: '+1',
+        phoneNumber: '3001112233',
+      }),
+    );
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await expect(service.start('3001112233')).resolves.toEqual({
+        status: 'phone_country_code_required',
+      });
+    }
+    await expect(service.start('+13001112233')).resolves.toMatchObject({
+      status: 'challenge',
+    });
+    await expect(service.start('ana@example.com')).resolves.toMatchObject({
+      status: 'challenge',
+    });
+  });
+
+  test('HU3-CA12: after a recovery the new password logs in even if the device login was locked', async () => {
+    const { database, service } = await setup();
+    const login = new AccountLoginService({
+      database,
+      engine: nodePbkdf2Engine,
+      sessions: new SessionManager(nodeRandomBytes),
+      random: nodeRandomBytes,
+      now: () => 1_000_000,
+      parameters: TEST_PARAMETERS,
+    });
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await login.login('ana@example.com', 'Incorrecta1!');
+    }
+    await expect(
+      login.login('ana@example.com', 'Clave123!'),
+    ).resolves.toMatchObject({ status: 'locked' });
+    const questions = await challenge(service);
+    await expect(
+      service.complete(
+        'ana@example.com',
+        questions.map(id => answerFor(id)),
+        NEW_PASSWORD,
+        NEW_PASSWORD,
+      ),
+    ).resolves.toEqual({ status: 'password_updated' });
+    await expect(
+      login.login('ana@example.com', 'Clave123!'),
+    ).resolves.toMatchObject({ status: 'invalid_credentials' });
+    await expect(
+      login.login('ana@example.com', NEW_PASSWORD),
+    ).resolves.toMatchObject({ status: 'authenticated' });
+  });
+
+  test('HU3-CA06: the new password is stored only as a PBKDF2 verifier', async () => {
+    const { database, ana, service } = await setup();
+    const questions = await challenge(service);
+    await service.complete(
+      'ana@example.com',
+      questions.map(id => answerFor(id)),
+      NEW_PASSWORD,
+      NEW_PASSWORD,
+    );
+    const rows = (
+      await database.execute('SELECT * FROM credentials WHERE user_id = ?', [
+        ana,
+      ])
+    ).rows;
+    expect(rows).toHaveLength(1);
+    const plain = toHex(utf8Encode(NEW_PASSWORD));
+    for (const value of Object.values(rows[0])) {
+      if (ArrayBuffer.isView(value)) {
+        expect(
+          toHex(
+            new Uint8Array(value.buffer, value.byteOffset, value.byteLength),
+          ),
+        ).not.toContain(plain);
+      } else {
+        expect(String(value)).not.toContain(NEW_PASSWORD);
+      }
+    }
+  });
+
+  test('lists the security question prompts for the challenge', async () => {
+    const { service } = await setup();
+    const questions = await challenge(service);
+    const catalog = await service.listSecurityQuestions();
+    for (const id of questions) {
+      expect(catalog.find(question => question.id === id)?.prompt).toBeTruthy();
+    }
+  });
+
+  test('reports a database failure without throwing', async () => {
+    const { database } = await setup();
+    const broken: SqlDatabase = Object.assign(Object.create(database), {
+      execute: () => Promise.reject(new Error('disk I/O error')),
+    });
+    const service = new AccountRecoveryService({
+      database: broken,
+      engine: nodePbkdf2Engine,
+      random: nodeRandomBytes,
+      parameters: TEST_PARAMETERS,
+    });
+    await expect(service.start('ana@example.com')).resolves.toEqual({
+      status: 'failed',
+    });
+    await expect(
+      service.complete('ana@example.com', [], NEW_PASSWORD, NEW_PASSWORD),
+    ).resolves.toEqual({ status: 'failed' });
   });
 });

@@ -14,7 +14,9 @@ import {
   remainingLockMs,
   type ThrottlePolicy,
 } from './attemptThrottle';
+import { LOGIN_THROTTLE_SUBJECT } from './accountLogin';
 import { validateNewPassword, type PasswordViolation } from './passwordPolicy';
+import { emailError } from './registrationValidation';
 import { serializedByDatabase } from '../databaseQueue';
 import {
   createSecretVerifier,
@@ -25,22 +27,52 @@ import {
   pickRecoveryQuestions,
   RECOVERY_QUESTION_COUNT,
   type SecurityAnswerInput,
+  type SecurityQuestion,
 } from './securityQuestionPolicy';
 
 export const RECOVERY_CHALLENGE_TTL_MS = 15 * 60_000;
 export const UNKNOWN_IDENTIFIER_SUBJECT = 'unknown-identifier';
 
+export type RecoveryIdentifierError = 'required' | 'identifier_format';
+
 export type RecoveryStartResult =
   | { status: 'challenge'; questionIds: [string, string] }
   | { status: 'invalid_identifier' }
-  | { status: 'locked'; retryAfterMs: number };
+  | { status: 'phone_country_code_required' }
+  | { status: 'locked'; retryAfterMs: number }
+  | { status: 'failed' };
 
 export type RecoveryCompletionResult =
   | { status: 'password_updated' }
   | { status: 'invalid_data' }
   | { status: 'password_rejected'; violations: PasswordViolation[] }
   | { status: 'confirmation_mismatch' }
-  | { status: 'locked'; retryAfterMs: number };
+  | { status: 'challenge_expired' }
+  | { status: 'locked'; retryAfterMs: number }
+  | { status: 'failed' };
+
+export interface RecoveryGateway {
+  listSecurityQuestions(): Promise<SecurityQuestion[]>;
+  start(identifier: string): Promise<RecoveryStartResult>;
+  complete(
+    identifier: string,
+    answers: readonly SecurityAnswerInput[],
+    newPassword: string,
+    confirmation: string,
+  ): Promise<RecoveryCompletionResult>;
+}
+
+export function validateRecoveryIdentifier(
+  identifier: string,
+): RecoveryIdentifierError | null {
+  const trimmed = identifier.trim();
+  if (trimmed.length === 0) {
+    return 'required';
+  }
+  return trimmed.includes('@') && emailError(trimmed) !== null
+    ? 'identifier_format'
+    : null;
+}
 
 export type AccountRecoveryDependencies = {
   database: SqlDatabase;
@@ -51,7 +83,7 @@ export type AccountRecoveryDependencies = {
   parameters?: VerifierParameters;
 };
 
-export class AccountRecoveryService {
+export class AccountRecoveryService implements RecoveryGateway {
   private readonly random: RandomBytesSource;
   private readonly now: () => number;
   private readonly policy: ThrottlePolicy;
@@ -85,21 +117,36 @@ export class AccountRecoveryService {
     );
   }
 
-  start(identifier: string): Promise<RecoveryStartResult> {
-    return serializedByDatabase(this.dependencies.database, () =>
-      this.startSerialized(identifier),
-    );
+  listSecurityQuestions(): Promise<SecurityQuestion[]> {
+    return this.repository().getSecurityQuestionCatalog();
   }
 
-  complete(
+  async start(identifier: string): Promise<RecoveryStartResult> {
+    if (validateRecoveryIdentifier(identifier) !== null) {
+      return { status: 'invalid_identifier' };
+    }
+    try {
+      return await serializedByDatabase(this.dependencies.database, () =>
+        this.startSerialized(identifier),
+      );
+    } catch {
+      return { status: 'failed' };
+    }
+  }
+
+  async complete(
     identifier: string,
     answers: readonly SecurityAnswerInput[],
     newPassword: string,
     confirmation: string,
   ): Promise<RecoveryCompletionResult> {
-    return serializedByDatabase(this.dependencies.database, () =>
-      this.completeSerialized(identifier, answers, newPassword, confirmation),
-    );
+    try {
+      return await serializedByDatabase(this.dependencies.database, () =>
+        this.completeSerialized(identifier, answers, newPassword, confirmation),
+      );
+    } catch {
+      return { status: 'failed' };
+    }
   }
 
   private async startSerialized(
@@ -117,11 +164,15 @@ export class AccountRecoveryService {
         retryAfterMs: remainingLockMs(unknownState, now),
       };
     }
-    const userId = await repository.findUserIdByIdentifier(identifier);
-    if (userId === null) {
+    const lookup = await repository.lookupIdentifier(identifier);
+    if (lookup.status === 'phone_country_code_required') {
+      return { status: 'phone_country_code_required' };
+    }
+    if (lookup.status === 'not_found') {
       await this.recordFailure(repository, UNKNOWN_IDENTIFIER_SUBJECT);
       return { status: 'invalid_identifier' };
     }
+    const userId = lookup.userId;
     const state = await this.lockState(repository, userId);
     if (isLocked(state, now)) {
       return { status: 'locked', retryAfterMs: remainingLockMs(state, now) };
@@ -170,7 +221,7 @@ export class AccountRecoveryService {
     }
     const challenge = await repository.getRecoveryChallenge(userId);
     if (challenge === null || challenge.expiresAt <= now) {
-      return { status: 'invalid_data' };
+      return { status: 'challenge_expired' };
     }
     let allCorrect = answers.length === RECOVERY_QUESTION_COUNT;
     for (const questionId of challenge.questionIds) {
@@ -199,7 +250,11 @@ export class AccountRecoveryService {
       await transactional.replaceCredential(userId, credential, now);
       await transactional.deleteRecoveryChallenge(userId);
       await transactional.saveThrottle('recovery', userId, registerSuccess());
-      await transactional.saveThrottle('login', userId, registerSuccess());
+      await transactional.saveThrottle(
+        'login',
+        LOGIN_THROTTLE_SUBJECT,
+        registerSuccess(),
+      );
     });
     return { status: 'password_updated' };
   }

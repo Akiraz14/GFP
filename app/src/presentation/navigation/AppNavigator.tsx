@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { AppServices } from '../../services/appServices';
 import type { UserSession } from '../../services/session/sessionManager';
 import { LoginScreen } from '../login/LoginScreen';
+import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
 import { ProvisionalScreen } from '../screens/ProvisionalScreen';
 import {
@@ -45,6 +46,14 @@ export function AppNavigator({ services }: { services: AppServices }) {
           setSession(started);
           setRoute(AUTHENTICATED_HOME_ROUTE);
         }}
+        onNavigate={setRoute}
+      />
+    );
+  }
+  if (visible === ROUTES.passwordRecovery) {
+    return (
+      <PasswordRecoveryScreen
+        gateway={services.recovery}
         onNavigate={setRoute}
       />
     );
