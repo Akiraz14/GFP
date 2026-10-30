@@ -34,7 +34,7 @@ Los nombres técnicos existentes de paquetes, API y contratos públicos se conse
 ## 3. Etapas, decisiones y evidencias
 
 - En prosa: «Etapa 02», «Etapa 03».
-- Directorios de evidencias: `evidencias/ETAPA-01/`, `evidencias/ETAPA-02/`, etc.
+- Directorios de evidencias: desde la Etapa 05, `GFP-evidencias\eNN\`, fuera del repositorio (G-10, `flujo-de-trabajo.md`). `evidencias/ETAPA-01/` y `evidencias/ETAPA-02/` del repositorio, y `GFP-e03-evidencias` y `GFP-e04-evidencias`, se conservan como evidencia histórica donde están.
 - Nuevos nombres de archivo: `kebab-case`, ASCII, sin espacios ni tildes, salvo los que exige una herramienta (`README.md`, `package.json`, `AndroidManifest.xml`) o las convenciones de la tabla anterior.
 - Fechas en evidencias: `YYYYMMDD` (por ejemplo `claude-20261025/`).
 - Se conservan los identificadores existentes: `E02-D1` a `E02-D9`, `E02-C1` a `E02-C8`, `E03-D1` a `E03-D10`, `G-xx`, `C-xx`, `HUx-CAyy`.

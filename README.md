@@ -21,7 +21,7 @@ responsable, y siguen siendo la fuente de verdad del proyecto:
 | `app/` | Proyecto React Native 0.87.1 (`co.gfpsas.gestionfinanciera`) |
 | `app/src/` | Capas según C4 Nivel 3 (ver `app/src/README.md`) |
 | `docs/` | Plan de etapas, decisiones, trazabilidad y guías de validación |
-| `evidencias/` | Resultados de validación por etapa |
+| `evidencias/` | Evidencias históricas de las Etapas 01 y 02; las siguientes se guardan fuera del repositorio (`docs/flujo-de-trabajo.md`) |
 | `scripts/` | `validar-etapa.ps1` (validación Android en Windows) |
 
 ## Comandos (desde `app/`)
@@ -38,5 +38,8 @@ Validación Android completa: ver `docs/validacion/ETAPA-01.md`.
 
 ## Ramas
 
-- `main`: solo etapas aprobadas. Aún no existe: se creará sobre el commit aprobado de la Etapa 01, junto con la etiqueta `etapa-01-aprobada`.
-- `etapa/NN-nombre`: trabajo de cada etapa; al aprobarse se integra en `main` y se etiqueta `etapa-NN-aprobada`.
+- `main`: rama estable y publicada; solo recibe merges `--no-ff` aprobados.
+- `eNN/<historia>` (etapas) y `fix/<tema>` (correcciones): se crean desde `main` actualizada.
+- `etapa-NN-aprobada`: etiqueta del cierre aprobado de cada etapa.
+
+Metodología completa en `docs/flujo-de-trabajo.md`.
