@@ -18,7 +18,9 @@ validación en Windows y en los emuladores está pendiente de ejecución por el 
   el estado de Git no cambió. `npm ci` y Gradle solo escriben en carpetas ignoradas
   (`node_modules`, `build`, `.gradle`).
 - No se modifica ninguna evidencia anterior. Las de las Etapas 03 y 04 siguen en
-  `GFP-e03-evidencias\` y `GFP-e04-evidencias\`.
+  `GFP-e03-evidencias\` y `GFP-e04-evidencias\`. Ningún comando de este documento escribe en
+  ellas: los scripts reciben `-EvidenceRoot $Ev` y el recorrido manual crea su propia carpeta
+  `$Run` dentro de `$Ev`.
 
 ## 1. Windows: controles estáticos, Jest y APK
 
@@ -116,25 +118,41 @@ Contraseñas, respuestas y bloqueos:
 | R05 | `3105550001` | «Ingresa el número celular con el código de país» | A-ID2, E05-D7 |
 | R06 | `HU3.A@example.com` | Aparecen 2 de las preguntas de A, «Nueva contraseña», «Confirmar nueva contraseña» y «Actualizar contraseña»; el identificador no se puede editar | HU3-CA02, HU3-CA04 |
 | R07 | Atrás de Android; vuelve a entrar y empieza con `5005001` y después con `+573105550001` | El inicio de sesión aparece al pulsar Atrás; con los tres identificadores se muestran las mismas 2 preguntas (reto vigente) | E05-D6, HU3-CA02, E05-D2 |
-| R08 | Respuestas vacías y una contraseña válida | «Ingresa la respuesta.» en ambas y el aviso «Datos ingresados incorrectos» | HU3-CA08, HU3-CA09 |
-| R09 | Respuestas correctas y la contraseña `sinnumero!` | Requisito «Al menos un número» pendiente y aviso «Datos ingresados incorrectos» | HU3-CA05, HU3-CA09 |
-| R10 | Respuestas correctas y una confirmación distinta | «La confirmación no coincide con la nueva contraseña.» y el aviso | HU3-CA07 |
-| R11 | Una respuesta incorrecta | Aviso «Datos ingresados incorrectos»; se borran las respuestas y las contraseñas | HU3-CA09, HU3-CA10 |
-| R12 | Respuestas correctas, contraseña nueva válida y confirmada | «La contraseña fue actualizada. Inicia sesión con la nueva contraseña.»; «Aceptar» abre el inicio de sesión | HU3-CA11, HU3-CA13 |
+| R08 | *Validación local.* Deja vacías las dos respuestas y escribe una contraseña válida y su confirmación; pulsa «Actualizar contraseña» | «Ingresa la respuesta.» junto a cada respuesta y el aviso «Datos ingresados incorrectos». No aparece «Verificando…». Tras «Aceptar», la contraseña y la confirmación siguen escritas | HU3-CA08, HU3-CA09 |
+| R09 | *Validación local.* Escribe las respuestas correctas y la contraseña `sinnumero!` con la misma confirmación | Requisito «Al menos un número» pendiente, «Datos ingresados incorrectos» junto a «Nueva contraseña» y el mismo aviso. No aparece «Verificando…». Tras «Aceptar», las respuestas y las contraseñas siguen escritas | HU3-CA05, HU3-CA08, HU3-CA09 |
+| R10 | *Validación local.* Corrige la contraseña con una válida y escribe una confirmación distinta | «La confirmación no coincide con la nueva contraseña.» junto a la confirmación y el aviso «Datos ingresados incorrectos». No aparece «Verificando…». Tras «Aceptar», los campos siguen escritos | HU3-CA07, HU3-CA08 |
+| R11 | *Verificación del servicio.* Escribe una respuesta correcta, otra incorrecta y una contraseña válida confirmada | Aparece «Verificando…» y después el aviso «Datos ingresados incorrectos», sin indicar qué respuesta falló. Las respuestas y las contraseñas quedan vacías. Cuenta un intento de recuperación para A | HU3-CA09, HU3-CA10 |
+| R12 | *Actualización.* Escribe de nuevo las respuestas correctas y una contraseña válida confirmada | «Verificando…» y «La contraseña fue actualizada. Inicia sesión con la nueva contraseña.»; «Aceptar» abre el inicio de sesión. Como solo R11 llegó al servicio, A tiene un intento y no está bloqueada; R08 a R10 no contaron | HU3-CA11, HU3-CA13, E05-D5 |
 | R13 | Inicia sesión con A y la contraseña anterior; después, con la nueva | La anterior: «El campo identificación o contraseña son incorrectos»; la nueva: pantalla provisional de HU5 | HU3-CA12 |
-| R14 | Con B: tres veces respuestas incorrectas; después, respuestas correctas | Tres veces «Datos ingresados incorrectos»; al cuarto intento, «Superaste los intentos permitidos. La recuperación queda bloqueada durante 15 minutos.» y vuelve el identificador. «Comenzar recuperación» con B repite el bloqueo | E05-D1 |
+| R14 | *Bloqueo de recuperación (HU3), no de inicio de sesión (HU2).* Cierra y vuelve a abrir la app; en la recuperación, con B, envía tres veces respuestas incorrectas con una contraseña válida confirmada; después, envía las respuestas correctas | Las tres veces, «Verificando…» y «Datos ingresados incorrectos». En el cuarto envío, «Superaste los intentos permitidos. La recuperación queda bloqueada durante 15 minutos.» y vuelve la fase del identificador; «Comenzar recuperación» con B repite ese aviso. El texto es el de HU3, no el de HU2 («El acceso queda bloqueado…») | E05-D1 |
+| R14b | Vuelve al inicio de sesión con Atrás e inicia sesión con B y su contraseña actual | Entra (pantalla provisional de HU5): el bloqueo de recuperación de B no bloquea el inicio de sesión. Los contadores son distintos: `scope = 'recovery'` por cuenta y `scope = 'login'` del dispositivo | E05-D1, E04-D1 |
 | R15 | Con C: «Comenzar recuperación» con `+13105550001`; espera 16 minutos; respuestas correctas y contraseña válida | «El tiempo para responder las preguntas terminó. Comienza la recuperación de nuevo.» y vuelve el identificador | E05-D2 |
 | R16 | Contraseña en claro | `adb logcat -d` no contiene ninguna contraseña ni respuesta usada: `adb logcat -d \| Select-String -SimpleMatch '<valor>'` sin resultados para cada valor anotado a mano, sin guardarlo en archivos | HU3-CA06 |
 
 Pruebas que necesitan preparación especial:
 
 - **R05:** necesita dos cuentas con el mismo número nacional en países distintos (A y C).
-- **R14:** deja B bloqueada entre 15 minutos y 24 horas, según los bloqueos previos.
+- **R14:** deja bloqueada la recuperación de B entre 15 minutos y 24 horas, según los bloqueos
+  previos. No afecta al inicio de sesión (R14b).
 - **R15:** exige esperar más de 15 minutos. Las imágenes `google_apis_playstore` no permiten
   `adb root`, así que no se puede adelantar el reloj de forma fiable.
 - **HU3-CA12 con el inicio de sesión bloqueado (E05-D8):** opcional. Se hacen tres inicios de
   sesión fallidos, se recupera la cuenta y se comprueba que la contraseña nueva entra sin esperar.
   Jest ya lo cubre.
+
+Los pasos distinguen tres comportamientos (E05-D5):
+
+- **Validación local (R08 a R10):** la pantalla comprueba las respuestas vacías, la política y la
+  confirmación antes de llamar al servicio. Muestra el mensaje del campo y el aviso «Datos
+  ingresados incorrectos», no aparece «Verificando…», no cuenta un intento y conserva los campos.
+- **Verificación del servicio (R11, R14):** las respuestas se comprueban en el servicio. Aparece
+  «Verificando…», el aviso no indica qué falló, se cuenta un intento y se borran las respuestas y
+  las contraseñas.
+- **Actualización (R12):** el servicio cambia la credencial y la pantalla vuelve al inicio de
+  sesión.
+
+R12 demuestra además que R08 a R10 no contaron: si hubieran contado, A tendría cuatro fallos y
+estaría bloqueada.
 
 Anota el resultado de cada paso (PASS o FAIL, con una observación) en `$Run\resultados.md`.
 
@@ -144,6 +162,6 @@ Anota el resultado de cada paso (PASS o FAIL, con una observación) en `$Run\res
 2. Android 14 y Android 10: `Invoke-Hu2DeviceTests.ps1`, `Invoke-Hu1DeviceRegression.ps1` e
    `Invoke-HermesUnicodeCheck.ps1` sin FAIL ni BLOCKED, salvo el defecto conocido de `E03-V13` en
    Android 14, que se confirma a mano.
-3. Recorrido manual R01 a R16 en ambos emuladores, con sus capturas.
+3. Recorrido manual R01 a R16 (incluido R14b) en ambos emuladores, con sus capturas.
 4. Comparación de la pantalla con el prototipo de HU3, que requiere sus imágenes.
 5. Ratificación de E05-D1 a E05-D9 por el responsable.
