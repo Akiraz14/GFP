@@ -1,14 +1,19 @@
 package co.gfpsas.gestionfinanciera.crypto;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 public final class Pbkdf2HmacSha256 {
+  public static final String ALGORITHM = "PBKDF2WithHmacSHA256";
   public static final int MAX_ITERATIONS = 10_000_000;
   public static final int MAX_KEY_LENGTH_BYTES = 64;
-  private static final int HASH_LENGTH_BYTES = 32;
 
   private Pbkdf2HmacSha256() {}
 
@@ -23,36 +28,41 @@ public final class Pbkdf2HmacSha256 {
     if (keyLengthBytes < 1 || keyLengthBytes > MAX_KEY_LENGTH_BYTES) {
       throw new IllegalArgumentException("invalid key length");
     }
-    Mac mac = Mac.getInstance("HmacSHA256");
-    mac.init(new SecretKeySpec(password, "HmacSHA256"));
-    byte[] output = new byte[keyLengthBytes];
-    byte[] block = new byte[HASH_LENGTH_BYTES];
-    byte[] accumulator = new byte[HASH_LENGTH_BYTES];
-    int blocks = (keyLengthBytes + HASH_LENGTH_BYTES - 1) / HASH_LENGTH_BYTES;
+    SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
+    char[] characters = decodeUtf8(password);
+    PBEKeySpec spec = new PBEKeySpec(characters, salt, iterations, keyLengthBytes * 8);
     try {
-      for (int blockIndex = 1; blockIndex <= blocks; blockIndex++) {
-        mac.update(salt);
-        mac.update((byte) (blockIndex >>> 24));
-        mac.update((byte) (blockIndex >>> 16));
-        mac.update((byte) (blockIndex >>> 8));
-        mac.update((byte) blockIndex);
-        mac.doFinal(block, 0);
-        System.arraycopy(block, 0, accumulator, 0, HASH_LENGTH_BYTES);
-        for (int iteration = 1; iteration < iterations; iteration++) {
-          mac.update(block);
-          mac.doFinal(block, 0);
-          for (int index = 0; index < HASH_LENGTH_BYTES; index++) {
-            accumulator[index] ^= block[index];
-          }
+      byte[] derived = factory.generateSecret(spec).getEncoded();
+      if (derived == null || derived.length != keyLengthBytes) {
+        if (derived != null) {
+          Arrays.fill(derived, (byte) 0);
         }
-        int offset = (blockIndex - 1) * HASH_LENGTH_BYTES;
-        System.arraycopy(
-            accumulator, 0, output, offset, Math.min(HASH_LENGTH_BYTES, keyLengthBytes - offset));
+        throw new GeneralSecurityException("unexpected derived key length");
       }
-      return output;
+      return derived;
     } finally {
-      Arrays.fill(block, (byte) 0);
-      Arrays.fill(accumulator, (byte) 0);
+      spec.clearPassword();
+      Arrays.fill(characters, '\0');
     }
+  }
+
+  static char[] decodeUtf8(byte[] bytes) {
+    CharBuffer buffer;
+    try {
+      buffer =
+          StandardCharsets.UTF_8
+              .newDecoder()
+              .onMalformedInput(CodingErrorAction.REPORT)
+              .onUnmappableCharacter(CodingErrorAction.REPORT)
+              .decode(ByteBuffer.wrap(bytes));
+    } catch (CharacterCodingException error) {
+      throw new IllegalArgumentException("password is not valid UTF-8");
+    }
+    char[] characters = new char[buffer.remaining()];
+    buffer.get(characters);
+    if (buffer.hasArray()) {
+      Arrays.fill(buffer.array(), '\0');
+    }
+    return characters;
   }
 }

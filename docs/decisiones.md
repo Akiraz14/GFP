@@ -228,3 +228,18 @@ prueba P-Dx (`validacion/etapa-02-pruebas-dispositivo.md`).
 | P-D2 | Ejecutada el 2026-10-26 en emulador API 29, incluida NFD | 15 PASS (paquete de evidencias `GFP-e03-evidencias`, carpeta `p-d2-20261026-150452/`, fuera del repositorio) |
 | Revisión documental de la Etapa 03 | Cerrada por el responsable (2026-10-25, E03-REVISION) | Decisiones aprobadas documentalmente; implementación y validación pendientes |
 | Autorización explícita para iniciar la Etapa 03 | Concedida por el responsable para implementar HU1 (2026-10-26) | Implementación y validación en emulador registradas en `trazabilidad.md` |
+
+## Nota de implementación de E02-D1: `SecretKeyFactory` en lugar de `Mac` (2026-10-28)
+
+No cambia E02-D1: el algoritmo sigue siendo PBKDF2-HMAC-SHA256, con las mismas iteraciones,
+sal, longitud de la clave derivada, normalización y formato de los verificadores.
+
+| Aspecto | Detalle |
+|---|---|
+| Autorización | WU del responsable del 2026-10-28 («Corregir el consumo de memoria de PBKDF2 en Android»), tras el diagnóstico E1 a E3; sin integración en `main` ni publicación |
+| Motivo | Con `Mac("HmacSHA256")`, Conscrypt crea un contexto nativo en cada `doFinal()` que solo se libera al finalizar el objeto. Seis derivaciones en paralelo (el registro de HU1) agotaron la memoria nativa en Android 14 y 10 (`docs/validacion/etapa-04-diagnostico-memoria-pbkdf2.md`) |
+| Cambio | `Pbkdf2HmacSha256.derive()` usa `SecretKeyFactory("PBKDF2WithHmacSHA256")`; los bytes UTF-8 se decodifican estrictamente a `char[]` sin `String`, y `PBEKeySpec.clearPassword()` y el borrado del `char[]` se hacen en `finally`. UTF-8 no válido se rechaza con `IllegalArgumentException`; si el algoritmo no está disponible se propaga la excepción, sin volver a la implementación anterior. `Pbkdf2Calibration` añade los vectores U1 a U8 y las comprobaciones de rechazo |
+| Sin cambios | `GfpCryptoModule`, la interfaz JavaScript, `PROVISIONAL_PBKDF2_ITERATIONS`, el esquema y los verificadores guardados |
+| Evidencia previa | E3 en emuladores Android 10 y 14: 13 vectores idénticos, verificadores compatibles en ambos sentidos, memoria nativa máxima de unos 2 MB frente a 410–2049 MB en paralelo, y derivación 2–2,6 veces más rápida. En el JDK 21 de Claude, 303 casos aleatorios (Unicode, sal aleatoria, 1–3000 y 600 000 iteraciones, 1–64 bytes) idénticos entre ambas implementaciones |
+| Validación | Emuladores Android 10 y 14, 2026-10-29, APK Debug corregido `26D3F94F…045F` (anterior `B9544684…6F28`): `Pbkdf2Calibration` con 13/13 vectores y 6/6 rechazos (proveedor `BC`); memoria nativa máxima de 1,4–2,0 MB con 6 derivaciones en paralelo; registro, HU2, regresión de HU1 y P-D2 sin fallos; una cuenta registrada con el APK anterior inicia sesión con el corregido tras `adb install -r` con la base intacta (Android 10). Detalle en `docs/validacion/etapa-04-diagnostico-memoria-pbkdf2.md` de la rama de la Etapa 04 |
+| Limitación | Depende de BouncyCastle interno de Android; su versión cambia con el sistema y debe comprobarse con los vectores en cada versión soportada. No se ha medido en un dispositivo físico (P-D1 sigue aplazada) |

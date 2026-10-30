@@ -112,7 +112,7 @@ erDiagram
   }
   auth_throttles {
     TEXT scope PK "login | recovery"
-    TEXT subject PK "id de usuario o unknown-identifier"
+    TEXT subject PK "id de usuario, unknown-identifier o device"
     INTEGER failure_count
     INTEGER lock_level
     INTEGER locked_until
@@ -158,13 +158,17 @@ entrega, cualquier cambio de esquema requiere una migración nueva.
 | Iteraciones | **600 000, provisional** (`PROVISIONAL_PBKDF2_ITERATIONS`), versionado en cada registro. Pendiente de la calibración P-D1 |
 | Comparación | Tiempo constante (`constantTimeEqual`) |
 | Formato | Columnas `algorithm`, `iterations`, `salt`, `verifier`, `normalization` y `format_version` (1). `needsRehash()` detecta registros con parámetros antiguos para regenerarlos tras un inicio de sesión correcto |
-| Implementación | Módulo nativo `GfpCrypto` (TurboModule de la app): `Pbkdf2HmacSha256.java` sobre `javax.crypto.Mac("HmacSHA256")` de la plataforma, con su propio grupo de hilos |
+| Implementación | Módulo nativo `GfpCrypto` (TurboModule de la app): `Pbkdf2HmacSha256.java` sobre `SecretKeyFactory("PBKDF2WithHmacSHA256")` de la plataforma (BouncyCastle de Android: 1.61 en Android 10 y 1.68 en Android 14), con su propio grupo de hilos. Sustituye a la implementación sobre `Mac("HmacSHA256")`, que agotaba la memoria nativa con derivaciones en paralelo; el algoritmo, los parámetros y el formato no cambian (nota de implementación de E02-D1 en `decisiones.md`) |
 
 **Por qué no JavaScript:** `@noble/hashes` en Hermes tardó 70,9 s (mediana) en
 600 000 iteraciones en el emulador (`evidencias/ETAPA-02/V4/p3-benchmark.txt`), unas
 8 500 iteraciones por segundo. Un segundo por derivación con ese rendimiento no es un
 parámetro defendible. La implementación nativa recibe los bytes UTF-8 exactos, no un
-`String` de Java, para que la normalización dependa solo de la política de la app.
+`String` de Java, para que la normalización dependa solo de la política de la app. Los
+decodifica estrictamente a `char[]`, sin crear un `String`, para `PBEKeySpec`, cuyo proveedor
+vuelve a codificarlos en UTF-8; una secuencia UTF-8 no válida se rechaza. La equivalencia con
+los bytes originales se comprueba con vectores que incluyen tildes, NFC, NFD, emoji, CJK y signos
+combinados.
 
 Normalización (E02-D2):
 
@@ -188,7 +192,7 @@ Normalización (E02-D2):
 | Intentos limitados con esperas progresivas | WU | 3 fallos bloquean la recuperación de la cuenta durante 15 minutos; cada bloqueo siguiente dobla la espera (30, 60, 120… minutos) hasta 24 horas (E05-D1). Los identificadores inexistentes repetidos bloquean el inicio de la recuperación en el dispositivo con la misma regla |
 | No cambiar la contraseña sin completar la verificación | HU3, WU | La nueva contraseña cumple la política, coincide con la confirmación y solo se guarda tras verificar ambas respuestas, en una transacción que también elimina el reto y reinicia los contadores |
 | Retroceso del reloj | Riesgo propio | Si la hora del dispositivo retrocede, el bloqueo vigente se mantiene |
-| Intentos simultáneos | Revisión consolidada | `start()` y `complete()` se ejecutan en serie por base de datos, también entre instancias del servicio, para que cada intento lea el contador del anterior. El inicio de sesión (HU2) debe aplicar la misma regla |
+| Intentos simultáneos | Revisión consolidada | `start()` y `complete()` se ejecutan en serie por base de datos, también entre instancias del servicio, para que cada intento lea el contador del anterior. El inicio de sesión (HU2) aplica la misma regla (E04-D7) |
 
 Limitaciones que se aceptan expresamente:
 
@@ -198,7 +202,7 @@ Limitaciones que se aceptan expresamente:
 - Uso permitido: solo una demostración académica controlada; no se distribuye a usuarios reales hasta revisar y tratar el mecanismo (E03-D11). Controles, riesgos, mitigaciones futuras y pruebas pendientes en `decisiones-etapa-03.md`.
 - La protección real frente a la adivinación es la limitación de intentos. Quien obtenga el archivo de la base y su clave podría probar todas las combinaciones fuera de línea; PBKDF2 solo lo encarece.
 - El mensaje «Identificador incorrecto», exigido por HU3, permite saber si un identificador está registrado. Se mitiga con la limitación de intentos sobre identificadores inexistentes.
-- El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY`. El alcance del bloqueo (por cuenta o por dispositivo) es E04-D1; la tabla `auth_throttles` admite ambos.
+- El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY` con un único contador del dispositivo (`scope = 'login'`, `subject = 'device'`), según E04-D1 (`decisiones-etapa-04.md`, pendiente de ratificación).
 
 ## 5. Clave de la base de datos (E02-D3)
 

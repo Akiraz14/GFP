@@ -16,7 +16,7 @@ criterio derivado figura en su columna «Origen».
 | Historia | Criterios | Etapa | Estado |
 |---|---|---|---|
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
-| HU2 Iniciar sesión | CA01–CA11 | 04 | Pendiente |
+| HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada en la rama `e04/hu2-login` (2026-10-28), sin integrar en `main`; CA01–CA08 verificados en Jest y en Android 10 y 14 (2026-10-28); CA09–CA11 parciales |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Pendiente |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Pendiente |
@@ -32,9 +32,9 @@ criterio derivado figura en su columna «Origen».
 | Criterio | Historia | Dependencia | Evidencia exigible en la etapa actual (propuesta) | Verificación definitiva |
 |---|---|---|---|---|
 | HU1-CA18 | HU1 | Pantalla de inicio de sesión (HU2) | Prueba: Cancelar limpia todos los campos y emite navegación a la ruta de inicio de sesión | Verificado en E03 (2026-10-27): el criterio exige regresar a la vista de inicio de sesión, no autenticar; en E04 se repite como regresión cuando HU2 sustituya la pantalla provisional |
-| HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación | E05 |
-| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5, HU6, HU9, HU10) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 | E13 |
-| HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 | E13 |
+| HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación (cumplida en E04: `LoginScreen.test.tsx`, `App.test.tsx`) | E05 |
+| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5, HU6, HU9, HU10) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
+| HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | E13 |
 | HU8-CA07c | HU8 | Movimientos (HU4) | Prueba de eliminación; reasignación con datos de prueba solo si el esquema existe desde E02 | E07 |
 | HU8-CA08 | HU8 | Formulario HU4 y filtros HU5 | Prueba: la categoría creada o editada aparece de inmediato en la consulta de categorías activas | E07 y E08 |
 | HU4-CA07 y CA08 (variante edición) | HU4 | Punto de entrada a la edición (HU5) | Prueba de integración del modo edición: guarda y muestra el mensaje de actualización | E08 |
@@ -232,6 +232,40 @@ de `app/` que difieren de `b5b4140`.
 | `typecheck`, `lint`, `format:check` y Jest | Código 0; 17 suites, 221 pruebas | `hu1-candidate-20261027-175324/` |
 | CE y PPT en el emulador (`emulator-5554`) | Letras rechazadas con el mensaje de su tipo; dígitos aceptados | `hu1-candidate-20261027-175324/v06-ce-solo-digitos.png`, `v06-ppt-solo-digitos.png` |
 | Tipo de teclado (E03-V13) | La primera comprobación dio 3 FAIL porque el script buscaba el formato de registro del teclado de Android 10 y en Android 14 no lo encuentra; además borraba el registro de cada caso. Con la lectura corregida, 14 PASS y 0 FAIL: CC, CE y PPT `inputType=0x83002` (numérico), PA `0x81001` (texto), teclado mostrado, letras rechazadas y dígitos aceptados en CC, CE y PPT, y PA alfanumérico aceptado; el worktree sigue igual al manifiesto | `hu1-candidate-20261027-175324/summary.txt`; `hu1-v13-keyboard-20261027-181849/summary.txt`, `ime-cc.log` a `ime-pa.log`, `teclado-*.png` |
+
+## HU2 — criterios de aceptación (Etapa 04)
+
+Transcripción literal de los 11 criterios de HU2, en el orden del documento fuente.
+Verificación: U, C e I como en HU1; E (ejecución en el emulador). Implementación en la rama
+`e04/hu2-login`; decisiones E04-D1 a E04-D8 en `decisiones-etapa-04.md`, pendientes de
+ratificación. Estado al 2026-10-28: con el commit `438a9f6`, Jest en Linux y en Windows (19
+suites, 264 pruebas) y recorrido completo en los emuladores de Android 10 (API 29) y Android 14
+(API 34) sin fallos; resultados y evidencias en `validacion/etapa-04-pruebas-dispositivo.md`.
+El commit `a4831e9` corrige el doble envío del formulario (HU2-CA06) y añade una prueba. Con
+`d91dfbc` pasaron Jest en Linux y en Windows (265 pruebas) y los tres recorridos en Android 10;
+en Android 14 pasaron la regresión de HU1 y P-D2, y el recorrido de HU2 quedó bloqueado en el
+registro de la cuenta sintética, con la app fuera del primer plano; su repetición está pendiente.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Comprobación en dispositivo prevista | Estado |
+|---|---|---|---|---|---|
+| HU2-CA01 | El campo identificador debe recibir correo electrónico, número de documento o número de celular. | Campo único «Identificador»; búsqueda de A-ID1 a A-ID4 (`lookupIdentifier`) | U, I: `accountLogin.test.ts` (correo, documento normalizado, E.164 con y sin separadores, celular nacional inequívoco) | `HU2-CA01-EMAIL`, `-DOCUMENT`, `-PHONE` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA02 | Los campos identificador y contraseña deben ser obligatorios. | `validateLoginInput()` en la pantalla y en el servicio, sin contar intentos | U, C: `accountLogin.test.ts`, `LoginScreen.test.tsx` | `HU2-CA02` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA03 | No se debe exponer ni almacenar la contraseña en texto plano. | `secureTextEntry`; verificación PBKDF2 (E02-D1); la contraseña no se devuelve, guarda ni registra (E04-D7) | U, C: `accountLogin.test.ts`, `LoginScreen.test.tsx` | `HU2-CA03-DB`, `HU2-CA03-LOGCAT` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA04 | Si el usuario ingresa el correo electrónico, se debe garantizar la validación del símbolo @ y un dominio; de no contar con estos parámetros, debe indicarse al usuario por mensaje “Verificar identificación”. | Si el identificador contiene `@`, se valida con la regla de correo de HU1 | U, C | `HU2-CA04` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA05 | Si el usuario y/o contraseña es incorrecta, se debe generar un mensaje de alerta indicando “El campo identificación o contraseña son incorrectos”. | Diálogo de alerta con el texto literal; mismo resultado y costo para identificador inexistente y contraseña incorrecta (E04-D7) | U, C | `HU2-CA05-PASSWORD`, `-UNKNOWN` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA06 | Si el identificador y/o contraseña son incorrectos en 3 oportunidades, debe bloquearse el acceso a la plataforma por 15 minutos. | Contador único del dispositivo en `auth_throttles` (E04-D1), persistente; intentos en serie | U, C: tercer fallo, bloqueo con la contraseña correcta, fin del bloqueo, reinicio tras éxito, persistencia, reloj hacia atrás, 10 intentos simultáneos | `HU2-CA06` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA07 | El botón “Ingresar” debe validar la información contra los datos almacenados en la base de datos. | `AccountLoginService` sobre la base cifrada; sesión del `SessionManager` | U, I, C: `accountLogin.test.ts`, `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA07` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA08 | El botón “Registrar” debe redirigir al formulario de registro de usuario. | Navegación a `register` | C: `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA08` | Verificado (Jest; Android 10 y 14) |
+| HU2-CA09 | El vínculo “Olvidé mi contraseña” redirige al formulario de recuperación de contraseña. | Navegación a `passwordRecovery` (pantalla provisional de G-07 hasta HU3) | C | `HU2-CA09` | Parcial: navegación verificada en Jest y en Android 10 y 14; verificación definitiva en E05 |
+| HU2-CA10 | La información financiera no debe estar disponible mediante la aplicación sin una autenticación válida. | `requiresSession` y `resolveRoute()` (E04-D3) | C: `App.test.tsx` | `HU2-CA10` (reinicio: vuelve al inicio de sesión) | Parcial: verificado en Jest y en Android 10 y 14 (la sesión no se conserva al reabrir); re-verificación en E07–E12 y E13 |
+| HU2-CA11 | Después de una autenticación válida, el usuario debe acceder únicamente a la información asociada a su cuenta. | Sesión de un único usuario; cada inicio de sesión sustituye la anterior (E04-D4); repositorios basados en la sesión (E02-D4) | U: `accountLogin.test.ts`, `userIsolation.test.ts` | — | Parcial: aislamiento de datos en E07, E08, E11, E12 y E13 |
+
+Regresión de HU1 en la Etapa 04: HU1-CA18 se verifica en Jest con la pantalla real de inicio
+de sesión (`App.test.tsx`: «Cancelar» vuelve a HU2 con los campos vacíos) y en Android 10 y 14
+(`HU1-CA18`, 2026-10-28); en los mismos emuladores pasaron el registro completo de una cuenta y
+P-D3, E03-V09, E03-V06, E03-V13 y P-D2. Se actualizaron tres pruebas de `App.test.tsx` cuyo
+comportamiento cambia con HU2: la app empieza en el inicio de sesión, «Cancelar» lleva a la
+pantalla real y el registro de rutas declara HU1 y HU2 implementadas.
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

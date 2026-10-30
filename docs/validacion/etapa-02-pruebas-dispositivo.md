@@ -23,12 +23,14 @@ adb shell rm /data/local/tmp/gfp-calibration.apk
 ```
 
 `Pbkdf2Calibration` usa la misma clase `Pbkdf2HmacSha256` y el mismo proveedor
-`Mac("HmacSHA256")` que la app. Primero comprueba 5 vectores de referencia y después
-mide 5 derivaciones de 32 bytes.
+(`SecretKeyFactory("PBKDF2WithHmacSHA256")`) que la app. Primero comprueba 13 vectores de
+referencia (V1, V4 a V7 y U1 a U8, con tildes, NFC, NFD, emoji, CJK y signos combinados) y 6
+rechazos o diferencias esperados (UTF-8 no válido, contraseña o sal vacías, 0 iteraciones,
+longitud 65 y contraseña incorrecta), y después mide 5 derivaciones de 32 bytes.
 
 **Criterio de aceptación:**
 
-1. `GFP-PBKDF2|vectors_result|OK|failed=0`. Si falla, la implementación nativa no se usa y se informa el bloqueo.
+1. `GFP-PBKDF2|vectors_result|OK|failed=0` y `GFP-PBKDF2|checks_result|OK|failed=0`. Si falla, la implementación nativa no se usa y se informa el bloqueo.
 2. Con `medianMs` ≤ 1 200 se mantienen 600 000 iteraciones.
 3. Con `medianMs` > 1 200, el nuevo valor es `600000 × 1000 / medianMs`, redondeado hacia abajo a la decena de millar, y se repite la medición con ese valor.
 4. El valor nunca baja de 310 000 iteraciones. Si hiciera falta menos para acercarse a un segundo, se mantiene 310 000 y se registra el tiempo real para que el responsable decida.
