@@ -28,6 +28,11 @@ Se mantiene lo adelantado en la WU del 2026-10-25 y ya implementado en la Etapa 
 Un identificador vacío o con formato de correo inválido, y un celular nacional ambiguo, no cuentan
 como intento, igual que en HU2 (E04-D1, E04-D6). Durante el bloqueo no se verifican respuestas.
 
+El tercer fallo responde «Datos ingresados incorrectos», como los anteriores. El bloqueo se
+anuncia en el intento siguiente, ya sea al pulsar «Actualizar contraseña» o «Comenzar
+recuperación». A diferencia de HU2, que lo anuncia en el mismo tercer fallo (E04-D5), el servicio
+de la Etapa 02 no devuelve el estado del bloqueo junto con el fallo, y esta etapa no lo modifica.
+
 ## E05-D2 — Preguntas elegidas al azar
 
 Se mantiene lo adelantado: las 2 preguntas se eligen al azar (`RNGetRandomValues`) entre las 5
@@ -42,8 +47,11 @@ por qué fallaba.
 
 ## E05-D3 — Normalización de respuestas
 
-Igual que E03-D9: las respuestas se comparan con la normalización `free-text-folded` (sin tildes,
-sin distinguir mayúsculas y con los espacios colapsados), la misma del registro.
+Igual que E03-D9, con las respuestas escritas de E03-D11 (que sustituye a las respuestas
+seleccionables de C-03): se aplica la normalización `free-text-folded`, la misma del registro.
+Consiste en NFC, eliminación de tildes y diacríticos, minúsculas, espacios internos reducidos a
+uno y recorte de los externos (`normalizeFreeTextAnswer()`). El verificador de cada respuesta
+guarda `normalization = 'free-text-folded'`, y la recuperación usa el valor guardado.
 
 ## E05-D4 — Flujo de la pantalla
 
@@ -84,12 +92,17 @@ identificador.» (E04-D5) y el texto aprobado de A-ID2. Propuestas para lo que H
 | Error de la base | «No fue posible recuperar la contraseña. Intenta de nuevo» |
 | Verificación en curso | «Verificando…», con los controles deshabilitados |
 
-Las respuestas y las contraseñas se borran de la pantalla tras cada intento fallido y tras el éxito.
+Las respuestas y las contraseñas se borran de la pantalla tras cada respuesta del servicio que no sea
+un éxito (respuestas incorrectas, bloqueo, reto vencido o error) y tras el éxito, que borra también
+el identificador. Si la validación local de la pantalla falla (respuesta vacía, contraseña débil o
+confirmación distinta), no se llama al servicio, no se cuenta un intento y los campos se conservan
+para corregirlos.
 
 ## E05-D6 — Volver al inicio de sesión
 
 HU3 no define un botón para salir. El botón Atrás de Android vuelve al inicio de sesión en lugar de
-cerrar la app. Así no se añade un control que la historia no pide y no se deja al usuario sin
+cerrar la app, en cualquiera de las dos fases. Mientras hay una verificación en curso, la pulsación
+se ignora. Así no se añade un control que la historia no pide y no se deja al usuario sin
 salida. Se cambia en una línea si el prototipo muestra otra cosa.
 
 ## E05-D7 — Celular nacional ambiguo en la recuperación
@@ -114,4 +127,6 @@ contraseña, así que reiniciar el contador no debilita el bloqueo de HU2.
 ## E05-D9 — Evidencias
 
 Se aplica G-10 (`flujo-de-trabajo.md`): las evidencias de esta etapa se guardan en
-`GFP-evidencias\e05\`, fuera del repositorio.
+`GFP-evidencias\e05\`, fuera del repositorio. Los scripts de `scripts/stage-04/` usan por defecto
+`GFP-e04-evidencias`, así que en esta etapa se ejecutan siempre con
+`-EvidenceRoot "..\GFP-evidencias\e05"` (`validacion/etapa-05-pruebas-dispositivo.md`).

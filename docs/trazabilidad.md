@@ -280,7 +280,8 @@ Verificación: U, C e I como en HU1 y HU2. Implementación en la rama `e05/hu3-r
 sobre el servicio de recuperación de la Etapa 02 (`accountRecovery.ts`) y la pantalla
 `PasswordRecoveryScreen.tsx`. Decisiones E05-D1 a E05-D9 en `decisiones-etapa-05.md`,
 pendientes de ratificación. Estado al 2026-10-30: Jest en Linux (20 suites, 293 pruebas) sin
-fallos; la validación en emulador está pendiente.
+fallos; la validación en Windows y en emulador está pendiente (procedimiento en
+`validacion/etapa-05-pruebas-dispositivo.md`).
 
 | ID | Criterio (literal) | Implementación | Pruebas automatizadas | Estado |
 |---|---|---|---|---|
