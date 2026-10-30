@@ -8,6 +8,9 @@ Historias de usuario: identificadores y nombres literales del documento
 Análisis → plan → implementación → validación → trazabilidad → documentación →
 informe de cierre → pausa obligatoria hasta aprobación explícita.
 
+Gestión de ramas, integración, publicación y evidencias: `flujo-de-trabajo.md` (G-10), desde la
+Etapa 05.
+
 ## Criterio común de cierre de las etapas de historias (03–12)
 
 1. Cada criterio de aceptación literal de la historia figura en `trazabilidad.md` con estado y evidencia.
