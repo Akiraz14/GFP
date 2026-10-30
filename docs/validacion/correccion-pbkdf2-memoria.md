@@ -1,13 +1,13 @@
 # Corrección del consumo de memoria de PBKDF2 en Android (`fix/pbkdf2-memory`)
 
-**Estado (2026-10-30): corrección validada en emuladores Android 10 y 14; pendiente de revisión
-del responsable, sin integrar en `main` y sin validación en un dispositivo físico.**
+**Estado (2026-10-30): corrección validada en emuladores Android 10 y 14 e integrada en `main`
+(`611a7ef`, E04-APROBACION), sin validación en un dispositivo físico.**
 
 Este documento registra la corrección y su validación sobre el commit
 `4d9b63279b7b5f3eec1716d716d9f9510a202cad` (rama `fix/pbkdf2-memory`, base `main` `b59948c`). La
 decisión técnica está en `docs/decisiones.md`, sección «Nota de implementación de E02-D1». El
-diagnóstico completo (experimentos E1 a E3) está en la rama `e04/hu2-login-pbkdf2` y no se
-reproduce aquí.
+diagnóstico completo (experimentos E1 a E3) está en `etapa-04-diagnostico-memoria-pbkdf2.md` y no
+se reproduce aquí.
 
 Las evidencias están en `GFP-e04-evidencias\`, fuera del repositorio. Horas en UTC−5 salvo que se
 indique otra cosa.
@@ -144,12 +144,13 @@ entre revisiones:
 La revisión 1 registraba como PASS `E03-V06-*-LETTERS` y `-DIGITS` aunque el campo no estuviera en
 pantalla. La misma lógica, y el mismo lector de Gboard, siguen en
 `scripts/stage-04/Invoke-Hu1DeviceRegression.ps1` y `scripts/stage-04/lib/DeviceUi.ps1` de la rama
-de la Etapa 04. Ese hallazgo está pendiente de decisión.
+de la Etapa 04, que el responsable decidió conservar sin cambios (E04-APROBACION;
+`etapa-04-pruebas-dispositivo.md`, sección «Defectos conocidos de los scripts»).
 
 ## 6. Limitaciones y pendientes
 
 - **Solo emuladores x86/x86_64.** No hay pruebas en un dispositivo físico; P-D1 sigue aplazada.
-- **Inicio de sesión no probado en esta rama.** `main` solo tiene la pantalla provisional de HU2. La
+- **Inicio de sesión no probado sobre `4d9b632`.** Ese commit, basado en `b59948c`, solo tiene la pantalla provisional de HU2. La
   verificación de una contraseña correcta e incorrecta se cubre aquí con los vectores y con la
   comprobación `wrong-password-differs`, no con la interfaz. La prueba de actualización con
   `adb install -r` y el inicio de sesión se ejecutaron en la rama de la Etapa 04, no sobre `4d9b632`.

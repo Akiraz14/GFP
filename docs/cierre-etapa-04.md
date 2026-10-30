@@ -1,11 +1,22 @@
 # Cierre de la Etapa 04 — HU2 Iniciar sesión
 
-**Estado: BORRADOR PARA REVISIÓN. La Etapa 04 no está cerrada.** HU2 está implementada en la
-rama local `e04/hu2-login`, que no está integrada en `main` ni publicada. Las decisiones E04-D1
-a E04-D8 están **pendientes de ratificación** del responsable. Con el commit `438a9f6`, los
-criterios HU2-CA01 a HU2-CA08 se verificaron en Jest y en Android 10 y Android 14. El commit
-`a4831e9`, posterior, corrige un defecto de HU2-CA06; su validación en Windows y en los
-emuladores está pendiente (sección «Validación pendiente»).
+**Veredicto: HU2 y la corrección de memoria de PBKDF2 están implementadas, validadas en los
+emuladores Android 10 (API 29) y Android 14 (API 34) e integradas en `main`, con reservas
+documentadas.** Los criterios HU2-CA01 a HU2-CA08 y la regresión de HU1 están verificados en
+Jest y en emulador. HU2-CA09 a HU2-CA11 quedan parciales, como estaba previsto. Siguen abiertas
+las reservas de la sección «Reservas y deuda técnica». Este cierre no autoriza el inicio de la
+Etapa 05.
+
+**Estado de aprobación (E04-APROBACION, `decisiones.md`):** el 2026-10-30 el responsable:
+
+- ratificó E04-D1 a E04-D8 con las recomendaciones y los ajustes documentales del anexo;
+- aprobó integrar `e04/hu2-login-pbkdf2` y `fix/pbkdf2-memory` en `main` con dos merges
+  `--no-ff`;
+- decidió conservar `scripts/stage-04` con sus defectos documentados;
+- aceptó las reservas de este documento;
+- limitó la publicación a `main`.
+
+**Publicación:** pendiente. Se hará con `git push origin main`, ejecutado por el responsable.
 
 ## Objetivo y alcance
 
@@ -17,164 +28,114 @@ Implementar HU2 Iniciar sesión según sus 11 criterios literales (`trazabilidad
 - Sesión en memoria y protección de las rutas con datos financieros (HU2-CA10, HU2-CA11).
 - Regresión de HU1, cuyo «Cancelar» lleva ahora a la pantalla real de inicio de sesión (HU1-CA18).
 
-Fuera del alcance: la recuperación de contraseña (HU3, Etapa 05; el enlace abre la pantalla
-provisional), las pantallas con datos financieros (HU4 a HU10) y el cierre de sesión, que
-ninguna historia pide (E04-D4).
+Durante la etapa se incorporó la corrección del consumo de memoria nativa de PBKDF2. Con la
+implementación anterior, el registro de HU1 agotaba la memoria en Android 14 (WU del
+2026-10-28; nota de implementación de E02-D1 en `decisiones.md`). La corrección no cambia el
+algoritmo ni sus parámetros.
+
+Fuera del alcance:
+
+- la recuperación de contraseña: HU3, Etapa 05; el enlace abre la pantalla provisional;
+- las pantallas con datos financieros: HU4 a HU10;
+- el cierre de sesión, que ninguna historia pide (E04-D4).
 
 ## Decisiones de la etapa
 
-Texto completo y motivos en `decisiones-etapa-04.md`. Ninguna está ratificada. El análisis de
-cada una y la recomendación técnica están en el anexo «Análisis de E04-D1 a E04-D8».
+Texto completo en `decisiones-etapa-04.md`. Todas fueron ratificadas por el responsable el
+2026-10-30 (E04-APROBACION).
 
-| Decisión | Asunto | Estado | Recomendación técnica |
-|---|---|---|---|
-| E04-D1 | Alcance y persistencia del bloqueo | Pendiente de ratificación | Aprobar con una precisión documental |
-| E04-D2 | Distinción entre documento, celular y correo | Pendiente de ratificación (aplica A-ID1 a A-ID4, aprobadas) | Aprobar |
-| E04-D3 | Destino tras iniciar sesión y protección de rutas | Pendiente de ratificación | Aprobar con un ajuste documental |
-| E04-D4 | Duración y cierre de la sesión | Pendiente de ratificación | Aprobar con reserva |
-| E04-D5 | Textos no definidos por HU2 | Pendiente de ratificación | Aprobar con cambios (completar la lista) |
-| E04-D6 | Celular nacional ambiguo | Pendiente de ratificación | Aprobar |
-| E04-D7 | Seguridad de la verificación | Pendiente de ratificación | Aprobar |
-| E04-D8 | Evidencias de HU2 | Pendiente de ratificación (la política global sigue pendiente) | Aprobar para HU2 |
+| Decisión | Asunto | Ratificación |
+|---|---|---|
+| E04-D1 | Alcance y persistencia del bloqueo | Aprobada con una precisión documental: un identificador que empieza por `+` sin formato E.164 cuenta como intento |
+| E04-D2 | Distinción entre documento, celular y correo | Aprobada (aplica A-ID1 a A-ID4) |
+| E04-D3 | Destino tras iniciar sesión y protección de rutas | Aprobada; lista de historias con datos financieros alineada en `trazabilidad.md` |
+| E04-D4 | Duración y cierre de la sesión | Aprobada con reserva: cierre de sesión y tiempo de inactividad se deciden con la pantalla principal |
+| E04-D5 | Textos no definidos por HU2 | Aprobada con cambios: se añaden el título «Iniciar sesión» y el botón «Aceptar», y se confirma la convención de rótulos de HU1 |
+| E04-D6 | Celular nacional ambiguo | Aprobada |
+| E04-D7 | Seguridad de la verificación | Aprobada |
+| E04-D8 | Evidencias de HU2 | Aprobada para HU2; la política global de evidencias sigue pendiente |
 
 ## Cambios principales
 
 | Área | Archivos | Cambio |
 |---|---|---|
 | Servicio | `app/src/services/authentication/accountLogin.ts` | `AccountLoginService`: validación de entrada, búsqueda con `lookupIdentifier` (A-ID1 a A-ID4), `verifySecret` con registro señuelo, bloqueo del dispositivo en `auth_throttles`, intentos en serie y regeneración de credenciales antiguas |
-| Pantalla | `app/src/presentation/login/LoginScreen.tsx`, `loginTexts.ts` | Formulario de HU2 con los componentes de HU1 |
+| Pantalla | `app/src/presentation/login/LoginScreen.tsx`, `loginTexts.ts` | Formulario de HU2 con los componentes de HU1; un único intento por envío (`a4831e9`) |
 | Navegación | `routes.ts`, `AppNavigator.tsx` | Inicio en `login`; `requiresSession` y `resolveRoute()`; destino `movementHistory` tras la autenticación |
 | Servicios de la app | `appServices.ts`, `nativeAppServices.ts` | `login` y `sessions` comparten la base y el motor PBKDF2 del registro |
-| Pruebas | `accountLogin.test.ts` (27), `LoginScreen.test.tsx` (13), `App.test.tsx` (12 en total) | Pruebas nuevas y tres de `App.test.tsx` actualizadas porque la app empieza ahora en el inicio de sesión |
-| Scripts | `scripts/stage-04/` | Análisis sintáctico, controles estáticos, compilación y recorridos en emulador |
-| Documentación | `decisiones-etapa-04.md`, `trazabilidad.md`, `arquitectura-identidad.md`, `validacion/etapa-04-pruebas-dispositivo.md` | Decisiones, criterios literales, matriz y resultados |
+| PBKDF2 (Android) | `Pbkdf2HmacSha256.java`, `Pbkdf2Calibration.java` | `SecretKeyFactory("PBKDF2WithHmacSHA256")` en lugar de `Mac`, decodificación UTF-8 estricta y borrado en `finally`; vectores U1 a U8 y comprobaciones de rechazo |
+| Pruebas | `accountLogin.test.ts`, `LoginScreen.test.tsx`, `App.test.tsx` | 19 suites y 265 pruebas en Jest |
+| Scripts | `scripts/stage-04/` | Análisis sintáctico, controles estáticos, compilación, recorridos en emulador y prueba de actualización (`Invoke-Pbkdf2UpgradeCheck.ps1`) |
+| Documentación | `decisiones-etapa-04.md`, `trazabilidad.md`, `arquitectura-identidad.md`, `decisiones.md`, `validacion/etapa-04-pruebas-dispositivo.md`, `validacion/etapa-04-diagnostico-memoria-pbkdf2.md`, `validacion/correccion-pbkdf2-memoria.md` | Decisiones, criterios, resultados, diagnóstico y validación de la corrección |
 
-## Commits de la rama
+## Integración en `main`
 
-Base: `b59948c` (`main`, cierre de la Etapa 03).
+| Commit | Contenido |
+|---|---|
+| `96d00cb` | `merge: integrate HU2 login and the PBKDF2 memory fix (stage 04)`: merge `--no-ff` de `e04/hu2-login-pbkdf2` (`cf57a54`, 19 commits sobre `b59948c`, incluida toda la rama `e04/hu2-login`); padres `b59948c` y `cf57a54` |
+| `611a7ef` | `merge: integrate the PBKDF2 memory fix validation (stage 04)`: merge `--no-ff` de `fix/pbkdf2-memory` (`2001abf`); padres `96d00cb` y `2001abf`. Su código Java es idéntico al ya integrado, así que solo añade `validacion/correccion-pbkdf2-memoria.md`. El único conflicto, las filas «Motivo» y «Validación» de la nota de E02-D1 en `decisiones.md`, se resolvió con el texto de `fix/pbkdf2-memory` |
 
-| Commit | Tipo | Contenido | Cambia código de la app |
-|---|---|---|---|
-| `00ac561` | feat(auth) | Implementación de HU2 y sus pruebas | Sí |
-| `b18210d` | docs | Decisiones E04-D1 a E04-D8 y trazabilidad | No |
-| `a13bddc` | chore(scripts) | Scripts de validación | No |
-| `35a8150` | fix(scripts) | El script de compilación deja de esperar al demonio de Gradle | No |
-| `438a9f6` | fix(scripts) | Límite de tiempo en `adb` | No |
-| `b2d9a19` | docs | Resultados de Windows y de los emuladores | No |
-| `a4831e9` | fix(login) | Un único intento por envío del formulario; prueba de regresión | Sí: `LoginScreen.tsx` |
-| `d91dfbc` | docs | Borrador de cierre | No |
-| `628a2d3` | fix(scripts) | `logcat` y captura cuando una ejecución falla | No |
-| (siguiente) | docs | Resultados con `d91dfbc` | No |
+El cambio de `Pbkdf2HmacSha256.java` aparece dos veces en el historial (`40cda90` y `6564d95`),
+con el mismo contenido. El árbol `app/` de `main` tras los merges (`e1ea0c2`) es idéntico al de
+`2e5fd6c`, el commit validado en los emuladores. Los cambios posteriores a `2e5fd6c` son solo de
+documentación y scripts. Las ramas, los worktrees y las evidencias locales se conservan.
 
-## Relación entre commits, compilación y evidencias
+## Validación
 
-`git diff --name-only 00ac561 438a9f6 -- app` no devuelve ningún archivo: entre `00ac561` y
-`438a9f6` solo cambian scripts y documentación. Por eso los resultados obtenidos con
-`a13bddc`, `35a8150` y `438a9f6` corresponden al mismo código de la app (el de `00ac561`).
+Resultados en `validacion/etapa-04-pruebas-dispositivo.md`,
+`validacion/etapa-04-diagnostico-memoria-pbkdf2.md` (sección 9) y
+`validacion/correccion-pbkdf2-memoria.md`.
 
 | Comprobación | Commit | Evidencia | Resultado |
 |---|---|---|---|
-| Controles estáticos en Windows | `a13bddc` | `hu2-static-windows-20261028-144946` | PASS=8 FAIL=0; Jest 264/264 |
-| Compilación del APK Debug | `35a8150` | `hu2-build-windows-20261028-162954` | PASS=4 FAIL=0; SHA-256 `B9544684…6F28` |
-| HU2 en Android 14 (API 34) | `438a9f6` | `hu2-device-emulator-5554-20261028-181257` | PASS=26 FAIL=0 BLOCKED=0 |
-| Regresión de HU1 en Android 14 | `438a9f6` | `hu2-hu1-regression-emulator-5554-20261028-182906` | PASS=30 FAIL=0 BLOCKED=0 |
-| P-D2 en Android 14 | `438a9f6` | `hu2-p-d2-emulator-5554-20261028-183403` | PASS=15 FAIL=0 BLOCKED=0 |
-| HU2 en Android 10 (API 29) | `438a9f6` | `hu2-device-emulator-5554-20261028-190159` | PASS=26 FAIL=0 BLOCKED=0 |
-| Regresión de HU1 en Android 10 | `438a9f6` | `hu2-hu1-regression-emulator-5554-20261028-191251` | PASS=30 FAIL=0 BLOCKED=0 |
-| P-D2 en Android 10 | `438a9f6` | `hu2-p-d2-emulator-5554-20261028-191606` | PASS=15 FAIL=0 BLOCKED=0 |
-| Controles estáticos en Linux | `a4831e9` | Ejecución de Claude del 2026-10-28 | `typecheck`, `lint` y `format:check` correctos; Jest 265/265 (19 suites) |
+| Controles estáticos en Windows | `2e5fd6c` | `hu2-static-windows-20261028-235504` | PASS=8 FAIL=0; Jest 265/265 |
+| Compilación del APK Debug | `2e5fd6c` | `hu2-build-windows-20261028-235608` | PASS=4 FAIL=0; APK `26D3F94F…045F` |
+| HU2 en Android 10 / 14 | `2e5fd6c` | `hu2-device-emulator-5554-20261029-001949` / `…-003847` | PASS=26 FAIL=0 BLOCKED=0 en ambos; sin `Scudo OOM` ni `lowmemorykiller` |
+| Regresión de HU1 y P-D2 en Android 10 / 14 | `2e5fd6c` | `hu2-hu1-regression-…-20261029-002709` y `-004840`; `hu2-p-d2-…-20261029-003054` y `-010313` | PASS=30 y PASS=15 en ambos |
+| Cuenta creada con el APK anterior que inicia sesión tras `adb install -r` (Android 10) | `1df52d8` | `hu2-pbkdf2-upgrade-emulator-5554-20261029-011328` | PASS=14 FAIL=0 BLOCKED=0 NOT RUN=1 |
+| Corrección PBKDF2 desde `main`: controles, compilación, calibración y regresión de HU1 con registro completo y arranque en frío | `4d9b632` | `validacion/correccion-pbkdf2-memoria.md` | Jest 221/221; vectores 13/13; HU1 36/36 en Android 10 y 14; sin `Scudo OOM` ni `lowmemorykiller` |
+| `main` integrada (Linux, Claude, 2026-10-30) | `611a7ef` | Salida de terminal | `typecheck`, `lint` y `format:check` correctos; Jest 19 suites y 265/265; 9 scripts de `scripts/stage-04` sin errores de sintaxis; árbol `app/` = `e1ea0c2` |
 
-Comprobaciones de coherencia en las evidencias:
-
-- Cada `summary.txt` registra el commit, la rama y el dispositivo; `device.txt` confirma `sdk=34` y `sdk=29`.
-- Todas las ejecuciones en dispositivo instalaron el mismo APK (`B9544684…6F28`) y su `metro.log` sirvió el JavaScript desde `GFP-e04-hu2`.
-- `worktree-status-start.txt` y `worktree-status-end.txt` están vacíos en todas: el árbol estaba limpio y no cambió.
-- El APK Debug no incluye el JavaScript: la variante `debug` no lo empaqueta (`app/android/app/build.gradle`, valor predeterminado de `debuggableVariants`) y Metro lo sirve desde el árbol probado. Por eso un APK compilado con `35a8150` es válido para probar `438a9f6` y `a4831e9`, cuyo cambio es solo de JavaScript.
-
-Dos ejecuciones interrumpidas se conservan sin contar como resultado
-(`hu2-build-windows-20261028-145142` y `hu2-device-emulator-5554-20261028-164615`; motivos en
-`validacion/etapa-04-pruebas-dispositivo.md`).
+No se repitieron las pruebas en emulador sobre `main`: el código de la app es el mismo árbol ya
+validado. El APK Debug no incluye el JavaScript, que Metro sirve desde el árbol probado.
 
 ## Criterios de aceptación
 
-| Criterio | Estado con `438a9f6` | Observación |
+| Criterio | Estado | Observación |
 |---|---|---|
-| HU2-CA01 | Verificado (Jest; Android 10 y 14) | Correo en mayúsculas, documento, celular E.164 y celular nacional |
-| HU2-CA02 | Verificado (Jest; Android 10 y 14) | Campos vacíos sin contar intento |
-| HU2-CA03 | Verificado (Jest; Android 10 y 14) | Base cifrada sin la contraseña ni el correo en claro; `logcat` sin la contraseña |
-| HU2-CA04 | Verificado (Jest; Android 10 y 14) | «Verificar identificación» |
-| HU2-CA05 | Verificado (Jest; Android 10 y 14) | Mismo mensaje literal para contraseña incorrecta e identificador inexistente |
-| HU2-CA06 | Verificado (Jest; Android 10 y 14) | El defecto de doble envío corregido en `a4831e9` requiere repetir la verificación |
-| HU2-CA07 | Verificado (Jest; Android 10 y 14) | Validación contra la base cifrada |
-| HU2-CA08 | Verificado (Jest; Android 10 y 14) | Abre el paso 1 del registro |
+| HU2-CA01 a HU2-CA05, HU2-CA07, HU2-CA08 | Verificado (Jest; Android 10 y 14) | Ver `trazabilidad.md` |
+| HU2-CA06 | Verificado (Jest; Android 10 y 14) | Con la corrección del doble envío (`a4831e9`), verificada con `2e5fd6c` |
 | HU2-CA09 | Parcial | Navegación verificada; el formulario de recuperación llega con HU3 (E05) |
 | HU2-CA10 | Parcial | Rutas protegidas y sesión no conservada al reabrir; re-verificación en E07–E12 y E13 |
 | HU2-CA11 | Parcial | Sesión de un único usuario (Jest); aislamiento de datos en E07, E08, E11, E12 y E13 |
 | HU1-CA18 (regresión) | Verificado (Jest; Android 10 y 14) | «Cancelar» vuelve al inicio de sesión real con los campos vacíos |
 
-## Auditoría técnica
+## Observaciones de la auditoría técnica
 
-| Aspecto | Resultado | Evidencia |
-|---|---|---|
-| Autenticación y contraseñas | `verifySecret` (PBKDF2-HMAC-SHA256, comparación en tiempo constante); la contraseña no se devuelve, guarda ni registra; regeneración con parámetros antiguos dentro de una transacción | `accountLogin.ts`; pruebas «HU2-CA03: credentials are never returned…» y «regenerates a credential with outdated parameters…»; `HU2-CA03-DB`, `HU2-CA03-LOGCAT` |
-| Normalización e identificadores | Correo en minúsculas y NFC; documento sin separadores y en mayúsculas; `+` indica E.164; un número sin `+` se busca como documento y como celular nacional; solo cuentas `active`. Una misma entrada no puede ser documento de una cuenta y celular de otra, porque el registro lo impide (A-ID1) | `identifiers.ts`, `identityRepository.ts` (`lookupIdentifier`, `isAlreadyRegistered`); pruebas de HU2-CA01 y A-ID2 |
-| Errores y enumeración | Mismo resultado y misma derivación PBKDF2 para identificador inexistente y contraseña incorrecta; la diferencia es una consulta adicional (`getCredential`) frente a una derivación de cientos de milisegundos. El bloqueo se comprueba antes de la búsqueda. El aviso de celular ambiguo revela que el número nacional existe en más de un país (E04-D6, A-ID2) | Prueba «HU2-CA05: a wrong password and an unknown identifier give the same result and cost» |
-| Defecto corregido | Dos envíos del formulario antes de que la pantalla se actualizara (acción del teclado y botón, o doble toque rápido) llegaban ambos al servicio: una sola acción consumía dos de los tres intentos de HU2-CA06. La comprobación usaba el estado `busy`, que no cambia hasta el siguiente renderizado | Prueba nueva «HU2-CA06: two submissions before the screen updates make a single attempt»: falla sin la corrección (2 llamadas) y pasa con ella (1); commit `a4831e9` |
-| Sesión y navegación | `SessionManager` en memoria; `resolveRoute()` exige que la sesión de la pantalla sea la activa; cada inicio de sesión sustituye la anterior; tras autenticarse se abre `movementHistory` | `AppNavigator.tsx`, `routes.ts`; pruebas de `App.test.tsx`; comprobaciones `…-RESTART` |
-| Persistencia, cifrado y logs | El bloqueo se guarda en la base cifrada (`auth_throttles`) y sobrevive al reinicio; el código de la app no escribe en consola; la contraseña no aparece en `logcat` | Prueba «the lock survives a restart…»; `HU2-CA06-RESTART`; `HU2-CA03-LOGCAT` |
-| Regresión de HU1 | Sin fallos en Jest y en ambos emuladores: registro completo, HU1-CA18, P-D3, E03-V09, E03-V06, E03-V13 y P-D2 | Evidencias de la tabla anterior |
-
-Observaciones que no son defectos y no se han modificado:
-
-1. Un identificador que empieza por `+` sin formato E.164 válido se trata como inexistente y cuenta como intento, mientras que un correo con formato inválido no cuenta (HU2-CA04). E04-D1 no menciona el caso del `+`.
-2. `decisiones-etapa-04.md` (E04-D3) protege las rutas de HU4, HU5, HU7, HU8, HU9 y HU10; `trazabilidad.md` («Criterios parciales previstos», HU2-CA10) cita HU4, HU5, HU6, HU9 y HU10. HU6 no tiene ruta propia (es el resumen de la pantalla de HU5) y HU7 y HU8 están protegidas además. Las listas deberían alinearse.
-3. `arquitectura-identidad.md` dice en su introducción que no implementa las pantallas de HU1, HU2 ni HU3; es una frase del diseño de la Etapa 02 que ya no describe el estado del proyecto.
-4. Las pantallas provisionales no tienen navegación: tras iniciar sesión, o al abrir «Olvidé mi contraseña», solo se sale cerrando la app (el botón Atrás de Android la cierra). Es el comportamiento de G-07 hasta que HU3 y HU5 sustituyan esas pantallas.
-5. No comparé la pantalla con el prototipo de HU2: el documento fuente lo incluye como imagen y no lo pude extraer como texto. Los nombres de los campos siguen la convención de HU1 («Ingresar primer nombre» se muestra como «Primer nombre»).
-
-## Validación pendiente
-
-Repetición con `d91dfbc` (incluye `a4831e9`), detallada en
-`validacion/etapa-04-pruebas-dispositivo.md`:
-
-| Paso | Resultado |
+| Observación | Resolución |
 |---|---|
-| Controles estáticos en Windows | Hecho: PASS=8 FAIL=0, Jest 265/265 (`hu2-static-windows-20261028-200646`) |
-| HU2, regresión de HU1 y P-D2 en Android 10 | Hecho: 26, 30 y 15 PASS, sin FAIL ni BLOCKED |
-| Regresión de HU1 y P-D2 en Android 14 | Hecho: 30 y 15 PASS, sin FAIL ni BLOCKED |
-| HU2 en Android 14 | **Pendiente**: la ejecución `hu2-device-emulator-5554-20261028-202817` terminó con FAIL=2 y BLOCKED=1 en el registro de la cuenta sintética; la app no estaba en primer plano y no hay `logcat` para saber por qué. Hay que repetirla con los scripts de `628a2d3`, que guardan `logcat` y una captura si vuelve a fallar |
-
-No hace falta compilar otra vez: el cambio es solo de JavaScript (sección anterior).
+| 1. Identificador con `+` mal formado cuenta como intento | Precisión añadida a E04-D1 |
+| 2. Listas de rutas protegidas distintas | Alineada en `trazabilidad.md` (HU2-CA10) según E04-D3 |
+| 3. La introducción de `arquitectura-identidad.md` dice que no implementa HU1 a HU3 | Reserva aceptada, sin cambio |
+| 4. Las pantallas provisionales no tienen navegación de salida | Reserva aceptada: comportamiento de G-07 hasta HU3 y HU5 |
+| 5. Pantalla no comparada con el prototipo de HU2 | Convención de rótulos de HU1 confirmada en E04-D5 |
 
 ## Reservas y deuda técnica
 
 | Asunto | Estado | Condición o etapa |
 |---|---|---|
 | HU2-CA09, HU2-CA10, HU2-CA11 | Parciales previstos | E05; E07–E12 y E13 |
-| Bloqueo y reloj manipulado | Limitación conocida | Adelantar el reloj acorta el bloqueo (`arquitectura-identidad.md`); mitigación propuesta, no implementada |
+| Sesión sin cierre ni expiración por inactividad | Reserva de E04-D4 | Se decide con la pantalla principal |
+| Bloqueo y reloj manipulado | Limitación conocida | Adelantar el reloj acorta el bloqueo (`arquitectura-identidad.md`) |
 | Bloqueo del dispositivo | Riesgo aceptado en E04-D1 | Cualquiera que use el dispositivo puede bloquear el acceso 15 minutos |
-| Sesión sin cierre ni expiración por inactividad | E04-D4 | Mientras el proceso sigue vivo, la sesión permanece abierta; cierre y tiempo de inactividad se deciden con la pantalla principal |
 | Fin del bloqueo tras 15 minutos | Verificado solo en Jest | En dispositivo exigiría esperar 15 minutos |
-| P-D1 (calibración de PBKDF2) | Diferida (cierre de la Etapa 03) | El tiempo real de inicio de sesión en un dispositivo físico mínimo no está medido |
+| P-D1 (dispositivo físico) | Diferida desde la Etapa 03 | Todas las pruebas son en emuladores; la corrección de PBKDF2 depende de BouncyCastle interno, cuya versión debe comprobarse con `Pbkdf2Calibration` en cada versión soportada |
+| Prueba de actualización con una cuenta real | Solo en Android 10 | En Android 14, el APK anterior no consigue registrar una cuenta |
+| Cierre de la app en Android 14 sin causa conocida | Una ejecución (`fix-pbkdf2-hu1-device-emulator-5554-20261029-123420`) | Antes de cualquier derivación PBKDF2; no se repitió en las ejecuciones válidas |
+| Defectos conocidos de `scripts/stage-04` | Se conservan sin cambios (decisión del responsable) | `validacion/etapa-04-pruebas-dispositivo.md`, sección «Defectos conocidos de los scripts» |
+| Observaciones 3 y 4 de la auditoría | Aceptadas | Sección anterior |
 | Política global de evidencias | Pendiente del responsable | E04-D8 se aplica solo a HU2 |
-| Congelamiento del emulador del 2026-10-28 | Causa desconocida | Desde `438a9f6` los scripts terminan con `BLOCKED DEVICE-RESPONSIVE` en lugar de esperar sin límite |
-| `GFP-spike02` y el archivo de bloqueo renombrado en `.git` | Fuera de la rama | Limpieza local que decide el responsable |
-
-## Cómo repetir las pruebas
-
-Desde el worktree `GFP-e04-hu2`, con el árbol limpio (`validacion/etapa-04-pruebas-dispositivo.md`):
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Test-ScriptSyntax.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Invoke-StaticChecks.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Invoke-AndroidBuild.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Invoke-Hu2DeviceTests.ps1 -Serial emulator-5554 -AllowAppReset
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Invoke-Hu1DeviceRegression.ps1 -Serial emulator-5554 -AllowAppReset
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stage-04\Invoke-HermesUnicodeCheck.ps1 -Serial emulator-5554
-```
-
-En Linux, desde `app/`: `npm ci`, `npm run typecheck`, `npm run lint`, `npm run format:check` y
-`npx jest`.
+| Congelamiento del emulador del 2026-10-28 | Causa desconocida | Desde `438a9f6` los scripts terminan con `BLOCKED DEVICE-RESPONSIVE` |
 
 ## Criterio común de cierre (`plan-etapas.md`)
 
@@ -182,24 +143,31 @@ En Linux, desde `app/`: `npm ci`, `npm run typecheck`, `npm run lint`, `npm run 
 |---|---|---|
 | 1 | Cada criterio literal figura en `trazabilidad.md` con estado y evidencia | Cumplido: HU2-CA01 a HU2-CA11, con su texto literal sin cambios |
 | 2 | Solo quedan parciales los criterios de «Criterios parciales previstos» | Cumplido: HU2-CA09, HU2-CA10 y HU2-CA11 |
-| 3 | Pruebas automatizadas ejecutadas con resultados reales | Cumplido con `d91dfbc` en Linux y Windows (Jest 265/265) |
-| 4 | Compilación e instalación en Android 10 (API 29) o superior | Cumplido: APK `B9544684…6F28` instalado en API 29 y API 34 |
-| 5 | Regresión de las etapas anteriores sin fallos | Cumplido con `d91dfbc` en Android 10 y, para HU1 y P-D2, en Android 14; falta repetir el recorrido de HU2 en Android 14 |
-| 6 | Decisiones de la etapa resueltas | **No cumplido**: E04-D1 a E04-D8 pendientes de ratificación |
-| 7 | Informe de cierre y pausa obligatoria | Este borrador; pendiente de revisión y aprobación |
+| 3 | Pruebas automatizadas ejecutadas con resultados reales | Cumplido: Jest 265/265 en Windows (`2e5fd6c`) y en Linux sobre `main` integrada (`611a7ef`) |
+| 4 | Compilación e instalación en Android 10 (API 29) o superior | Cumplido: APK `26D3F94F…045F` instalado en API 29 y API 34 |
+| 5 | Regresión de las etapas anteriores sin fallos | Cumplido: regresión de HU1 y P-D2 en Android 10 y 14 con `2e5fd6c`; HU1 con registro completo y arranque en frío con `4d9b632` |
+| 6 | Decisiones de la etapa resueltas | Cumplido: E04-D1 a E04-D8 ratificadas el 2026-10-30 |
+| 7 | Informe de cierre y pausa obligatoria | Este documento (E04-APROBACION) |
 
-## Condiciones antes de considerar cerrada la Etapa 04
+## Evidencias
 
-1. El responsable ratifica E04-D1 a E04-D8, con los cambios que decida; si alguno cambia el comportamiento, se implementa y se vuelve a validar.
-2. Los pasos de «Validación pendiente» se ejecutan con el commit final de la rama, sin `FAIL` ni `BLOCKED`, y sus resultados se registran.
-3. El responsable decide sobre las observaciones 1 a 5 de la auditoría.
-4. Este informe se actualiza con los resultados finales y el responsable lo aprueba.
-5. El responsable autoriza expresamente la integración en `main`, la publicación y, si procede, la etiqueta de la etapa.
+Las evidencias de la Etapa 04 no se incluyen en el repositorio (E04-D8). Forman el paquete
+`GFP-e04-evidencias`, que conserva el responsable. Las carpetas citadas son carpetas de ese
+paquete y los resultados comprobados constan en las tablas.
+
+## Pendiente del responsable
+
+1. Publicar `main` en `origin` (`git push origin main`).
+2. Decidir si se crea una etiqueta de la etapa.
+3. Decidir si se retiran las ramas `e04/hu2-login`, `e04/hu2-login-pbkdf2` y `fix/pbkdf2-memory` y sus worktrees, que se conservan.
+4. Definir la política global de evidencias.
+5. Autorizar la Etapa 05 (HU3 Recuperar contraseña).
 
 ## Anexo — Análisis de E04-D1 a E04-D8
 
-El texto completo de cada decisión está en `decisiones-etapa-04.md`; aquí se resume sin
-cambiar su contenido.
+Análisis previo a la ratificación del 2026-10-30, conservado como base de las recomendaciones
+aprobadas. El texto completo de cada decisión está en `decisiones-etapa-04.md`; aquí se resume
+sin cambiar su contenido.
 
 ### E04-D1 — Alcance y persistencia del bloqueo
 

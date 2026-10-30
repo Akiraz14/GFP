@@ -128,3 +128,22 @@ Ejecuciones anteriores que no cuentan como resultado:
 
 En `Invoke-HermesUnicodeCheck.ps1` la línea «PASS conexion WebSocket» es informativa y no entra
 en el recuento: el resumen tiene 16 líneas `PASS` y el resultado indica `PASS=15`.
+
+Resultado final: el paso 3 en Android 14 y el resto de recorridos pasaron con `2e5fd6c`, que
+incluye la corrección de PBKDF2 (`etapa-04-diagnostico-memoria-pbkdf2.md`, sección 9;
+`../cierre-etapa-04.md`).
+
+## Defectos conocidos de los scripts
+
+Se conservan sin cambios por decisión del responsable (E04-APROBACION, 2026-10-30). Se
+detectaron al validar `fix/pbkdf2-memory` con copias de estos scripts, corregidas fuera del
+repositorio (`correccion-pbkdf2-memoria.md`, sección 5). En las ejecuciones válidas de esta etapa,
+`E03-V06-*-LETTERS` encontró el mensaje específico en pantalla (`mensaje especifico=True`) y
+`E03-V13` reconoció el formato de registro del teclado, de modo que esos resultados no dependen
+de los defectos. Deben tenerse en cuenta antes de reutilizar los scripts.
+
+| Script | Defecto | Efecto |
+|---|---|---|
+| `Invoke-Hu1DeviceRegression.ps1` | `E03-V06-*-LETTERS` y `-DIGITS` dan PASS aunque el campo «Documento» no esté en pantalla (la condición acepta un texto nulo y la ausencia del mensaje de error) | Un estado inesperado de la app puede contarse como PASS en esos casos |
+| `lib/DeviceUi.ps1` (`Get-EditorClass`) | Solo reconoce los formatos `onStartInputView(EditorInfo{inputType=0x…` y el de Android 10; no reconoce `EditorInfo{EditorInfo{packageName=…, inputType=…`, que registra Gboard en el emulador Android 14 desde el 2026-10-29 | `E03-V13` da FAIL con «sin EditorInfo en logcat» aunque el teclado sea el correcto |
+| `lib/DeviceUi.ps1` (`Assert-AppState`) | No detecta diálogos del sistema superpuestos (por ejemplo, «System UI isn't responding») y solo se llama en algunos pasos | Un ANR del sistema tras un arranque en frío puede producir FAIL atribuibles al emulador, no a la app |

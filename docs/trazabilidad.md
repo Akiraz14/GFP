@@ -16,7 +16,7 @@ criterio derivado figura en su columna «Origen».
 | Historia | Criterios | Etapa | Estado |
 |---|---|---|---|
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
-| HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada en la rama `e04/hu2-login` (2026-10-28), sin integrar en `main`; CA01–CA08 verificados en Jest y en Android 10 y 14 (2026-10-28); CA09–CA11 parciales |
+| HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Pendiente |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Pendiente |
@@ -33,7 +33,7 @@ criterio derivado figura en su columna «Origen».
 |---|---|---|---|---|
 | HU1-CA18 | HU1 | Pantalla de inicio de sesión (HU2) | Prueba: Cancelar limpia todos los campos y emite navegación a la ruta de inicio de sesión | Verificado en E03 (2026-10-27): el criterio exige regresar a la vista de inicio de sesión, no autenticar; en E04 se repite como regresión cuando HU2 sustituya la pantalla provisional |
 | HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación (cumplida en E04: `LoginScreen.test.tsx`, `App.test.tsx`) | E05 |
-| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5, HU6, HU9, HU10) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
+| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5 con el resumen de HU6, HU7, HU8, HU9 y HU10; E04-D3) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
 | HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | E13 |
 | HU8-CA07c | HU8 | Movimientos (HU4) | Prueba de eliminación; reasignación con datos de prueba solo si el esquema existe desde E02 | E07 |
 | HU8-CA08 | HU8 | Formulario HU4 y filtros HU5 | Prueba: la categoría creada o editada aparece de inmediato en la consulta de categorías activas | E07 y E08 |
@@ -237,14 +237,20 @@ de `app/` que difieren de `b5b4140`.
 
 Transcripción literal de los 11 criterios de HU2, en el orden del documento fuente.
 Verificación: U, C e I como en HU1; E (ejecución en el emulador). Implementación en la rama
-`e04/hu2-login`; decisiones E04-D1 a E04-D8 en `decisiones-etapa-04.md`, pendientes de
-ratificación. Estado al 2026-10-28: con el commit `438a9f6`, Jest en Linux y en Windows (19
+`e04/hu2-login`, integrada en `main` el 2026-10-30 desde `e04/hu2-login-pbkdf2` (`96d00cb`);
+decisiones E04-D1 a E04-D8 en `decisiones-etapa-04.md`, ratificadas el 2026-10-30. Estado
+final: con `2e5fd6c`, que incluye `a4831e9` y la corrección de PBKDF2, Jest 265/265 en Windows y
+recorridos de HU2, regresión de HU1 y P-D2 sin fallos en Android 10 y 14
+(`validacion/etapa-04-diagnostico-memoria-pbkdf2.md`, sección 9; `cierre-etapa-04.md`).
+Historial al 2026-10-28: con el commit `438a9f6`, Jest en Linux y en Windows (19
 suites, 264 pruebas) y recorrido completo en los emuladores de Android 10 (API 29) y Android 14
 (API 34) sin fallos; resultados y evidencias en `validacion/etapa-04-pruebas-dispositivo.md`.
 El commit `a4831e9` corrige el doble envío del formulario (HU2-CA06) y añade una prueba. Con
 `d91dfbc` pasaron Jest en Linux y en Windows (265 pruebas) y los tres recorridos en Android 10;
 en Android 14 pasaron la regresión de HU1 y P-D2, y el recorrido de HU2 quedó bloqueado en el
-registro de la cuenta sintética, con la app fuera del primer plano; su repetición está pendiente.
+registro de la cuenta sintética, con la app fuera del primer plano. La ejecución siguiente, con
+`logcat`, mostró el agotamiento de memoria de PBKDF2, ya corregido, y la repetición con
+`2e5fd6c` pasó.
 
 | ID | Criterio (literal) | Implementación | Pruebas automatizadas | Comprobación en dispositivo prevista | Estado |
 |---|---|---|---|---|---|

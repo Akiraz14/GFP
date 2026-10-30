@@ -209,7 +209,8 @@ Ejecuciones anteriores de esta prueba que no cuentan como resultado: `hu2-pbkdf2
 
 Limitaciones: solo emuladores (no hay dispositivo físico; P-D1 sigue aplazada); la prueba con una cuenta real solo pudo hacerse en Android 10, porque en Android 14 el APK anterior no consigue registrar; la versión de Conscrypt de Android 10 no quedó registrada; la mediana en Android 10 (6,4–8,4 s por derivación) es del emulador x86 de 32 bits y no representa un dispositivo.
 
-## 10. Siguiente paso
+## 10. Integración
 
-Revisión de integración por el responsable: la corrección está en `fix/pbkdf2-memory` (desde `main`) y
-en `e04/hu2-login-pbkdf2` (desde `e04/hu2-login`). No se ha integrado ni publicado.
+El responsable aprobó la integración el 2026-10-30 (E04-APROBACION): `e04/hu2-login-pbkdf2`
+se integró en `main` con `96d00cb` y `fix/pbkdf2-memory`, con su validación
+(`correccion-pbkdf2-memoria.md`), con `611a7ef`. Cierre en `cierre-etapa-04.md`.
