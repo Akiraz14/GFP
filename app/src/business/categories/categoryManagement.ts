@@ -224,7 +224,13 @@ export class CategoryManagementService implements CategoryGateway {
             }
             return {
               status: 'saved',
-              category: { ...current, ...valid, updatedAt: now },
+              category: {
+                ...current,
+                name: valid.name,
+                type: valid.type,
+                icon: valid.icon,
+                updatedAt: now,
+              },
             };
           },
         ),

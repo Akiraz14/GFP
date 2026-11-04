@@ -69,10 +69,21 @@ describe('category input validation (HU8-CA03)', () => {
     });
   });
 
-  test('only accepts icons from the catalog (E06-D5)', () => {
-    expect(validateCategoryInput({ ...VALID, icon: 'wallet' })).toEqual({});
-    expect(validateCategoryInput({ ...VALID, icon: 'rocket' })).toEqual({
-      icon: 'invalid',
+  test('only accepts the 12 icons of the selector (E06-D5)', () => {
+    expect(validateCategoryInput({ ...VALID, icon: 'more' })).toEqual({});
+    for (const icon of ['wallet', 'gamepad', 'shopping-bag', 'rocket']) {
+      expect(validateCategoryInput({ ...VALID, icon })).toEqual({
+        icon: 'invalid',
+      });
+    }
+  });
+
+  test('counts the 40-character limit in code points (E06-D9b, E03-D5)', () => {
+    expect(validateCategoryInput({ ...VALID, name: '😀'.repeat(40) })).toEqual(
+      {},
+    );
+    expect(validateCategoryInput({ ...VALID, name: '😀'.repeat(41) })).toEqual({
+      name: 'too_long',
     });
   });
 });

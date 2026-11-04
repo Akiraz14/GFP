@@ -1,6 +1,6 @@
 import {
-  CATEGORY_ICON_IDS,
   CATEGORY_TYPES,
+  SELECTABLE_CATEGORY_ICON_IDS,
   type CategoryIconId,
   type CategoryType,
 } from '../../infrastructure/database/categoryCatalogs';
@@ -37,7 +37,12 @@ export function normalizeCategoryName(raw: string): string {
 // Clave de comparación de duplicados (HU8-CA04): no distingue mayúsculas y minúsculas,
 // pero sí tildes (E06-D9). Se calcula aquí porque `lower()` de SQLite solo convierte ASCII.
 export function categoryNameKey(raw: string): string {
-  return normalizeCategoryName(raw).toLocaleLowerCase('es-CO');
+  return normalizeCategoryName(raw).toLowerCase();
+}
+
+// Longitud en puntos de código, como `length()` de SQLite y E03-D5.
+export function categoryNameLength(value: string): number {
+  return Array.from(value).length;
 }
 
 export function isCategoryType(value: string): value is CategoryType {
@@ -45,7 +50,7 @@ export function isCategoryType(value: string): value is CategoryType {
 }
 
 export function isCategoryIcon(value: string): value is CategoryIconId {
-  return (CATEGORY_ICON_IDS as readonly string[]).includes(value);
+  return (SELECTABLE_CATEGORY_ICON_IDS as readonly string[]).includes(value);
 }
 
 export function validateCategoryInput(
@@ -56,8 +61,8 @@ export function validateCategoryInput(
   if (name.length === 0) {
     errors.name = 'required';
   } else if (
-    name.length > CATEGORY_NAME_MAX_LENGTH ||
-    categoryNameKey(name).length > CATEGORY_NAME_MAX_LENGTH
+    categoryNameLength(name) > CATEGORY_NAME_MAX_LENGTH ||
+    categoryNameLength(categoryNameKey(name)) > CATEGORY_NAME_MAX_LENGTH
   ) {
     errors.name = 'too_long';
   }

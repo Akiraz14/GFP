@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
 import App from '../App';
 import { DatabaseOpenError } from '../src/infrastructure/database/encryptedDatabase';
 import { MigrationError } from '../src/infrastructure/database/migrator';
@@ -224,7 +225,15 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
 });
 
 describe('HU8 access from the history (E06-D4)', () => {
-  test('after logging in, «Categorías» opens the categories screen and «Volver» returns', async () => {
+  test('after logging in, «Categorías» opens the categories screen and the Android back button returns', async () => {
+    const listeners: Array<Parameters<typeof BackHandler.addEventListener>[1]> =
+      [];
+    const spy = jest
+      .spyOn(BackHandler, 'addEventListener')
+      .mockImplementation((_event, handler) => {
+        listeners.push(handler);
+        return { remove: jest.fn() };
+      });
     await render(<App createServices={() => readyServices(true)} />);
     await fireEvent.changeText(
       await screen.findByTestId('login-identifier'),
@@ -238,7 +247,10 @@ describe('HU8 access from the history (E06-D4)', () => {
     await fireEvent.press(await screen.findByTestId('open-categories'));
     expect(await screen.findByTestId('categories-screen')).toBeTruthy();
     expect(await screen.findByText('Alimentación')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('categories-back'));
+    await act(async () => {
+      listeners.at(-1)!({ type: 'hardwareBackPress', timeStamp: 0 });
+    });
     expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    spy.mockRestore();
   });
 });

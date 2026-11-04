@@ -12,7 +12,6 @@ export const CATEGORY_TEXTS = {
     system: 'Categorías del sistema',
     own: 'Mis categorías',
   },
-  emptyOwn: 'Aún no tienes categorías personalizadas.',
   types: {
     income: 'Ingreso',
     expense: 'Gasto',
@@ -25,7 +24,6 @@ export const CATEGORY_TEXTS = {
     delete: 'Eliminar',
     confirm: 'Confirmar',
     accept: 'Aceptar',
-    back: 'Volver',
     openCategories: 'Categorías',
   },
   form: {
@@ -45,10 +43,6 @@ export const CATEGORY_TEXTS = {
   },
   messages: {
     duplicate: 'La categoría ya existe',
-    nameRequired: 'Ingresa el nombre de la categoría.',
-    nameTooLong: (max: number) => `El nombre admite máximo ${max} caracteres.`,
-    typeRequired: 'Selecciona el tipo de categoría.',
-    iconRequired: 'Selecciona un ícono.',
     deleteQuestion: '¿Está seguro de eliminar esta categoría?',
     deleteWarning:
       "Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'.",

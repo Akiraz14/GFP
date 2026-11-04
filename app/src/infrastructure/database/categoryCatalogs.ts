@@ -23,8 +23,8 @@ export type CategoryIconId =
   | 'briefcase'
   | 'plane';
 
-// Orden en el que el selector muestra los íconos (E06-D5).
-export const CATEGORY_ICON_IDS: readonly CategoryIconId[] = [
+// Íconos que ofrece el selector, en el orden del prototipo de HU8 (E06-D5).
+export const SELECTABLE_CATEGORY_ICON_IDS: readonly CategoryIconId[] = [
   'cart',
   'home',
   'car',
@@ -37,6 +37,12 @@ export const CATEGORY_ICON_IDS: readonly CategoryIconId[] = [
   'briefcase',
   'plane',
   'more',
+];
+
+// Todos los íconos: los del selector y los que solo usan categorías del sistema
+// (Entretenimiento, Compras y Salario en el prototipo).
+export const CATEGORY_ICON_IDS: readonly CategoryIconId[] = [
+  ...SELECTABLE_CATEGORY_ICON_IDS,
   'gamepad',
   'shopping-bag',
   'wallet',

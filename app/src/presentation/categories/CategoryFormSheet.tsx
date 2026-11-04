@@ -16,18 +16,16 @@ import {
   CATEGORY_NAME_MAX_LENGTH,
   normalizeCategoryName,
   validateCategoryInput,
-  type CategoryFieldErrors,
 } from '../../business/categories/categoryRules';
 import {
-  CATEGORY_ICON_IDS,
   CATEGORY_TYPES,
+  SELECTABLE_CATEGORY_ICON_IDS,
   type CategoryIconId,
   type CategoryType,
 } from '../../infrastructure/database/categoryCatalogs';
 import type { Category } from '../../infrastructure/database/repositories/categoryRepository';
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
-import { FieldError } from '../components/FieldError';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { CATEGORY_ICON_GLYPHS, CategoryIcon } from './CategoryIcon';
@@ -44,21 +42,6 @@ type CategoryFormSheetProps = {
   onFailure: (result: Exclude<CategorySaveResult['status'], 'saved'>) => void;
 };
 
-function nameMessage(
-  errors: CategoryFieldErrors,
-  duplicate: boolean,
-): string | null {
-  if (duplicate) {
-    return TEXTS.messages.duplicate;
-  }
-  if (errors.name === 'required') {
-    return TEXTS.messages.nameRequired;
-  }
-  return errors.name === 'too_long'
-    ? TEXTS.messages.nameTooLong(CATEGORY_NAME_MAX_LENGTH)
-    : null;
-}
-
 export function CategoryFormSheet({
   gateway,
   session,
@@ -74,7 +57,6 @@ export function CategoryFormSheet({
   const [icon, setIcon] = useState<CategoryIconId | null>(
     category?.icon ?? null,
   );
-  const [errors, setErrors] = useState<CategoryFieldErrors>({});
   const [duplicate, setDuplicate] = useState(false);
   const [busy, setBusy] = useState(false);
   const check = useRef(0);
@@ -91,7 +73,6 @@ export function CategoryFormSheet({
   // respuesta de la última comprobación.
   function handleNameChange(value: string) {
     setName(value);
-    setErrors(current => ({ ...current, name: undefined }));
     setDuplicate(false);
     const ticket = ++check.current;
     if (normalizeCategoryName(value).length === 0) {
@@ -109,9 +90,7 @@ export function CategoryFormSheet({
       return;
     }
     const input = { name, type, icon: icon ?? '' };
-    const localErrors = validateCategoryInput(input);
-    setErrors(localErrors);
-    if (Object.keys(localErrors).length > 0) {
+    if (Object.keys(validateCategoryInput(input)).length > 0) {
       return;
     }
     setBusy(true);
@@ -127,8 +106,6 @@ export function CategoryFormSheet({
       onSaved(result.category);
     } else if (result.status === 'duplicate_name') {
       setDuplicate(true);
-    } else if (result.status === 'invalid_input') {
-      setErrors(result.errors);
     } else {
       onFailure(result.status);
     }
@@ -146,9 +123,9 @@ export function CategoryFormSheet({
             <TextField
               autoCapitalize="sentences"
               editable={!busy}
-              error={nameMessage(errors, duplicate)}
+              error={duplicate ? TEXTS.messages.duplicate : null}
               label={TEXTS.form.nameLabel}
-              maxLength={CATEGORY_NAME_MAX_LENGTH + 10}
+              maxLength={CATEGORY_NAME_MAX_LENGTH}
               onChangeText={handleNameChange}
               placeholder={TEXTS.form.namePlaceholder}
               testID="category-name"
@@ -186,7 +163,7 @@ export function CategoryFormSheet({
             </View>
             <Text style={styles.label}>{TEXTS.form.iconLabel}</Text>
             <View style={styles.icons}>
-              {CATEGORY_ICON_IDS.map(option => {
+              {SELECTABLE_CATEGORY_ICON_IDS.map(option => {
                 const selected = option === icon;
                 return (
                   <Pressable
@@ -197,10 +174,7 @@ export function CategoryFormSheet({
                     accessibilityState={{ selected, disabled: busy }}
                     disabled={busy}
                     key={option}
-                    onPress={() => {
-                      setIcon(option);
-                      setErrors(current => ({ ...current, icon: undefined }));
-                    }}
+                    onPress={() => setIcon(option)}
                     style={[styles.iconOption, selected && styles.iconSelected]}
                     testID={`category-icon-${option}`}
                   >
@@ -209,12 +183,6 @@ export function CategoryFormSheet({
                 );
               })}
             </View>
-            <FieldError
-              message={
-                errors.icon !== undefined ? TEXTS.messages.iconRequired : null
-              }
-              testID="category-icon-error"
-            />
             <View style={styles.buttons}>
               <ActionButton
                 disabled={busy}
@@ -223,7 +191,13 @@ export function CategoryFormSheet({
                 testID="category-cancel"
               />
               <ActionButton
-                disabled={busy || duplicate}
+                disabled={
+                  busy ||
+                  duplicate ||
+                  Object.keys(
+                    validateCategoryInput({ name, type, icon: icon ?? '' }),
+                  ).length > 0
+                }
                 label={TEXTS.buttons.save}
                 onPress={() => {
                   handleSave();

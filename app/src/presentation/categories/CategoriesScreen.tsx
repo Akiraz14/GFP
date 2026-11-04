@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  BackHandler,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -101,6 +102,17 @@ export function CategoriesScreen({
     reload();
   }, [reload]);
 
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        onBack();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [onBack]);
+
   async function confirmDelete() {
     if (toDelete === null || deleting) {
       return;
@@ -128,14 +140,6 @@ export function CategoriesScreen({
   return (
     <View style={styles.screen} testID="categories-screen">
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable
-          accessibilityRole="link"
-          onPress={onBack}
-          style={styles.back}
-          testID="categories-back"
-        >
-          <Text style={styles.backText}>‹ {TEXTS.buttons.back}</Text>
-        </Pressable>
         <Text accessibilityRole="header" style={styles.title}>
           {TEXTS.screenTitle}
         </Text>
@@ -180,11 +184,6 @@ export function CategoriesScreen({
             <Text accessibilityRole="header" style={styles.section}>
               {TEXTS.sections.own}
             </Text>
-            {own.length === 0 && (
-              <Text style={styles.empty} testID="categories-empty">
-                {TEXTS.emptyOwn}
-              </Text>
-            )}
             {own.map(category => (
               <View
                 key={category.id}
@@ -283,8 +282,6 @@ export function CategoriesScreen({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 20, paddingBottom: 40 },
-  back: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
-  backText: { color: COLORS.primary, fontSize: 16 },
   title: { color: COLORS.text, fontSize: 28, fontWeight: '700' },
   subtitle: { color: COLORS.mutedText, fontSize: 15, marginTop: 2 },
   newButton: { flexDirection: 'row', marginHorizontal: -4, marginVertical: 16 },
@@ -323,5 +320,4 @@ const styles = StyleSheet.create({
   },
   firstAction: { marginLeft: 'auto' },
   actionGlyph: { fontSize: 18 },
-  empty: { color: COLORS.mutedText, fontSize: 15, marginBottom: 8 },
 });

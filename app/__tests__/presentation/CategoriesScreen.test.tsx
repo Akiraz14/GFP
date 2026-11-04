@@ -5,6 +5,7 @@ import {
   screen,
   within,
 } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
 import { CategoryManagementService } from '../../src/business/categories/categoryManagement';
 import { CategoriesScreen } from '../../src/presentation/categories/CategoriesScreen';
 import { SessionManager } from '../../src/services/session/sessionManager';
@@ -118,7 +119,10 @@ describe('HU8 categories screen', () => {
 
   test('HU8-CA03: creates a category with name, type and icon', async () => {
     await setup();
-    expect(screen.getByTestId('categories-empty')).toBeTruthy();
+    expect(screen.queryAllByTestId(/^category-edit-/)).toEqual([]);
+    expect(
+      screen.queryByText('Aún no tienes categorías personalizadas.'),
+    ).toBeNull();
     await fireEvent.press(screen.getByTestId('categories-new'));
     expect(screen.getByText('Nueva categoría')).toBeTruthy();
     expect(screen.getByText('Nombre de la categoría')).toBeTruthy();
@@ -128,18 +132,56 @@ describe('HU8 categories screen', () => {
     await fireEvent.press(screen.getByTestId('category-save'));
     expect(await screen.findByText('Freelance')).toBeTruthy();
     expect(screen.queryByTestId('category-form')).toBeNull();
-    expect(screen.queryByTestId('categories-empty')).toBeNull();
     const id = ownRowId('Freelance');
     expect(screen.getByTestId(`category-edit-${id}`)).toBeTruthy();
     expect(screen.getByTestId(`category-delete-${id}`)).toBeTruthy();
   });
 
-  test('asks for the name and the icon before saving', async () => {
+  test('E06-D6c: «Guardar» stays disabled until the name and the icon are given', async () => {
     await setup();
     await fireEvent.press(screen.getByTestId('categories-new'));
-    await fireEvent.press(screen.getByTestId('category-save'));
-    expect(screen.getByText('Ingresa el nombre de la categoría.')).toBeTruthy();
-    expect(screen.getByText('Selecciona un ícono.')).toBeTruthy();
+    const disabled = () =>
+      screen.getByTestId('category-save').props.accessibilityState.disabled;
+    expect(screen.getByText('Guardar')).toBeTruthy();
+    expect(disabled()).toBe(true);
+    await fireEvent.changeText(screen.getByTestId('category-name'), '   ');
+    await fireEvent.press(screen.getByTestId('category-icon-pet'));
+    expect(disabled()).toBe(true);
+    await fireEvent.changeText(screen.getByTestId('category-name'), 'Viajes');
+    await act(async () => {});
+    expect(disabled()).toBe(false);
+    expect(screen.queryByText('Ingresa el nombre de la categoría.')).toBeNull();
+  });
+
+  test('E06-D5: the selector offers the 12 icons of the prototype', async () => {
+    await setup();
+    await fireEvent.press(screen.getByTestId('categories-new'));
+    expect(
+      screen
+        .getAllByTestId(/^category-icon-/)
+        .map(element =>
+          String(element.props.testID).replace('category-icon-', ''),
+        ),
+    ).toEqual([
+      'cart',
+      'home',
+      'car',
+      'food',
+      'heart',
+      'book',
+      'gift',
+      'pet',
+      'dumbbell',
+      'briefcase',
+      'plane',
+      'more',
+    ]);
+  });
+
+  test('E06-D9b: the name field accepts at most 40 characters', async () => {
+    await setup();
+    await fireEvent.press(screen.getByTestId('categories-new'));
+    expect(screen.getByTestId('category-name').props.maxLength).toBe(40);
   });
 
   test('HU8-CA04: shows «La categoría ya existe» and disables «Guardar»', async () => {
@@ -170,6 +212,7 @@ describe('HU8 categories screen', () => {
       screen.getByTestId(`category-edit-${ownRowId('Mascotas')}`),
     );
     expect(screen.getByText('Editar categoría')).toBeTruthy();
+    expect(screen.getByText('Guardar')).toBeTruthy();
     expect(screen.getByTestId('category-name').props.value).toBe('Mascotas');
     await fillForm('Ventas', 'income', 'cart');
     await fireEvent.press(screen.getByTestId('category-save'));
@@ -217,10 +260,26 @@ describe('HU8 categories screen', () => {
     expect(stored.rows).toEqual([]);
   });
 
-  test('«Volver» returns to the history and an expired session leaves the screen', async () => {
-    const { onBack, onSessionExpired, sessions } = await setup();
-    await fireEvent.press(screen.getByTestId('categories-back'));
+  test('E06-D4: the Android back button returns to the history', async () => {
+    const listeners: Array<Parameters<typeof BackHandler.addEventListener>[1]> =
+      [];
+    const spy = jest
+      .spyOn(BackHandler, 'addEventListener')
+      .mockImplementation((_event, handler) => {
+        listeners.push(handler);
+        return { remove: jest.fn() };
+      });
+    const { onBack } = await setup();
+    expect(screen.queryByText(/Volver/)).toBeNull();
+    expect(listeners.at(-1)!({ type: 'hardwareBackPress', timeStamp: 0 })).toBe(
+      true,
+    );
     expect(onBack).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  test('an expired session leaves the screen', async () => {
+    const { onSessionExpired, sessions } = await setup();
     sessions.end();
     await fireEvent.press(screen.getByTestId('categories-new'));
     await fillForm('Viajes', 'expense', 'plane');
