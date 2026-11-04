@@ -18,7 +18,7 @@ criterio derivado figura en su columna «Origen».
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
 | HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada en la rama `e05/hu3-recuperar-contrasena` (2026-10-30), sin integrar en `main`; CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); E05-D1 a E05-D9 ratificadas y cierre documental preparado el 2026-11-04 (`cierre-etapa-05.md`); integración en `main` pendiente de autorización |
-| HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
+| HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Implementada en la rama `e06/hu8-administrar-categorias` (2026-11-04), sin integrar en `main`; CA01–CA06, CA07a y CA07b verificados en Jest; CA07c y CA08 parciales previstos (E07 y E08); validación en emulador pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Pendiente |
 | HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Pendiente |
 | HU6 Visualizar balance financiero | CA01–CA04 | 09 | Pendiente |
@@ -313,6 +313,38 @@ registro, inicio de sesión y navegación. Cambian dos pruebas de `App.test.tsx`
 cambia con HU3: el enlace «Olvidé mi contraseña» abre el formulario real y el registro de rutas
 declara HU3 implementada. La regresión en Android 10 y 14 se ejecutó el 2026-10-30 sin fallos,
 salvo el defecto conocido de `E03-V13` en Android 14, confirmado a mano.
+
+## HU8 — criterios de aceptación (Etapa 06)
+
+Transcripción literal de los criterios de HU8, en el orden del documento fuente. HU8-CA07 se
+divide en los subcriterios a, b y c, uno por viñeta del documento. Verificación: U (unitaria), C
+(componente), I (integración con SQLite). Decisiones E06-D1 a E06-D9 en
+`decisiones-etapa-06.md`. Implementación en la rama `e06/hu8-administrar-categorias`, desde
+`main` (`e19d9ab`), a partir del código del repositorio paralelo `daniela888-li/GFP` (commits
+`76d5821` y `12dcbcb`) con las adaptaciones de `5efd51d`.
+
+Estado al 2026-11-04: Jest en Linux sin fallos (24 suites, 362 pruebas), con `typecheck`, `lint`
+y `format:check` sin errores. La validación en Windows y en emulador está pendiente; procedimiento
+en `validacion/etapa-06-pruebas-dispositivo.md`, cuyos pasos C01 a C16 figuran en la columna
+«Dispositivo».
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Dispositivo | Estado |
+|---|---|---|---|---|---|
+| HU8-CA01 | Poblado inicial (Seeding): Al instalar o iniciar la aplicación por primera vez, el sistema debe crear automáticamente las siguientes categorías del sistema si la tabla categories está vacía: Alimentación, Transporte, Vivienda, Entretenimiento, Salud, Educación, Compras, Salario y Otros. | Migración 4 `categories-schema-and-system-seed`: tabla `categories` creada vacía y carga de las 9 categorías con identificadores fijos, tipos del prototipo (E06-D2) e íconos (E06-D5); se aplica una sola vez | I: `categoryMigration.test.ts`; C: `CategoriesScreen.test.tsx` | C01 | Verificado (Jest) |
+| HU8-CA02 | Protección de categorías del sistema: Las categorías creadas por defecto no podrán ser editadas ni eliminadas bajo ninguna circunstancia. Los botones de acción rápida para estas filas estarán deshabilitados o no visibles. | Disparadores `system_category_protected` (también frente a SQL directo); el servicio responde `protected`; las filas del sistema muestran un candado y no tienen botones | I: `categoryMigration.test.ts`; U: `categoryManagement.test.ts`; C: `CategoriesScreen.test.tsx` | C01 | Verificado (Jest) |
+| HU8-CA03 | Creación de categorías personalizadas: El usuario podrá crear nuevas categorías ingresando un nombre, tipo y seleccionando un ícono. | Formulario «Nueva categoría» (`CategoryFormSheet.tsx`); `CategoryManagementService.create()` asociado al usuario de la sesión (E06-D1); «Guardar» deshabilitado sin nombre o sin ícono (E06-D6c) | U: `categoryRules.test.ts`, `categoryManagement.test.ts`; C: `CategoriesScreen.test.tsx` | C03, C05, C07 | Verificado (Jest) |
+| HU8-CA04 | Validación de duplicados: No se permitirá crear ni modificar una categoría con un nombre que ya exista en la base de datos (insensible a mayúsculas/minúsculas e independiente de si es del sistema o personalizada). De lo contrario, muestra el mensaje: "La categoría ya existe". | Clave `name_normalized` (E06-D9); comparación con las categorías del sistema y las del usuario actual (E06-D1a); índices únicos y disparador; aviso mientras se escribe y «Guardar» deshabilitado | U, I: `categoryManagement.test.ts`, `categoryMigration.test.ts`, `userIsolation.test.ts`; C: `CategoriesScreen.test.tsx` | C04, C06, C09, C14 | Verificado (Jest), con el alcance de E06-D1a |
+| HU8-CA05 | Reutilización de íconos: Múltiples categorías pueden compartir el mismo ícono gráfico sin restricción. | `icon` sin índice único; selector de 12 íconos (E06-D5) | U, I: `categoryManagement.test.ts`, `categoryMigration.test.ts`; C: `CategoriesScreen.test.tsx` | C07 | Verificado (Jest) |
+| HU8-CA06 | Edición restringida: El usuario solo podrá editar el nombre, tipo e ícono de las categorías creadas por él mismo. | `CategoryRepository.updateOwn()` filtra por el usuario de la sesión y `is_system = 0`; una categoría ajena responde `not_found` | U, I: `categoryManagement.test.ts`, `userIsolation.test.ts`; C: `CategoriesScreen.test.tsx` | C08, C14 | Verificado (Jest) |
+| HU8-CA07a | Eliminación y reasignación automática a "Otros": El usuario solo podrá eliminar categorías personalizadas. | `deleteOwn()` filtra por el usuario y `is_system = 0`; disparador de protección | U, I: `categoryManagement.test.ts`, `categoryMigration.test.ts`, `userIsolation.test.ts`; C: `CategoriesScreen.test.tsx` | C01, C12, C14 | Verificado (Jest) |
+| HU8-CA07b | Al presionar "Eliminar", el sistema debe desplegar un modal de confirmación con el mensaje: “¿Está seguro de eliminar esta categoría?” y la advertencia: "Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'.". | Modal con `MessageDialog`, la categoría afectada, «Cancelar» y «Confirmar» | C: `CategoriesScreen.test.tsx` | C11 | Verificado (Jest) |
+| HU8-CA07c | Al presionar "Confirmar", la categoría es eliminada de la base de datos local y todos los movimientos financieros vinculados a ella cambian automáticamente su categoría asociada al ID de "Otros". | E06: eliminación transaccional e identificador fijo `other`; E07: reasignación de los movimientos en la misma transacción, conservando su tipo (E06-D3, E06-D7) | U, I: eliminación (`categoryManagement.test.ts`, `CategoriesScreen.test.tsx`) | C12 (solo la eliminación) | Parcial previsto: la eliminación está verificada; la reasignación se completa en E07 |
+| HU8-CA08 | Disponibilidad en el sistema: Las categorías personalizadas creadas o modificadas deben reflejarse inmediatamente en las listas desplegables del formulario de registro (HU4) y filtros (HU5). | `listActiveCategories(session, type?)` sin caché (E06-D7) | I: `categoryManagement.test.ts` (la categoría creada o editada aparece en la consulta siguiente) | — | Parcial previsto: se completa en E07 (HU4) y E08 (HU5) |
+
+Decisiones verificadas además en Jest: E06-D4 (acceso desde la pantalla provisional de HU5 y botón
+Atrás, `App.test.tsx` y `CategoriesScreen.test.tsx`), E06-D5 (12 íconos en el selector), E06-D6b
+(«Guardar»), E06-D6c y E06-D9b (40 puntos de código). HU2-CA10: la ruta `categories` exige sesión
+(`App.test.tsx`).
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
