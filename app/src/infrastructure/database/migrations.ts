@@ -1,3 +1,4 @@
+import { SYSTEM_CATEGORIES } from './categoryCatalogs';
 import {
   PROPOSED_DOCUMENT_TYPES,
   PROPOSED_SECURITY_QUESTIONS,
@@ -173,6 +174,77 @@ const DEACTIVATE_NIT_V3: readonly string[] = [
     BEGIN SELECT RAISE(ABORT, 'inactive_document_type'); END`,
 ];
 
+// HU8 (Etapa 06, E06-D1, E06-D2, E06-D9). Las categorías del sistema no tienen propietario
+// (`user_id` nulo) y son compartidas; las personalizadas pertenecen a un usuario. Los
+// disparadores protegen las del sistema aunque se use SQL directo (HU8-CA02, HU8-CA07a) y
+// evitan que una personalizada repita el nombre de una del sistema (HU8-CA04).
+const CATEGORIES_SCHEMA_V4: readonly string[] = [
+  `CREATE TABLE categories (
+    id TEXT PRIMARY KEY CHECK (length(id) BETWEEN 1 AND 36),
+    user_id TEXT REFERENCES users (id) ON DELETE CASCADE,
+    is_system INTEGER NOT NULL CHECK (is_system IN (0, 1)),
+    name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 40),
+    name_normalized TEXT NOT NULL CHECK (length(name_normalized) BETWEEN 1 AND 40),
+    type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+    icon TEXT NOT NULL CHECK (length(icon) BETWEEN 1 AND 30),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    CHECK (
+      (is_system = 1 AND user_id IS NULL) OR (is_system = 0 AND user_id IS NOT NULL)
+    )
+  ) STRICT`,
+  `CREATE UNIQUE INDEX ux_categories_system_name_normalized
+    ON categories (name_normalized) WHERE is_system = 1`,
+  `CREATE UNIQUE INDEX ux_categories_user_id_name_normalized
+    ON categories (user_id, name_normalized) WHERE user_id IS NOT NULL`,
+  'CREATE INDEX ix_categories_user_id ON categories (user_id)',
+];
+
+function systemCategoryStatements(): string[] {
+  return SYSTEM_CATEGORIES.map(
+    (category, index) =>
+      `INSERT INTO categories (id, user_id, is_system, name, name_normalized, type, icon, sort_order, created_at, updated_at) VALUES (${quote(
+        category.id,
+      )}, NULL, 1, ${quote(category.name)}, ${quote(
+        category.nameNormalized,
+      )}, ${quote(category.type)}, ${quote(category.icon)}, ${
+        index + 1
+      }, 0, 0)`,
+  );
+}
+
+// Se crean después de la carga inicial: desde ese momento ninguna categoría del sistema
+// puede añadirse, modificarse ni eliminarse.
+const CATEGORY_TRIGGERS_V4: readonly string[] = [
+  `CREATE TRIGGER tr_categories_system_insert BEFORE INSERT ON categories
+    WHEN NEW.is_system = 1
+    BEGIN SELECT RAISE(ABORT, 'system_category_protected'); END`,
+  `CREATE TRIGGER tr_categories_system_update BEFORE UPDATE ON categories
+    WHEN OLD.is_system = 1
+    BEGIN SELECT RAISE(ABORT, 'system_category_protected'); END`,
+  `CREATE TRIGGER tr_categories_system_delete BEFORE DELETE ON categories
+    WHEN OLD.is_system = 1
+    BEGIN SELECT RAISE(ABORT, 'system_category_protected'); END`,
+  `CREATE TRIGGER tr_categories_owner_update
+    BEFORE UPDATE OF user_id, is_system ON categories
+    WHEN NEW.user_id IS NOT OLD.user_id OR NEW.is_system <> OLD.is_system
+    BEGIN SELECT RAISE(ABORT, 'category_owner_immutable'); END`,
+  `CREATE TRIGGER tr_categories_system_name_insert BEFORE INSERT ON categories
+    WHEN NEW.is_system = 0 AND EXISTS (
+      SELECT 1 FROM categories system
+       WHERE system.is_system = 1 AND system.name_normalized = NEW.name_normalized
+    )
+    BEGIN SELECT RAISE(ABORT, 'category_name_taken'); END`,
+  `CREATE TRIGGER tr_categories_system_name_update
+    BEFORE UPDATE OF name_normalized ON categories
+    WHEN NEW.is_system = 0 AND EXISTS (
+      SELECT 1 FROM categories system
+       WHERE system.is_system = 1 AND system.name_normalized = NEW.name_normalized
+    )
+    BEGIN SELECT RAISE(ABORT, 'category_name_taken'); END`,
+];
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'identity-and-security-schema', statements: SCHEMA_V1 },
   {
@@ -184,5 +256,14 @@ export const MIGRATIONS: readonly Migration[] = [
     version: 3,
     name: 'deactivate-nit-document-type',
     statements: DEACTIVATE_NIT_V3,
+  },
+  {
+    version: 4,
+    name: 'categories-schema-and-system-seed',
+    statements: [
+      ...CATEGORIES_SCHEMA_V4,
+      ...systemCategoryStatements(),
+      ...CATEGORY_TRIGGERS_V4,
+    ],
   },
 ];
