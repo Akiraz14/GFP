@@ -3,6 +3,7 @@ import { createNativeDatabaseDependencies } from '../infrastructure/database/nat
 import { createNativePbkdf2Engine } from '../infrastructure/security/pbkdf2Engine';
 import type { AppServices } from './appServices';
 import { AccountLoginService } from './authentication/accountLogin';
+import { AccountRecoveryService } from './authentication/accountRecovery';
 import { AccountRegistrationService } from './authentication/accountRegistration';
 import { SessionManager } from './session/sessionManager';
 
@@ -17,6 +18,7 @@ export async function createNativeAppServices(): Promise<AppServices> {
   return {
     registration: new AccountRegistrationService({ database, engine }),
     login: new AccountLoginService({ database, engine, sessions }),
+    recovery: new AccountRecoveryService({ database, engine }),
     sessions,
   };
 }

@@ -3,7 +3,8 @@
 Diseño adoptado en la Etapa 02 para E02-D1 a E02-D5 y la recuperación por preguntas
 de seguridad (decisiones en `decisiones.md`). Fuentes: HU1, HU2 y HU3 del documento
 de historias de usuario y la WU del 2026-10-25. Implementación en `app/src/` y
-pruebas en `app/__tests__/`. No implementa las pantallas ni los flujos de HU1, HU2 ni HU3.
+pruebas en `app/__tests__/`. Este documento describe el diseño de la Etapa 02; las pantallas y los
+flujos se implementaron después sobre él: HU1 en la Etapa 03, HU2 en la Etapa 04 y HU3 en la Etapa 05.
 
 ## 1. Modelo multiusuario (E02-D4)
 
@@ -184,13 +185,13 @@ Normalización (E02-D2):
 | Regla | Origen | Implementación |
 |---|---|---|
 | Registro con 5 preguntas del catálogo, sin repetir ni elegir preguntas similares | HU1 | `validateRegistrationAnswers()`; dos preguntas son similares si comparten `similarity_group` (E03-D6) |
-| Respuestas escritas | HU1; E03-D11 (2026-10-25), que sustituye a C-03 | El verificador se calcula sobre la respuesta normalizada con `free-text-folded`. El código actual aún implementa las respuestas seleccionables de C-03 (`option-id`); su adaptación está pendiente de autorización |
+| Respuestas escritas | HU1; E03-D11 (2026-10-25), que sustituye a C-03 | El verificador se calcula sobre la respuesta normalizada con `free-text-folded`, en el registro (Etapa 03) y en la recuperación (Etapa 05, E05-D3). La variante `option-id` de C-03 se conserva en el código sin uso |
 | Respuestas no almacenadas en texto claro, con sal propia | HU1, WU | Un verificador PBKDF2 independiente por respuesta, con los mismos parámetros que la contraseña |
-| Identificador primero; error «Identificador incorrecto» | HU3 | `AccountRecoveryService.start()` devuelve `invalid_identifier` |
-| Responder 2 de las 5 preguntas, elegidas al azar | HU3 | Se eligen con `RNGetRandomValues` y se guardan en `recovery_challenges` durante 15 minutos; repetir «Comenzar recuperación» devuelve las mismas preguntas mientras el reto siga vigente, para que no se puedan buscar preguntas más fáciles (E05-D2) |
+| Identificador primero; error «Identificador incorrecto» | HU3 | `AccountRecoveryService.start()` devuelve `invalid_identifier` para un identificador vacío, un correo con formato inválido (sin contar un intento) o un identificador inexistente; un celular nacional ambiguo devuelve `phone_country_code_required` sin contar un intento (A-ID2, E05-D7) |
+| Responder 2 de las 5 preguntas, elegidas al azar | HU3 | Se eligen con `RNGetRandomValues` y se guardan en `recovery_challenges` durante 15 minutos; repetir «Comenzar recuperación» devuelve las mismas preguntas mientras el reto siga vigente, para que no se puedan buscar preguntas más fáciles (E05-D2). Un reto vencido devuelve `challenge_expired` sin contar un intento |
 | Las 2 respuestas deben ser correctas | HU3 | Se verifican siempre ambas, sin salida anticipada; el resultado es único («Datos ingresados incorrectos») y no indica cuál falló |
 | Intentos limitados con esperas progresivas | WU | 3 fallos bloquean la recuperación de la cuenta durante 15 minutos; cada bloqueo siguiente dobla la espera (30, 60, 120… minutos) hasta 24 horas (E05-D1). Los identificadores inexistentes repetidos bloquean el inicio de la recuperación en el dispositivo con la misma regla |
-| No cambiar la contraseña sin completar la verificación | HU3, WU | La nueva contraseña cumple la política, coincide con la confirmación y solo se guarda tras verificar ambas respuestas, en una transacción que también elimina el reto y reinicia los contadores |
+| No cambiar la contraseña sin completar la verificación | HU3, WU | La nueva contraseña cumple la política, coincide con la confirmación y solo se guarda tras verificar ambas respuestas, en una transacción que también elimina el reto y reinicia el contador de recuperación de la cuenta y el del inicio de sesión del dispositivo (E04-D1, E05-D8) |
 | Retroceso del reloj | Riesgo propio | Si la hora del dispositivo retrocede, el bloqueo vigente se mantiene |
 | Intentos simultáneos | Revisión consolidada | `start()` y `complete()` se ejecutan en serie por base de datos, también entre instancias del servicio, para que cada intento lea el contador del anterior. El inicio de sesión (HU2) aplica la misma regla (E04-D7) |
 
@@ -202,7 +203,7 @@ Limitaciones que se aceptan expresamente:
 - Uso permitido: solo una demostración académica controlada; no se distribuye a usuarios reales hasta revisar y tratar el mecanismo (E03-D11). Controles, riesgos, mitigaciones futuras y pruebas pendientes en `decisiones-etapa-03.md`.
 - La protección real frente a la adivinación es la limitación de intentos. Quien obtenga el archivo de la base y su clave podría probar todas las combinaciones fuera de línea; PBKDF2 solo lo encarece.
 - El mensaje «Identificador incorrecto», exigido por HU3, permite saber si un identificador está registrado. Se mitiga con la limitación de intentos sobre identificadores inexistentes.
-- El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY` con un único contador del dispositivo (`scope = 'login'`, `subject = 'device'`), según E04-D1 (`decisiones-etapa-04.md`, pendiente de ratificación).
+- El inicio de sesión de HU2 (3 fallos y 15 minutos de bloqueo) usa la política `LOGIN_THROTTLE_POLICY` con un único contador del dispositivo (`scope = 'login'`, `subject = 'device'`), según E04-D1 (`decisiones-etapa-04.md`, ratificada el 2026-10-30).
 
 ## 5. Clave de la base de datos (E02-D3)
 
@@ -229,7 +230,7 @@ Limitaciones que se aceptan expresamente:
 | Datos en memoria de JavaScript (contraseña como `string`) | Los arreglos de bytes se borran tras usarse; los `string` de JavaScript no se pueden borrar |
 | Errores de consulta que mezclen usuarios | API de repositorios basada en la sesión, pruebas de aislamiento y revisión obligatoria de cada repositorio nuevo |
 | Reloj del dispositivo manipulado hacia adelante | Acorta o anula el bloqueo de inicio de sesión y de recuperación, de modo que quien tiene el dispositivo no tiene un límite real de intentos; es una limitación de una app sin servidor. Agrava el riesgo de las preguntas de seguridad (E03-D11). Mitigación futura propuesta, no implementada: combinar la hora del sistema con un reloj monótono, con un cambio de código autorizado por separado |
-| Reinstalación y pérdida de la clave sin probar en un dispositivo físico | P-D3 y la pérdida de la clave (E03-V09) verificadas en un AVD aislado el 2026-10-27; falta el dispositivo físico (Etapa 05 o 06) |
+| Reinstalación y pérdida de la clave sin probar en un dispositivo físico | P-D3 y la pérdida de la clave (E03-V09) verificadas en un AVD aislado el 2026-10-27; falta el dispositivo físico (P-D1, diferida a la Etapa 06 o posterior) |
 
 Otras reservas abiertas de la Etapa 02 que no dependen de este diseño: el permiso
 `INTERNET` se conserva hasta la prueba P-D7 (E02-D7), y los umbrales de calidad del OCR

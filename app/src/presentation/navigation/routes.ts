@@ -39,7 +39,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   passwordRecovery: {
     story: 'HU3',
     title: 'Recuperar contraseña',
-    implemented: false,
+    implemented: true,
     requiresSession: false,
   },
   movementForm: {

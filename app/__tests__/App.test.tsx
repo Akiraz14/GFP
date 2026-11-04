@@ -8,6 +8,7 @@ import {
   type RouteName,
 } from '../src/presentation/navigation/routes';
 import { AccountLoginService } from '../src/services/authentication/accountLogin';
+import { AccountRecoveryService } from '../src/services/authentication/accountRecovery';
 import { AccountRegistrationService } from '../src/services/authentication/accountRegistration';
 import { SessionManager } from '../src/services/session/sessionManager';
 import {
@@ -17,6 +18,7 @@ import {
 import {
   createAccount,
   createMigratedDatabase,
+  DEFAULT_ANSWERS,
   profile,
   TEST_PARAMETERS,
 } from '../testing/identityFixtures';
@@ -42,6 +44,7 @@ async function readyServices(withAccount = false) {
   return {
     registration: new AccountRegistrationService(dependencies),
     login: new AccountLoginService({ ...dependencies, sessions }),
+    recovery: new AccountRecoveryService(dependencies),
     sessions,
   };
 }
@@ -98,10 +101,56 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     expect(screen.getByTestId('login-password').props.value).toBe('');
   });
 
-  test('HU2-CA09: «Olvidé mi contraseña» opens the provisional HU3 screen', async () => {
+  test('HU2-CA09: «Olvidé mi contraseña» opens the HU3 recovery form', async () => {
     await render(<App createServices={() => readyServices()} />);
     await fireEvent.press(await screen.findByTestId('login-forgot-password'));
-    expect(screen.getByTestId('provisional-HU3')).toBeTruthy();
+    expect(screen.getByTestId('recovery-screen')).toBeTruthy();
+    expect(screen.queryByTestId('provisional-HU3')).toBeNull();
+  });
+
+  test('HU3-CA12, CA13: after a successful recovery the app returns to the login form and the new password logs in', async () => {
+    const services = await readyServices(true);
+    const catalog = await services.recovery.listSecurityQuestions();
+    await render(<App createServices={() => Promise.resolve(services)} />);
+    await fireEvent.press(await screen.findByTestId('login-forgot-password'));
+    await fireEvent.changeText(
+      screen.getByTestId('recovery-identifier'),
+      'ana@example.com',
+    );
+    await fireEvent.press(screen.getByTestId('recovery-start'));
+    await screen.findByTestId('recovery-challenge');
+    for (const index of [0, 1]) {
+      const field = screen.getByTestId(`recovery-answer-${index}`);
+      const questionId = catalog.find(
+        question => question.prompt === field.props.accessibilityLabel,
+      )!.id;
+      await fireEvent.changeText(
+        field,
+        DEFAULT_ANSWERS.find(answer => answer.questionId === questionId)!
+          .answer,
+      );
+    }
+    await fireEvent.changeText(
+      screen.getByTestId('recovery-new-password'),
+      'Nueva clave 9#',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('recovery-confirmation'),
+      'Nueva clave 9#',
+    );
+    await fireEvent.press(screen.getByTestId('recovery-update'));
+    await fireEvent.press(await screen.findByTestId('dialog-accept'));
+    expect(screen.getByTestId('login-screen')).toBeTruthy();
+    await fireEvent.changeText(
+      screen.getByTestId('login-identifier'),
+      'ana@example.com',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Nueva clave 9#',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    expect(await screen.findByTestId('provisional-HU5')).toBeTruthy();
   });
 
   test('HU2-CA07, CA10: a valid login opens the authenticated home route', async () => {
@@ -147,7 +196,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1 and HU2 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and HU1 to HU3 are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -164,6 +213,6 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2']);
+    ).toEqual(['HU1', 'HU2', 'HU3']);
   });
 });

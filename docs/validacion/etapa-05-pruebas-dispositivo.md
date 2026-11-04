@@ -1,0 +1,243 @@
+# Validación de la Etapa 05 — HU3 Recuperar contraseña
+
+Procedimiento para la validación final de HU3 en Windows y en los emuladores del estándar del
+proyecto: Android 10 (API 29, AVD `Pixel_4_Android_10`) y Android 14 (API 34, AVD `Pixel_4`).
+
+**Estado (2026-11-04):** validación ejecutada sobre `81b03e5`.
+
+- Windows y emuladores (automatizada): 2026-10-30, sin fallos salvo el defecto conocido de
+  `E03-V13` en Android 14.
+- Recorrido manual de HU3: **ejecución culminada** el 2026-11-04 en Android 14 y Android 10.
+  R01 a R15 y R14b aceptados, con las excepciones de `etapa-05-observaciones-validacion.md`. R16
+  queda como **NO VERIFICABLE** en ambos emuladores.
+
+Resultados en la sección 5. Antes, Jest, `typecheck`, `lint` y `format:check` habían pasado en
+Linux sobre `cdc8923` (`GFP-evidencias\e05\hu3-static-linux-20261030-030652\`).
+
+## Evidencias
+
+- Todas las evidencias de esta etapa van a `GFP-evidencias\e05\` (G-10), fuera del repositorio.
+- Los scripts de `scripts/stage-04/` usan por defecto `GFP-e04-evidencias`, así que en esta etapa
+  se ejecutan siempre con `-EvidenceRoot` y una ruta absoluta.
+- Cada ejecución crea su propia carpeta (los scripts le ponen el prefijo `hu2-` por herencia de la
+  Etapa 04) y se niega a sobrescribir una existente.
+- Los scripts rechazan una ruta de evidencias dentro del repositorio y al terminar comprueban que
+  el estado de Git no cambió. `npm ci` y Gradle solo escriben en carpetas ignoradas
+  (`node_modules`, `build`, `.gradle`).
+- No se modifica ninguna evidencia anterior. Las de las Etapas 03 y 04 siguen en
+  `GFP-e03-evidencias\` y `GFP-e04-evidencias\`. Ningún comando de este documento escribe en
+  ellas: los scripts reciben `-EvidenceRoot $Ev` y el recorrido manual crea su propia carpeta
+  `$Run` dentro de `$Ev`.
+
+## 1. Windows: controles estáticos, Jest y APK
+
+Desde el repositorio canónico, en la rama de la etapa y con el árbol limpio:
+
+```powershell
+cd "C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP"
+git switch e05/hu3-recuperar-contrasena
+git status --porcelain            # vacío
+git log --oneline -1              # commit entregado
+$Ev = "C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-evidencias\e05"
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Test-ScriptSyntax.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 -ExpectedBranch e05/hu3-recuperar-contrasena -ExpectedTests 293 -EvidenceRoot $Ev
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-AndroidBuild.ps1 -EvidenceRoot $Ev
+```
+
+| Paso | Qué ejecuta | Resultado esperado |
+|---|---|---|
+| `Test-ScriptSyntax.ps1` | Análisis sintáctico de los scripts | Sin errores |
+| `Invoke-StaticChecks.ps1` | `npm ci`, `typecheck`, `lint`, `format:check` y Jest | PASS=8 FAIL=0; Jest 293/293 |
+| `Invoke-AndroidBuild.ps1` | `assembleDebug` con JDK 17 | PASS=4 FAIL=0; registra el SHA-256 de `app\android\app\build\outputs\apk\debug\app-debug.apk` |
+
+El APK Debug no incluye el JavaScript: Metro lo sirve desde el árbol probado.
+
+## 2. Emulador: regresión automatizada de HU1 y HU2
+
+Antes de cada ejecución, arranque en frío del emulador con un solo emulador activo:
+
+1. Cierra los emuladores.
+2. `emulator -avd <AVD> -no-snapshot-load`.
+3. Espera a `sys.boot_completed=1`.
+4. Espera 3 minutos más y comprueba que no hay avisos «… isn't responding».
+
+Ejecuta los scripts en Android 14 y después en Android 10:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-Hu2DeviceTests.ps1 -Serial emulator-5554 -AllowAppReset -EvidenceRoot $Ev
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-Hu1DeviceRegression.ps1 -Serial emulator-5554 -AllowAppReset -EvidenceRoot $Ev
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-HermesUnicodeCheck.ps1 -Serial emulator-5554 -EvidenceRoot $Ev
+```
+
+| Script | Cambio en la Etapa 05 | Comprobaciones |
+|---|---|---|
+| `Invoke-Hu2DeviceTests.ps1` | Solo HU2-CA09: antes esperaba la pantalla provisional de HU3. Ahora espera el formulario real («Recuperar contraseña» y «Comenzar recuperación»), comprueba el estado de la app y guarda una captura | Las demás comprobaciones de HU2 (CA01 a CA08, CA10, CA06 con bloqueo, CA03 en la base y en `logcat`) y HU1-CA18 no cambian |
+| `Invoke-Hu1DeviceRegression.ps1` | Sin cambios | P-D3, E03-V09, E03-V06 y E03-V13 |
+| `Invoke-HermesUnicodeCheck.ps1` | Sin cambios | P-D2 |
+
+Defectos conocidos de estos scripts (`etapa-04-pruebas-dispositivo.md`, conservados por E04-APROBACION):
+
+- En el emulador Android 14, con la versión actual de Gboard, `E03-V13` da FAIL con «sin
+  EditorInfo en logcat» aunque el teclado sea el correcto. Hay que confirmar a mano el tipo de
+  teclado en `ime-*.log`.
+- Los avisos ANR del sistema no se detectan. Por eso es necesario el arranque en frío con espera.
+
+## 3. Emulador: recorrido manual de HU3
+
+HU3 no tiene un recorrido automatizado. El recorrido se ejecuta a mano en cada emulador, con la app
+instalada por `Invoke-AndroidBuild.ps1` y Metro en marcha (`cd app; npx react-native start`, y
+`adb reverse tcp:8081 tcp:8081`). Para cada paso se guarda una captura en la carpeta de la
+ejecución:
+
+```powershell
+$Run = Join-Path $Ev ("hu3-manual-emulator-5554-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+New-Item -ItemType Directory $Run | Out-Null
+function Shot([string]$Name) { cmd /c "adb exec-out screencap -p > `"$Run\$Name.png`"" }
+```
+
+### Preparación
+
+Reinstala la app (`adb uninstall co.gfpsas.gestionfinanciera` y `adb install` del APK) y registra
+tres cuentas sintéticas por la interfaz (HU1). Anota en `$Run\datos.txt` las preguntas elegidas y
+sus respuestas, pero nunca las contraseñas.
+
+| Cuenta | Documento | Celular | Correo | Uso |
+|---|---|---|---|---|
+| A | CC 5005001 | +57 3105550001 | `hu3.a@example.com` | Celular ambiguo con C (R05) y recuperación correcta (R06 a R13) |
+| B | CC 5005002 | +57 3105550002 | `hu3.b@example.com` | Bloqueo de recuperación (R14) e inicio de sesión durante ese bloqueo (R14b) |
+| C | CC 5005003 | +1 3105550001 (Canadá) | `hu3.c@example.com` | Celular ambiguo con A (R05) y reto vencido (R15) |
+
+Contraseñas, respuestas y bloqueos:
+
+- Usa contraseñas que cumplan la política, distintas por cuenta, y respuestas de 2 a 100
+  caracteres.
+- Solo dos identificadores inexistentes por sesión: el tercero bloquearía 15 minutos el inicio de
+  la recuperación en todo el dispositivo (E05-D1).
+
+### Pasos
+
+| ID | Acción | Resultado esperado | Criterio |
+|---|---|---|---|
+| R01 | En el inicio de sesión, pulsa «Olvidé mi contraseña» | «Recuperar contraseña»; solo «Identificador» y «Comenzar recuperación» | HU2-CA09, HU3-CA01 |
+| R02 | Pulsa «Comenzar recuperación» con el campo vacío | «Ingresa tu identificador.» junto al campo | HU3-CA03 |
+| R03 | `hu3.a@example` | «Identificador incorrecto»; no cuenta como intento | HU3-CA03 |
+| R04 | `noexiste@example.com` (una sola vez) | «Identificador incorrecto» | HU3-CA03 |
+| R05 | `3105550001` | «Ingresa el número celular con el código de país» | A-ID2, E05-D7 |
+| R06 | `HU3.A@example.com` | Aparecen 2 de las preguntas de A, «Nueva contraseña», «Confirmar nueva contraseña» y «Actualizar contraseña»; el identificador no se puede editar | HU3-CA02, HU3-CA04 |
+| R07 | Atrás de Android; vuelve a entrar y empieza con `5005001` y después con `+573105550001` | El inicio de sesión aparece al pulsar Atrás; con los tres identificadores se muestran las mismas 2 preguntas (reto vigente) | E05-D6, HU3-CA02, E05-D2 |
+| R08 | *Validación local.* Deja vacías las dos respuestas y escribe una contraseña válida y su confirmación; pulsa «Actualizar contraseña» | «Ingresa la respuesta.» junto a cada respuesta y el aviso «Datos ingresados incorrectos». No aparece «Verificando…». Tras «Aceptar», la contraseña y la confirmación siguen escritas | HU3-CA08, HU3-CA09 |
+| R09 | *Validación local.* Escribe las respuestas correctas y la contraseña `sinnumero!` con la misma confirmación | Requisito «Al menos un número» pendiente, «Datos ingresados incorrectos» junto a «Nueva contraseña» y el mismo aviso. No aparece «Verificando…». Tras «Aceptar», las respuestas y las contraseñas siguen escritas | HU3-CA05, HU3-CA08, HU3-CA09 |
+| R10 | *Validación local.* Corrige la contraseña con una válida y escribe una confirmación distinta | «La confirmación no coincide con la nueva contraseña.» junto a la confirmación y el aviso «Datos ingresados incorrectos». No aparece «Verificando…». Tras «Aceptar», los campos siguen escritos | HU3-CA07, HU3-CA08 |
+| R11 | *Verificación del servicio.* Escribe una respuesta correcta, otra incorrecta y una contraseña válida confirmada | Aparece «Verificando…» y después el aviso «Datos ingresados incorrectos», sin indicar qué respuesta falló. Las respuestas y las contraseñas quedan vacías. Cuenta un intento de recuperación para A | HU3-CA09, HU3-CA10 |
+| R12 | *Actualización.* Escribe de nuevo las respuestas correctas y una contraseña válida confirmada | «Verificando…» y «La contraseña fue actualizada. Inicia sesión con la nueva contraseña.»; «Aceptar» abre el inicio de sesión. Como solo R11 llegó al servicio, A tiene un intento y no está bloqueada; R08 a R10 no contaron | HU3-CA11, HU3-CA13, E05-D5 |
+| R13 | Inicia sesión con A y la contraseña anterior; después, con la nueva | La anterior: «El campo identificación o contraseña son incorrectos»; la nueva: pantalla provisional de HU5 | HU3-CA12 |
+| R14 | *Bloqueo de recuperación (HU3), no de inicio de sesión (HU2).* Cierra y vuelve a abrir la app; en la recuperación, con B, envía tres veces respuestas incorrectas con una contraseña válida confirmada; después, envía las respuestas correctas | Las tres veces, «Verificando…» y «Datos ingresados incorrectos». En el cuarto envío, «Superaste los intentos permitidos. La recuperación queda bloqueada durante N minutos.», donde N son los minutos que faltan para que termine el bloqueo (15 si el envío es inmediato), y vuelve la fase del identificador; «Comenzar recuperación» con B repite ese aviso con los minutos restantes. El texto es el de HU3, no el de HU2 («El acceso queda bloqueado…») | E05-D1 |
+| R14b | Vuelve al inicio de sesión con Atrás e inicia sesión con B y su contraseña actual | Entra (pantalla provisional de HU5): el bloqueo de recuperación de B no bloquea el inicio de sesión. Los contadores son distintos: `scope = 'recovery'` por cuenta y `scope = 'login'` del dispositivo | E05-D1, E04-D1 |
+| R15 | Con C: «Comenzar recuperación» con `+13105550001`; espera 16 minutos; respuestas correctas y contraseña válida | «El tiempo para responder las preguntas terminó. Comienza la recuperación de nuevo.» y vuelve el identificador | E05-D2 |
+| R16 | Contraseña en claro | `adb logcat -d` no contiene ninguna contraseña ni respuesta usada: `adb logcat -d \| Select-String -SimpleMatch '<valor>'` sin resultados para cada valor anotado a mano, sin guardarlo en archivos | HU3-CA06 |
+
+Pruebas que necesitan preparación especial:
+
+- **R05:** necesita dos cuentas con el mismo número nacional en países distintos (A y C).
+- **R14:** deja bloqueada la recuperación de B entre 15 minutos y 24 horas, según los bloqueos
+  previos. No afecta al inicio de sesión (R14b).
+- **R15:** exige esperar más de 15 minutos. Las imágenes `google_apis_playstore` no permiten
+  `adb root`, así que no se puede adelantar el reloj de forma fiable.
+- **HU3-CA12 con el inicio de sesión bloqueado (E05-D8):** opcional. Se hacen tres inicios de
+  sesión fallidos, se recupera la cuenta y se comprueba que la contraseña nueva entra sin esperar.
+  Jest ya lo cubre.
+
+Los pasos distinguen tres comportamientos (E05-D5):
+
+- **Validación local (R08 a R10):** la pantalla comprueba las respuestas vacías, la política y la
+  confirmación antes de llamar al servicio. Muestra el mensaje del campo y el aviso «Datos
+  ingresados incorrectos», no aparece «Verificando…», no cuenta un intento y conserva los campos.
+- **Verificación del servicio (R11, R14):** las respuestas se comprueban en el servicio. Aparece
+  «Verificando…», el aviso no indica qué falló, se cuenta un intento y se borran las respuestas y
+  las contraseñas.
+- **Actualización (R12):** el servicio cambia la credencial y la pantalla vuelve al inicio de
+  sesión.
+
+R12 demuestra además que R08 a R10 no contaron: si hubieran contado, A tendría cuatro fallos y
+estaría bloqueada.
+
+Anota el resultado de cada paso (PASS o FAIL, con una observación) en `$Run\resultados.md`.
+
+## 4. Condiciones para aprobar la Etapa 05
+
+1. Windows: `Invoke-StaticChecks.ps1` con 293/293 y `Invoke-AndroidBuild.ps1` sin fallos.
+2. Android 14 y Android 10: `Invoke-Hu2DeviceTests.ps1`, `Invoke-Hu1DeviceRegression.ps1` e
+   `Invoke-HermesUnicodeCheck.ps1` sin FAIL ni BLOCKED, salvo el defecto conocido de `E03-V13` en
+   Android 14, que se confirma a mano.
+3. Recorrido manual R01 a R16 (incluido R14b) en ambos emuladores, con sus capturas.
+4. Comparación de la pantalla con el prototipo de HU3, que requiere sus imágenes.
+5. Ratificación de E05-D1 a E05-D9 por el responsable.
+
+Estado de las condiciones al 2026-11-04:
+
+| Condición | Estado |
+|---|---|
+| 1 | Cumplida (2026-10-30) |
+| 2 | Cumplida (2026-10-30); `E03-V13` en Android 14 confirmado a mano en `ime-*.log` |
+| 3 | Ejecución culminada (2026-11-04): R01 a R15 y R14b aceptados con excepciones; R16 no verificable en ambos emuladores |
+| 4 | Aceptada por el responsable como reserva documental (2026-11-04): no se dispone de las imágenes del prototipo y la comparación no se hizo |
+| 5 | Cumplida: E05-D1 a E05-D9 ratificadas por el responsable (2026-11-04) |
+
+## 5. Resultados de la ejecución
+
+Todas las ejecuciones se hicieron sobre `81b03e5` (rama `e05/hu3-recuperar-contrasena`). Horas de
+Bogotá. Evidencias en `GFP-evidencias\e05\`, sin modificar.
+
+### Windows (2026-10-30)
+
+| Paso | Resultado | Evidencia |
+|---|---|---|
+| `Test-ScriptSyntax.ps1` | 9 archivos, 0 errores | Salida de consola |
+| `Invoke-StaticChecks.ps1` | PASS=8 FAIL=0; Jest 293/293 en 20 suites | `hu2-static-windows-20261030-092018` |
+| `Invoke-AndroidBuild.ps1` | PASS=4 FAIL=0; APK Debug SHA-256 `011B6277CF00CCB2A44513A48CAC2607ABA55E3872BC9B22AA410D10BDF7826F` | `hu2-build-windows-20261030-092132` |
+
+### Regresión automatizada en emulador (2026-10-30)
+
+| Script | Android 14 (API 34) | Android 10 (API 29) |
+|---|---|---|
+| `Invoke-Hu2DeviceTests.ps1` | PASS=26 FAIL=0 (`hu2-device-emulator-5554-20261030-115657`) | PASS=26 FAIL=0 (`…-111723` y `…-134611`) |
+| `Invoke-Hu1DeviceRegression.ps1` | PASS=26 FAIL=4 (`hu2-hu1-regression-emulator-5554-20261030-120800`): los 4 FAIL son `E03-V13`, defecto conocido del script; `ime-*.log` muestra `inputTypeString=Number` en CC, CE y PPT y la clase Text en PA | PASS=30 FAIL=0 (`…-112731` y `…-135334`) |
+| `Invoke-HermesUnicodeCheck.ps1` | PASS=15 FAIL=0 (`hu2-p-d2-emulator-5554-20261030-122248`) | PASS=15 FAIL=0 (`…-113836` y `…-135919`) |
+
+`HU2-CA09` pasó en ambos emuladores con el formulario real de HU3. La primera ejecución en
+Android 14 (`…-111027`, `…-111028`, `…-111030`) quedó BLOCKED porque el emulador no estaba
+conectado; se repitió con el emulador conectado.
+
+### Recorrido manual de HU3 (2026-11-04)
+
+Carpetas: `hu3-manual-android14-api34-20261104-083056` (08:53 a 09:57) y
+`hu3-manual-android10-api29-20261104-101040` (11:17 a 12:10). Los identificadores O-xx remiten a
+`etapa-05-observaciones-validacion.md`.
+
+| Paso | Android 14 | Android 10 | Observaciones |
+|---|---|---|---|
+| R01 | PASS | PASS | |
+| R02 | PASS | PASS | |
+| R03 | PASS | PASS | Android 10: fila duplicada en `resultados.md` (O-04) y cierre inesperado de la app justo después (O-03) |
+| R04 | PASS | PASS | |
+| R05 | PASS | PASS | |
+| R06 | PASS | PASS | El identificador no editable se respalda en Jest (O-08) |
+| R07 | PASS | PASS | |
+| R08 | PASS | PASS | |
+| R09 | PASS | PASS | |
+| R10 | PASS | PASS | Android 10: falta la captura posterior a «Aceptar» (O-06) |
+| R11 | PASS | PASS | Android 10: con un reto nuevo tras el vencimiento no documentado del anterior (O-05) |
+| R12 | PASS | PASS | |
+| R13 | PASS | PASS | |
+| R14 | PASS | PASS | Android 14: reinicio no documentado antes del paso y dos capturas en orden inverso (O-01, O-02). El aviso muestra los minutos restantes (O-09) |
+| R14b | PASS | PASS | |
+| R15 | PASS | PASS | Esperas de 31 minutos (Android 14) y 18 minutos (Android 10) |
+| R16 | NO VERIFICABLE | NO VERIFICABLE | Los registros disponibles no permiten certificar la ausencia de contraseñas y respuestas en `logcat` durante todo el recorrido (O-11) |
+
+Decisión del responsable (2026-11-04): la ejecución de las pruebas manuales de HU3 queda
+culminada, con R16 no verificable y las excepciones documentadas. No se repiten pruebas ni se
+ejecuta la comprobación adicional de R16. Esta decisión no aprueba la Etapa 05 por sí sola; el cierre está en `cierre-etapa-05.md`.
+
+Correcciones documentales O-09 (texto esperado de R14) y O-10 (columna «Uso» de la tabla de
+cuentas): aplicadas en el cierre documental de la Etapa 05 (2026-11-04). El recorrido se ejecutó
+con el texto anterior; las correcciones no cambian ningún paso ni ningún resultado.

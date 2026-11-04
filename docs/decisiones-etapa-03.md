@@ -353,7 +353,7 @@ registrado como evolución futura porque amplía el alcance.
 
 ## E03-D9 — Normalización de respuestas
 
-- **Decisión:** con respuestas escritas (E03-D11, 2026-10-25) se aplica `free-text-folded`: NFC, eliminación de tildes y diacríticos, minúsculas, espacios internos reducidos a uno y recorte de los externos. Con respuestas seleccionables (C-03, sustituida en cuanto a la forma de responder), el verificador se calculaba sobre el identificador de la opción (`option-id`). Ambas variantes existen en el código y en `security_answers.normalization`; el uso de `free-text-folded` en el registro y la recuperación está pendiente de implementación.
+- **Decisión:** con respuestas escritas (E03-D11, 2026-10-25) se aplica `free-text-folded`: NFC, eliminación de tildes y diacríticos, minúsculas, espacios internos reducidos a uno y recorte de los externos. Con respuestas seleccionables (C-03, sustituida en cuanto a la forma de responder), el verificador se calculaba sobre el identificador de la opción (`option-id`). Ambas variantes existen en el código y en `security_answers.normalization`. `free-text-folded` se usa en el registro de HU1 (implementado el 2026-10-26, Etapa 03) y en la recuperación de HU3 (Etapa 05, E05-D3); `option-id` se conserva sin uso.
 - **Relación:** E05-D3 equivale a esta decisión.
 - **Implementación y pruebas:** `canonicalSecret()`, `normalizeFreeTextAnswer()`; `secretNormalization.test.ts` y `secretVerifier.test.ts`.
 
