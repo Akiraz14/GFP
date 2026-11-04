@@ -17,7 +17,7 @@ criterio derivado figura en su columna «Origen».
 |---|---|---|---|
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
 | HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
-| HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada en la rama `e05/hu3-recuperar-contrasena` (2026-10-30), sin integrar en `main`; CA01–CA13 verificados en Jest; validación en emulador pendiente |
+| HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada en la rama `e05/hu3-recuperar-contrasena` (2026-10-30), sin integrar en `main`; CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); cierre de la etapa pendiente |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Pendiente |
 | HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Pendiente |
@@ -32,7 +32,7 @@ criterio derivado figura en su columna «Origen».
 | Criterio | Historia | Dependencia | Evidencia exigible en la etapa actual (propuesta) | Verificación definitiva |
 |---|---|---|---|---|
 | HU1-CA18 | HU1 | Pantalla de inicio de sesión (HU2) | Prueba: Cancelar limpia todos los campos y emite navegación a la ruta de inicio de sesión | Verificado en E03 (2026-10-27): el criterio exige regresar a la vista de inicio de sesión, no autenticar; en E04 se repite como regresión cuando HU2 sustituya la pantalla provisional |
-| HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación (cumplida en E04: `LoginScreen.test.tsx`, `App.test.tsx`) | E05: cumplida en Jest (`App.test.tsx`: el enlace abre el formulario de HU3); pendiente en emulador |
+| HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación (cumplida en E04: `LoginScreen.test.tsx`, `App.test.tsx`) | E05: verificado en Jest (`App.test.tsx`: el enlace abre el formulario de HU3) y en Android 10 y 14 (`HU2-CA09`, 2026-10-30; R01, 2026-11-04) |
 | HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5 con el resumen de HU6, HU7, HU8, HU9 y HU10; E04-D3) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
 | HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | E13 |
 | HU8-CA07c | HU8 | Movimientos (HU4) | Prueba de eliminación; reasignación con datos de prueba solo si el esquema existe desde E02 | E07 |
@@ -262,7 +262,7 @@ registro de la cuenta sintética, con la app fuera del primer plano. La ejecuci�
 | HU2-CA06 | Si el identificador y/o contraseña son incorrectos en 3 oportunidades, debe bloquearse el acceso a la plataforma por 15 minutos. | Contador único del dispositivo en `auth_throttles` (E04-D1), persistente; intentos en serie | U, C: tercer fallo, bloqueo con la contraseña correcta, fin del bloqueo, reinicio tras éxito, persistencia, reloj hacia atrás, 10 intentos simultáneos | `HU2-CA06` | Verificado (Jest; Android 10 y 14) |
 | HU2-CA07 | El botón “Ingresar” debe validar la información contra los datos almacenados en la base de datos. | `AccountLoginService` sobre la base cifrada; sesión del `SessionManager` | U, I, C: `accountLogin.test.ts`, `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA07` | Verificado (Jest; Android 10 y 14) |
 | HU2-CA08 | El botón “Registrar” debe redirigir al formulario de registro de usuario. | Navegación a `register` | C: `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA08` | Verificado (Jest; Android 10 y 14) |
-| HU2-CA09 | El vínculo “Olvidé mi contraseña” redirige al formulario de recuperación de contraseña. | Navegación a `passwordRecovery` (pantalla provisional de G-07 hasta HU3) | C | `HU2-CA09` | Parcial: navegación a `passwordRecovery`, que desde E05 abre el formulario de HU3, verificada en Jest; en Android 10 y 14 se verificó en E04 con la pantalla provisional y queda pendiente con el formulario real |
+| HU2-CA09 | El vínculo “Olvidé mi contraseña” redirige al formulario de recuperación de contraseña. | Navegación a `passwordRecovery` (pantalla provisional de G-07 hasta HU3) | C | `HU2-CA09` | Verificado en la rama de E05 (Jest; Android 10 y 14 con el formulario real de HU3, 2026-10-30); en `main` sigue la pantalla provisional hasta integrar E05 |
 | HU2-CA10 | La información financiera no debe estar disponible mediante la aplicación sin una autenticación válida. | `requiresSession` y `resolveRoute()` (E04-D3) | C: `App.test.tsx` | `HU2-CA10` (reinicio: vuelve al inicio de sesión) | Parcial: verificado en Jest y en Android 10 y 14 (la sesión no se conserva al reabrir); re-verificación en E07–E12 y E13 |
 | HU2-CA11 | Después de una autenticación válida, el usuario debe acceder únicamente a la información asociada a su cuenta. | Sesión de un único usuario; cada inicio de sesión sustituye la anterior (E04-D4); repositorios basados en la sesión (E02-D4) | U: `accountLogin.test.ts`, `userIsolation.test.ts` | — | Parcial: aislamiento de datos en E07, E08, E11, E12 y E13 |
 
@@ -279,30 +279,39 @@ Transcripción literal de los 13 criterios de HU3, en el orden del documento fue
 Verificación: U, C e I como en HU1 y HU2. Implementación en la rama `e05/hu3-recuperar-contrasena`
 sobre el servicio de recuperación de la Etapa 02 (`accountRecovery.ts`) y la pantalla
 `PasswordRecoveryScreen.tsx`. Decisiones E05-D1 a E05-D9 en `decisiones-etapa-05.md`,
-pendientes de ratificación. Estado al 2026-10-30: Jest en Linux (20 suites, 293 pruebas) sin
-fallos; la validación en Windows y en emulador está pendiente (procedimiento en
-`validacion/etapa-05-pruebas-dispositivo.md`).
+pendientes de ratificación. Estado al 2026-11-04, sobre `81b03e5`:
 
-| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Estado |
-|---|---|---|---|---|
-| HU3-CA01 | Se debe solicitar primero el identificador para conocer el usuario que intenta recuperar la contraseña. | Primera fase de la pantalla: solo «Identificador» y «Comenzar recuperación» (E05-D4) | C: `PasswordRecoveryScreen.test.tsx` | Verificado (Jest) |
-| HU3-CA02 | El campo identificador debe recibir correo electrónico, número de documento o número de celular. | Búsqueda de A-ID1 a A-ID4 (`lookupIdentifier`); celular nacional ambiguo según A-ID2 (E05-D7) | U, C: `accountRecovery.test.ts`, `PasswordRecoveryScreen.test.tsx` | Verificado (Jest) |
-| HU3-CA03 | El botón “Comenzar recuperación” deberá validar el identificador y mostrar error si no es un identificador válido mediante un mensaje “Identificador incorrecto”. | `validateRecoveryIdentifier()` y `start()`: correo con formato inválido o identificador inexistente dan «Identificador incorrecto»; vacío, «Ingresa tu identificador.» (E05-D5) | U, C | Verificado (Jest) |
-| HU3-CA04 | Cuando se confirme el identificador válido, se deberá solicitar responder las preguntas de seguridad y solicitar la nueva contraseña. | Segunda fase con 2 de las 5 preguntas configuradas, elegidas al azar y mantenidas en un reto de 15 minutos (E05-D2), y los campos de la nueva contraseña | U, C | Verificado (Jest) |
-| HU3-CA05 | La contraseña nueva debe ser una contraseña segura, de mínimo 8 caracteres, entre los cuales debe contener mínimo 1 número, 1 letra, 1 símbolo. | `validateNewPassword()` de HU1 en la pantalla y en el servicio; requisitos visibles (`PasswordRequirements`) | U, C | Verificado (Jest) |
-| HU3-CA06 | La aplicación no debe almacenar la contraseña en texto plano. | Verificador PBKDF2 (E02-D1); campos con `secureTextEntry` | U, C: la fila de `credentials` no contiene la contraseña | Verificado (Jest) |
-| HU3-CA07 | La nueva contraseña y la confirmación deben ser idénticas para poder realizar la recuperación. | Comprobación en la pantalla y en el servicio (`confirmation_mismatch`) | U, C | Verificado (Jest) |
-| HU3-CA08 | El botón “Actualizar contraseña” deberá validar que los datos ingresados cumplan las reglas de formato y de seguridad y que sean correctos con los valores esperados. | Respuestas obligatorias, política y confirmación en la pantalla; respuestas verificadas en el servicio | U, C | Verificado (Jest) |
-| HU3-CA09 | Si los datos ingresados son incorrectos, se debe mostrar un error mediante el mensaje “Datos ingresados incorrectos”. | Aviso con el texto literal para datos con formato inválido y respuestas incorrectas (E05-D5) | C | Verificado (Jest) |
-| HU3-CA10 | Si las respuestas no son correctas, no debe permitirse el cambio de contraseña. | Se verifican siempre las 2 respuestas; un fallo no cambia la credencial y cuenta un intento (E05-D1) | U, C | Verificado (Jest) |
-| HU3-CA11 | Si las respuestas son correctas y la nueva contraseña es confirmada y cumple las condiciones de seguridad, se debe proceder a actualizar la nueva contraseña en la base de datos. | `replaceCredential()` en una transacción que elimina el reto y reinicia los contadores | U, C | Verificado (Jest) |
-| HU3-CA12 | Después de completar correctamente el proceso, la nueva contraseña debe permitir iniciar sesión. | La transacción reinicia también el bloqueo del inicio de sesión del dispositivo (E05-D8) | U: `accountRecovery.test.ts` (incluido un dispositivo bloqueado); I: `App.test.tsx` | Verificado (Jest) |
-| HU3-CA13 | Si el proceso de recuperación es exitoso, se debe redirigir al formulario de inicio de sesión. | Aviso de éxito y, al aceptarlo, ruta `login` | C: `PasswordRecoveryScreen.test.tsx`; I: `App.test.tsx` | Verificado (Jest) |
+- Jest sin fallos en Linux y Windows (20 suites, 293 pruebas).
+- Regresión automatizada de HU1 y HU2 en Android 10 y 14 (2026-10-30) sin fallos, salvo el
+  defecto conocido de `E03-V13` en Android 14.
+- Recorrido manual R01 a R16 en Android 10 y 14: ejecución culminada el 2026-11-04. R01 a R15 y
+  R14b aceptados con las excepciones de `validacion/etapa-05-observaciones-validacion.md`; R16
+  no verificable en ambos emuladores.
+
+Procedimiento y resultados en `validacion/etapa-05-pruebas-dispositivo.md`. La columna
+«Dispositivo» indica los pasos del recorrido y las observaciones (O-xx) que los afectan.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Dispositivo (Android 10 y 14) | Estado |
+|---|---|---|---|---|---|
+| HU3-CA01 | Se debe solicitar primero el identificador para conocer el usuario que intenta recuperar la contraseña. | Primera fase de la pantalla: solo «Identificador» y «Comenzar recuperación» (E05-D4) | C: `PasswordRecoveryScreen.test.tsx` | R01 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA02 | El campo identificador debe recibir correo electrónico, número de documento o número de celular. | Búsqueda de A-ID1 a A-ID4 (`lookupIdentifier`); celular nacional ambiguo según A-ID2 (E05-D7) | U, C: `accountRecovery.test.ts`, `PasswordRecoveryScreen.test.tsx` | R05, R06, R07 (correo, documento y celular); R06 con O-08 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA03 | El botón “Comenzar recuperación” deberá validar el identificador y mostrar error si no es un identificador válido mediante un mensaje “Identificador incorrecto”. | `validateRecoveryIdentifier()` y `start()`: correo con formato inválido o identificador inexistente dan «Identificador incorrecto»; vacío, «Ingresa tu identificador.» (E05-D5) | U, C | R02, R03, R04; Android 10: O-03, O-04 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA04 | Cuando se confirme el identificador válido, se deberá solicitar responder las preguntas de seguridad y solicitar la nueva contraseña. | Segunda fase con 2 de las 5 preguntas configuradas, elegidas al azar y mantenidas en un reto de 15 minutos (E05-D2), y los campos de la nueva contraseña | U, C | R06, R07 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA05 | La contraseña nueva debe ser una contraseña segura, de mínimo 8 caracteres, entre los cuales debe contener mínimo 1 número, 1 letra, 1 símbolo. | `validateNewPassword()` de HU1 en la pantalla y en el servicio; requisitos visibles (`PasswordRequirements`) | U, C | R09 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA06 | La aplicación no debe almacenar la contraseña en texto plano. | Verificador PBKDF2 (E02-D1); campos con `secureTextEntry` | U, C: la fila de `credentials` no contiene la contraseña | R16: no verificable (O-11); la base no se inspeccionó en el recorrido | Verificado (Jest); sin verificación en dispositivo |
+| HU3-CA07 | La nueva contraseña y la confirmación deben ser idénticas para poder realizar la recuperación. | Comprobación en la pantalla y en el servicio (`confirmation_mismatch`) | U, C | R10; Android 10: O-06 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA08 | El botón “Actualizar contraseña” deberá validar que los datos ingresados cumplan las reglas de formato y de seguridad y que sean correctos con los valores esperados. | Respuestas obligatorias, política y confirmación en la pantalla; respuestas verificadas en el servicio | U, C | R08, R09, R10, R11; Android 10: O-05, O-06 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA09 | Si los datos ingresados son incorrectos, se debe mostrar un error mediante el mensaje “Datos ingresados incorrectos”. | Aviso con el texto literal para datos con formato inválido y respuestas incorrectas (E05-D5) | C | R08 a R11, R14 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA10 | Si las respuestas no son correctas, no debe permitirse el cambio de contraseña. | Se verifican siempre las 2 respuestas; un fallo no cambia la credencial y cuenta un intento (E05-D1) | U, C | R11, R14; Android 14: O-01, O-02; Android 10: O-05 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA11 | Si las respuestas son correctas y la nueva contraseña es confirmada y cumple las condiciones de seguridad, se debe proceder a actualizar la nueva contraseña en la base de datos. | `replaceCredential()` en una transacción que elimina el reto y reinicia los contadores | U, C | R12 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA12 | Después de completar correctamente el proceso, la nueva contraseña debe permitir iniciar sesión. | La transacción reinicia también el bloqueo del inicio de sesión del dispositivo (E05-D8) | U: `accountRecovery.test.ts` (incluido un dispositivo bloqueado); I: `App.test.tsx` | R13 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA13 | Si el proceso de recuperación es exitoso, se debe redirigir al formulario de inicio de sesión. | Aviso de éxito y, al aceptarlo, ruta `login` | C: `PasswordRecoveryScreen.test.tsx`; I: `App.test.tsx` | R12 | Verificado (Jest; Android 10 y 14) |
 
 Regresión de HU1 y HU2 en la Etapa 05: la suite completa de Jest pasa, incluidas las pruebas de
 registro, inicio de sesión y navegación. Cambian dos pruebas de `App.test.tsx` cuyo comportamiento
 cambia con HU3: el enlace «Olvidé mi contraseña» abre el formulario real y el registro de rutas
-declara HU3 implementada. La regresión en emulador está pendiente.
+declara HU3 implementada. La regresión en Android 10 y 14 se ejecutó el 2026-10-30 sin fallos,
+salvo el defecto conocido de `E03-V13` en Android 14, confirmado a mano.
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

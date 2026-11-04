@@ -3,9 +3,16 @@
 Procedimiento para la validación final de HU3 en Windows y en los emuladores del estándar del
 proyecto: Android 10 (API 29, AVD `Pixel_4_Android_10`) y Android 14 (API 34, AVD `Pixel_4`).
 
-**Estado (2026-10-30):** Jest, `typecheck`, `lint` y `format:check` pasaron en Linux sobre
-`cdc8923`, con 20 suites y 293 pruebas (`GFP-evidencias\e05\hu3-static-linux-20261030-030652\`). La
-validación en Windows y en los emuladores está pendiente de ejecución por el responsable.
+**Estado (2026-11-04):** validación ejecutada sobre `81b03e5`.
+
+- Windows y emuladores (automatizada): 2026-10-30, sin fallos salvo el defecto conocido de
+  `E03-V13` en Android 14.
+- Recorrido manual de HU3: **ejecución culminada** el 2026-11-04 en Android 14 y Android 10.
+  R01 a R15 y R14b aceptados, con las excepciones de `etapa-05-observaciones-validacion.md`. R16
+  queda como **NO VERIFICABLE** en ambos emuladores.
+
+Resultados en la sección 5. Antes, Jest, `typecheck`, `lint` y `format:check` habían pasado en
+Linux sobre `cdc8923` (`GFP-evidencias\e05\hu3-static-linux-20261030-030652\`).
 
 ## Evidencias
 
@@ -165,3 +172,71 @@ Anota el resultado de cada paso (PASS o FAIL, con una observación) en `$Run\res
 3. Recorrido manual R01 a R16 (incluido R14b) en ambos emuladores, con sus capturas.
 4. Comparación de la pantalla con el prototipo de HU3, que requiere sus imágenes.
 5. Ratificación de E05-D1 a E05-D9 por el responsable.
+
+Estado de las condiciones al 2026-11-04:
+
+| Condición | Estado |
+|---|---|
+| 1 | Cumplida (2026-10-30) |
+| 2 | Cumplida (2026-10-30); `E03-V13` en Android 14 confirmado a mano en `ime-*.log` |
+| 3 | Ejecución culminada (2026-11-04): R01 a R15 y R14b aceptados con excepciones; R16 no verificable en ambos emuladores |
+| 4 | Pendiente: no se dispone de las imágenes del prototipo |
+| 5 | Pendiente de ratificación |
+
+## 5. Resultados de la ejecución
+
+Todas las ejecuciones se hicieron sobre `81b03e5` (rama `e05/hu3-recuperar-contrasena`). Horas de
+Bogotá. Evidencias en `GFP-evidencias\e05\`, sin modificar.
+
+### Windows (2026-10-30)
+
+| Paso | Resultado | Evidencia |
+|---|---|---|
+| `Test-ScriptSyntax.ps1` | 9 archivos, 0 errores | Salida de consola |
+| `Invoke-StaticChecks.ps1` | PASS=8 FAIL=0; Jest 293/293 en 20 suites | `hu2-static-windows-20261030-092018` |
+| `Invoke-AndroidBuild.ps1` | PASS=4 FAIL=0; APK Debug SHA-256 `011B6277CF00CCB2A44513A48CAC2607ABA55E3872BC9B22AA410D10BDF7826F` | `hu2-build-windows-20261030-092132` |
+
+### Regresión automatizada en emulador (2026-10-30)
+
+| Script | Android 14 (API 34) | Android 10 (API 29) |
+|---|---|---|
+| `Invoke-Hu2DeviceTests.ps1` | PASS=26 FAIL=0 (`hu2-device-emulator-5554-20261030-115657`) | PASS=26 FAIL=0 (`…-111723` y `…-134611`) |
+| `Invoke-Hu1DeviceRegression.ps1` | PASS=26 FAIL=4 (`hu2-hu1-regression-emulator-5554-20261030-120800`): los 4 FAIL son `E03-V13`, defecto conocido del script; `ime-*.log` muestra `inputTypeString=Number` en CC, CE y PPT y la clase Text en PA | PASS=30 FAIL=0 (`…-112731` y `…-135334`) |
+| `Invoke-HermesUnicodeCheck.ps1` | PASS=15 FAIL=0 (`hu2-p-d2-emulator-5554-20261030-122248`) | PASS=15 FAIL=0 (`…-113836` y `…-135919`) |
+
+`HU2-CA09` pasó en ambos emuladores con el formulario real de HU3. La primera ejecución en
+Android 14 (`…-111027`, `…-111028`, `…-111030`) quedó BLOCKED porque el emulador no estaba
+conectado; se repitió con el emulador conectado.
+
+### Recorrido manual de HU3 (2026-11-04)
+
+Carpetas: `hu3-manual-android14-api34-20261104-083056` (08:53 a 09:57) y
+`hu3-manual-android10-api29-20261104-101040` (11:17 a 12:10). Los identificadores O-xx remiten a
+`etapa-05-observaciones-validacion.md`.
+
+| Paso | Android 14 | Android 10 | Observaciones |
+|---|---|---|---|
+| R01 | PASS | PASS | |
+| R02 | PASS | PASS | |
+| R03 | PASS | PASS | Android 10: fila duplicada en `resultados.md` (O-04) y cierre inesperado de la app justo después (O-03) |
+| R04 | PASS | PASS | |
+| R05 | PASS | PASS | |
+| R06 | PASS | PASS | El identificador no editable se respalda en Jest (O-08) |
+| R07 | PASS | PASS | |
+| R08 | PASS | PASS | |
+| R09 | PASS | PASS | |
+| R10 | PASS | PASS | Android 10: falta la captura posterior a «Aceptar» (O-06) |
+| R11 | PASS | PASS | Android 10: con un reto nuevo tras el vencimiento no documentado del anterior (O-05) |
+| R12 | PASS | PASS | |
+| R13 | PASS | PASS | |
+| R14 | PASS | PASS | Android 14: reinicio no documentado antes del paso y dos capturas en orden inverso (O-01, O-02). El aviso muestra los minutos restantes (O-09) |
+| R14b | PASS | PASS | |
+| R15 | PASS | PASS | Esperas de 31 minutos (Android 14) y 18 minutos (Android 10) |
+| R16 | NO VERIFICABLE | NO VERIFICABLE | Los registros disponibles no permiten certificar la ausencia de contraseñas y respuestas en `logcat` durante todo el recorrido (O-11) |
+
+Decisión del responsable (2026-11-04): la ejecución de las pruebas manuales de HU3 queda
+culminada, con R16 no verificable y las excepciones documentadas. No se repiten pruebas ni se
+ejecuta la comprobación adicional de R16. Esta decisión no aprueba la Etapa 05.
+
+Correcciones documentales pendientes de este procedimiento, sin aplicar: el texto esperado de R14
+(O-09) y la columna «Uso» de la tabla de cuentas (O-10).
