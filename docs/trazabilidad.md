@@ -17,7 +17,7 @@ criterio derivado figura en su columna «Origen».
 |---|---|---|---|
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
 | HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
-| HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada en la rama `e05/hu3-recuperar-contrasena` (2026-10-30), sin integrar en `main`; CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); cierre de la etapa pendiente |
+| HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada en la rama `e05/hu3-recuperar-contrasena` (2026-10-30), sin integrar en `main`; CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); E05-D1 a E05-D9 ratificadas y cierre documental preparado el 2026-11-04 (`cierre-etapa-05.md`); integración en `main` pendiente de autorización |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Pendiente |
 | HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Pendiente |
@@ -214,7 +214,7 @@ Estado de las reservas al 2026-10-27:
 | Reserva | Estado | Motivo |
 |---|---|---|
 | E03-V06 | Verificado, con reserva documental | CE y PPT se apoyan en especificaciones oficiales sectoriales (MinSalud) a falta de una norma de Migración Colombia sobre el formato del número; si se publica, se revisa la regla |
-| P-D1 | Aplazada (decisión del responsable, 2026-10-27) | Requiere el dispositivo físico mínimo; se ejecuta en la Etapa 05 o 06. No bloquea el cierre de HU1 en emuladores |
+| P-D1 | Aplazada (decisión del responsable, 2026-10-27); diferida a la Etapa 06 o posterior (E05-APROBACION, 2026-11-04) | Requiere el dispositivo físico mínimo. No bloquea el cierre de HU1 en emuladores ni el de la Etapa 05 |
 | P-D3 | Verificada | `hu1-closure-20261027-160501/` |
 | P-D7 | Diferida | Su definición exige procesar con OCR las 6 imágenes sintéticas en un Release sin `INTERNET`; el flujo de OCR llega con HU7 (Etapa 10) |
 
@@ -279,7 +279,8 @@ Transcripción literal de los 13 criterios de HU3, en el orden del documento fue
 Verificación: U, C e I como en HU1 y HU2. Implementación en la rama `e05/hu3-recuperar-contrasena`
 sobre el servicio de recuperación de la Etapa 02 (`accountRecovery.ts`) y la pantalla
 `PasswordRecoveryScreen.tsx`. Decisiones E05-D1 a E05-D9 en `decisiones-etapa-05.md`,
-pendientes de ratificación. Estado al 2026-11-04, sobre `81b03e5`:
+ratificadas por el responsable el 2026-11-04 (E05-APROBACION), con los riesgos conocidos H-1 y
+H-2. Cierre en `cierre-etapa-05.md`. Estado al 2026-11-04, sobre `81b03e5`:
 
 - Jest sin fallos en Linux y Windows (20 suites, 293 pruebas).
 - Regresión automatizada de HU1 y HU2 en Android 10 y 14 (2026-10-30) sin fallos, salvo el
@@ -302,7 +303,7 @@ Procedimiento y resultados en `validacion/etapa-05-pruebas-dispositivo.md`. La c
 | HU3-CA07 | La nueva contraseña y la confirmación deben ser idénticas para poder realizar la recuperación. | Comprobación en la pantalla y en el servicio (`confirmation_mismatch`) | U, C | R10; Android 10: O-06 | Verificado (Jest; Android 10 y 14) |
 | HU3-CA08 | El botón “Actualizar contraseña” deberá validar que los datos ingresados cumplan las reglas de formato y de seguridad y que sean correctos con los valores esperados. | Respuestas obligatorias, política y confirmación en la pantalla; respuestas verificadas en el servicio | U, C | R08, R09, R10, R11; Android 10: O-05, O-06 | Verificado (Jest; Android 10 y 14) |
 | HU3-CA09 | Si los datos ingresados son incorrectos, se debe mostrar un error mediante el mensaje “Datos ingresados incorrectos”. | Aviso con el texto literal para datos con formato inválido y respuestas incorrectas (E05-D5) | C | R08 a R11, R14 | Verificado (Jest; Android 10 y 14) |
-| HU3-CA10 | Si las respuestas no son correctas, no debe permitirse el cambio de contraseña. | Se verifican siempre las 2 respuestas; un fallo no cambia la credencial y cuenta un intento (E05-D1) | U, C | R11, R14; Android 14: O-01, O-02; Android 10: O-05 | Verificado (Jest; Android 10 y 14) |
+| HU3-CA10 | Si las respuestas no son correctas, no debe permitirse el cambio de contraseña. | Se verifican siempre las 2 respuestas; un fallo no cambia la credencial y cuenta un intento (E05-D1) | U, C | R11, R14 y R14b (tras tres respuestas incorrectas, B inicia sesión con su contraseña anterior: no cambió); Android 14: O-01, O-02; Android 10: O-05 | Verificado (Jest; Android 10 y 14) |
 | HU3-CA11 | Si las respuestas son correctas y la nueva contraseña es confirmada y cumple las condiciones de seguridad, se debe proceder a actualizar la nueva contraseña en la base de datos. | `replaceCredential()` en una transacción que elimina el reto y reinicia los contadores | U, C | R12 | Verificado (Jest; Android 10 y 14) |
 | HU3-CA12 | Después de completar correctamente el proceso, la nueva contraseña debe permitir iniciar sesión. | La transacción reinicia también el bloqueo del inicio de sesión del dispositivo (E05-D8) | U: `accountRecovery.test.ts` (incluido un dispositivo bloqueado); I: `App.test.tsx` | R13 | Verificado (Jest; Android 10 y 14) |
 | HU3-CA13 | Si el proceso de recuperación es exitoso, se debe redirigir al formulario de inicio de sesión. | Aviso de éxito y, al aceptarlo, ruta `login` | C: `PasswordRecoveryScreen.test.tsx`; I: `App.test.tsx` | R12 | Verificado (Jest; Android 10 y 14) |

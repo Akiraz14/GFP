@@ -11,8 +11,8 @@ repite ninguna prueba, no se ejecuta la comprobación adicional de R16 y no se s
 capturas. Ninguna observación se trata como fallo funcional, porque ninguna evidencia demuestra un
 defecto de la aplicación.
 
-Esta decisión cierra solo la ejecución de las pruebas manuales. No aprueba la Etapa 05 ni ratifica
-las decisiones E05-D1 a E05-D9.
+Esta decisión cierra solo la ejecución de las pruebas manuales. La ratificación de E05-D1 a E05-D9
+y el cierre de la etapa se registran aparte (E05-APROBACION, `cierre-etapa-05.md`).
 
 ## Evidencias revisadas
 
@@ -46,11 +46,11 @@ ninguna cumple la política de contraseñas.
 | O-06 | Android 10 | R10 | `r10a-confirmacion-distinta-aviso.png` y `r10b-confirmacion-distinta-campos-conservados.png` son el mismo archivo (MD5 idéntico) y las dos muestran el aviso abierto. Falta la captura posterior a «Aceptar». | Debajo del aviso se ven las respuestas, la contraseña y la confirmación escritas, y el mensaje de la confirmación junto al campo. La conservación tras «Aceptar» se verificó en Android 14 y en R08 y R09 de Android 10, y Jest la cubre. | Aceptada con observación. |
 | O-07 | Android 10 | Preparación | No existe `datos.txt`, así que no se puede saber qué respuestas se usaron en Android 10. | Solo afecta a R16 (O-11). | Registrada. |
 | O-08 | Ambos | R06 | Una captura no puede mostrar que el identificador queda bloqueado para edición en la segunda fase. | Respaldado por Jest: `PasswordRecoveryScreen.test.tsx` comprueba `editable` del campo `recovery-identifier`. | Aceptada. |
-| O-09 | Documento | R14 | El resultado esperado de R14 dice «bloqueada durante 15 minutos». La app muestra los minutos restantes del bloqueo (`remainingLockMs`): 15 y luego 14 en Android 10, y 14 en Android 14. | El texto del procedimiento es impreciso; la app se comporta según E05-D1 y E05-D5. | Registrada como corrección documental pendiente. El procedimiento no se modifica en esta actualización. |
-| O-10 | Documento | Preparación | La columna «Uso» de la tabla de cuentas de la sección 3 conserva la numeración anterior a `81b03e5`. Los pasos reales son R06 a R13 para A, R14 y R14b para B, y R05 y R15 para C. | Ninguno: la tabla de pasos es la correcta y se siguió. | Registrada como corrección documental pendiente. |
+| O-09 | Documento | R14 | El resultado esperado de R14 dice «bloqueada durante 15 minutos». La app muestra los minutos restantes del bloqueo (`remainingLockMs`): 15 y luego 14 en Android 10, y 14 en Android 14. | El texto del procedimiento es impreciso; la app se comporta según E05-D1 y E05-D5. | Corregida en el cierre documental (2026-11-04): R14 expresa los minutos restantes. |
+| O-10 | Documento | Preparación | La columna «Uso» de la tabla de cuentas de la sección 3 conserva la numeración anterior a `81b03e5`. Los pasos reales son R06 a R13 para A, R14 y R14b para B, y R05 y R15 para C. | Ninguno: la tabla de pasos es la correcta y se siguió. | Corregida en el cierre documental (2026-11-04). |
 | O-11 | Ambos | R16 | Ver «R16» más abajo. | No se puede certificar que `logcat` no contenga contraseñas ni respuestas durante todo el recorrido. | **NO VERIFICABLE** en ambos emuladores. |
 | O-12 | Ambos | — | Además de las dos carpetas del recorrido, en `GFP-evidencias\e05\` hay tres carpetas del 2026-10-30 con solo la preparación (`hu3-manual-emulator-5554-20261030-114133`, `-123347` y `-140709`) y tres carpetas BLOCKED de la primera ejecución en Android 14 (`hu2-*-emulator-5554-20261030-111027`, `-111028` y `-111030`). | Ninguno; quedan como registro. | Se conservan. |
-| O-13 | — | — | No hay imágenes del prototipo de HU3: el documento de historias de usuario disponible solo trae el texto. | La comparación visual con el prototipo no se pudo hacer. | Pendiente, fuera de las pruebas manuales. |
+| O-13 | — | — | No hay imágenes del prototipo de HU3: el documento de historias de usuario disponible solo trae el texto. | La comparación visual con el prototipo no se pudo hacer. | Aceptada por el responsable como reserva documental (2026-11-04). No se declara hecha. |
 
 ## R16 — contraseñas y respuestas en `logcat`
 

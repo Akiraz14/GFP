@@ -103,9 +103,9 @@ sus respuestas, pero nunca las contraseñas.
 
 | Cuenta | Documento | Celular | Correo | Uso |
 |---|---|---|---|---|
-| A | CC 5005001 | +57 3105550001 | `hu3.a@example.com` | Recuperación correcta (R06 a R11) |
-| B | CC 5005002 | +57 3105550002 | `hu3.b@example.com` | Bloqueo (R12) |
-| C | CC 5005003 | +1 3105550001 (Canadá) | `hu3.c@example.com` | Celular ambiguo con A (R05) y reto vencido (R13) |
+| A | CC 5005001 | +57 3105550001 | `hu3.a@example.com` | Celular ambiguo con C (R05) y recuperación correcta (R06 a R13) |
+| B | CC 5005002 | +57 3105550002 | `hu3.b@example.com` | Bloqueo de recuperación (R14) e inicio de sesión durante ese bloqueo (R14b) |
+| C | CC 5005003 | +1 3105550001 (Canadá) | `hu3.c@example.com` | Celular ambiguo con A (R05) y reto vencido (R15) |
 
 Contraseñas, respuestas y bloqueos:
 
@@ -131,7 +131,7 @@ Contraseñas, respuestas y bloqueos:
 | R11 | *Verificación del servicio.* Escribe una respuesta correcta, otra incorrecta y una contraseña válida confirmada | Aparece «Verificando…» y después el aviso «Datos ingresados incorrectos», sin indicar qué respuesta falló. Las respuestas y las contraseñas quedan vacías. Cuenta un intento de recuperación para A | HU3-CA09, HU3-CA10 |
 | R12 | *Actualización.* Escribe de nuevo las respuestas correctas y una contraseña válida confirmada | «Verificando…» y «La contraseña fue actualizada. Inicia sesión con la nueva contraseña.»; «Aceptar» abre el inicio de sesión. Como solo R11 llegó al servicio, A tiene un intento y no está bloqueada; R08 a R10 no contaron | HU3-CA11, HU3-CA13, E05-D5 |
 | R13 | Inicia sesión con A y la contraseña anterior; después, con la nueva | La anterior: «El campo identificación o contraseña son incorrectos»; la nueva: pantalla provisional de HU5 | HU3-CA12 |
-| R14 | *Bloqueo de recuperación (HU3), no de inicio de sesión (HU2).* Cierra y vuelve a abrir la app; en la recuperación, con B, envía tres veces respuestas incorrectas con una contraseña válida confirmada; después, envía las respuestas correctas | Las tres veces, «Verificando…» y «Datos ingresados incorrectos». En el cuarto envío, «Superaste los intentos permitidos. La recuperación queda bloqueada durante 15 minutos.» y vuelve la fase del identificador; «Comenzar recuperación» con B repite ese aviso. El texto es el de HU3, no el de HU2 («El acceso queda bloqueado…») | E05-D1 |
+| R14 | *Bloqueo de recuperación (HU3), no de inicio de sesión (HU2).* Cierra y vuelve a abrir la app; en la recuperación, con B, envía tres veces respuestas incorrectas con una contraseña válida confirmada; después, envía las respuestas correctas | Las tres veces, «Verificando…» y «Datos ingresados incorrectos». En el cuarto envío, «Superaste los intentos permitidos. La recuperación queda bloqueada durante N minutos.», donde N son los minutos que faltan para que termine el bloqueo (15 si el envío es inmediato), y vuelve la fase del identificador; «Comenzar recuperación» con B repite ese aviso con los minutos restantes. El texto es el de HU3, no el de HU2 («El acceso queda bloqueado…») | E05-D1 |
 | R14b | Vuelve al inicio de sesión con Atrás e inicia sesión con B y su contraseña actual | Entra (pantalla provisional de HU5): el bloqueo de recuperación de B no bloquea el inicio de sesión. Los contadores son distintos: `scope = 'recovery'` por cuenta y `scope = 'login'` del dispositivo | E05-D1, E04-D1 |
 | R15 | Con C: «Comenzar recuperación» con `+13105550001`; espera 16 minutos; respuestas correctas y contraseña válida | «El tiempo para responder las preguntas terminó. Comienza la recuperación de nuevo.» y vuelve el identificador | E05-D2 |
 | R16 | Contraseña en claro | `adb logcat -d` no contiene ninguna contraseña ni respuesta usada: `adb logcat -d \| Select-String -SimpleMatch '<valor>'` sin resultados para cada valor anotado a mano, sin guardarlo en archivos | HU3-CA06 |
@@ -180,8 +180,8 @@ Estado de las condiciones al 2026-11-04:
 | 1 | Cumplida (2026-10-30) |
 | 2 | Cumplida (2026-10-30); `E03-V13` en Android 14 confirmado a mano en `ime-*.log` |
 | 3 | Ejecución culminada (2026-11-04): R01 a R15 y R14b aceptados con excepciones; R16 no verificable en ambos emuladores |
-| 4 | Pendiente: no se dispone de las imágenes del prototipo |
-| 5 | Pendiente de ratificación |
+| 4 | Aceptada por el responsable como reserva documental (2026-11-04): no se dispone de las imágenes del prototipo y la comparación no se hizo |
+| 5 | Cumplida: E05-D1 a E05-D9 ratificadas por el responsable (2026-11-04) |
 
 ## 5. Resultados de la ejecución
 
@@ -236,7 +236,8 @@ Carpetas: `hu3-manual-android14-api34-20261104-083056` (08:53 a 09:57) y
 
 Decisión del responsable (2026-11-04): la ejecución de las pruebas manuales de HU3 queda
 culminada, con R16 no verificable y las excepciones documentadas. No se repiten pruebas ni se
-ejecuta la comprobación adicional de R16. Esta decisión no aprueba la Etapa 05.
+ejecuta la comprobación adicional de R16. Esta decisión no aprueba la Etapa 05 por sí sola; el cierre está en `cierre-etapa-05.md`.
 
-Correcciones documentales pendientes de este procedimiento, sin aplicar: el texto esperado de R14
-(O-09) y la columna «Uso» de la tabla de cuentas (O-10).
+Correcciones documentales O-09 (texto esperado de R14) y O-10 (columna «Uso» de la tabla de
+cuentas): aplicadas en el cierre documental de la Etapa 05 (2026-11-04). El recorrido se ejecutó
+con el texto anterior; las correcciones no cambian ningún paso ni ningún resultado.
