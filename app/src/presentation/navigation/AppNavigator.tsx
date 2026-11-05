@@ -1,4 +1,9 @@
 import { useState, type ReactNode } from 'react';
+import {
+  NO_MOVEMENT_FILTERS,
+  type MovementFilters,
+} from '../../infrastructure/database/repositories/movementRepository';
+import { AnalysisScreen } from '../analysis/AnalysisScreen';
 import { StyleSheet, View } from 'react-native';
 import type { AppServices } from '../../services/appServices';
 import type { UserSession } from '../../services/session/sessionManager';
@@ -10,6 +15,7 @@ import {
 } from '../movements/MovementFormScreen';
 import { MovementHistoryScreen } from '../movements/MovementHistoryScreen';
 import { ReceiptCaptureScreen } from '../receipts/ReceiptCaptureScreen';
+import { RecommendationsScreen } from '../recommendations/RecommendationsScreen';
 import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
 import { ProvisionalScreen } from '../screens/ProvisionalScreen';
@@ -50,6 +56,10 @@ export function AppNavigator({ services }: { services: AppServices }) {
   const [movementForm, setMovementForm] = useState<MovementFormMode>({
     mode: 'create',
   });
+  // Filtros con los que se abre el historial desde HU9 o HU10. Cualquier otra entrada al
+  // historial lo abre sin filtros.
+  const [historyFilters, setHistoryFilters] =
+    useState<MovementFilters>(NO_MOVEMENT_FILTERS);
   const visible = resolveRoute(route, session, services.sessions.current());
   if (visible === ROUTES.register) {
     return (
@@ -86,21 +96,31 @@ export function AppNavigator({ services }: { services: AppServices }) {
     setSession(null);
     setRoute(ROUTES.login);
   };
-  const toHistory = () => setRoute(ROUTES.movementHistory);
+  const go = (next: RouteName) => {
+    setHistoryFilters(NO_MOVEMENT_FILTERS);
+    setRoute(next);
+  };
+  const toHistory = () => go(ROUTES.movementHistory);
+  const toFilteredHistory = (filters: MovementFilters) => {
+    setHistoryFilters(filters);
+    setRoute(ROUTES.movementHistory);
+  };
+  const newMovement = () => {
+    setMovementForm({ mode: 'create' });
+    go(ROUTES.movementForm);
+  };
   let screen: ReactNode;
   if (visible === ROUTES.movementHistory) {
     screen = (
       <MovementHistoryScreen
         categories={services.categories}
+        initialFilters={historyFilters}
         movements={services.movements}
         onEdit={movementId => {
           setMovementForm({ mode: 'edit', movementId });
           setRoute(ROUTES.movementForm);
         }}
-        onNewMovement={() => {
-          setMovementForm({ mode: 'create' });
-          setRoute(ROUTES.movementForm);
-        }}
+        onNewMovement={newMovement}
         onCaptureReceipt={() => setRoute(ROUTES.receiptCapture)}
         onOpenCategories={() => setRoute(ROUTES.categories)}
         onSessionExpired={expire}
@@ -138,13 +158,32 @@ export function AppNavigator({ services }: { services: AppServices }) {
         session={session}
       />
     );
+  } else if (visible === ROUTES.financialAnalysis) {
+    screen = (
+      <AnalysisScreen
+        gateway={services.movements}
+        onNewMovement={newMovement}
+        onOpenHistory={toFilteredHistory}
+        onSessionExpired={expire}
+        session={session}
+      />
+    );
+  } else if (visible === ROUTES.recommendations) {
+    screen = (
+      <RecommendationsScreen
+        gateway={services.recommendations}
+        onOpenHistory={toFilteredHistory}
+        onSessionExpired={expire}
+        session={session}
+      />
+    );
   } else {
     screen = <ProvisionalScreen route={ROUTE_DEFINITIONS[visible]} />;
   }
   return (
     <View style={styles.layout}>
       <View style={styles.layout}>{screen}</View>
-      <BottomTabBar current={tabOf(visible)} onSelect={setRoute} />
+      <BottomTabBar current={tabOf(visible)} onSelect={go} />
     </View>
   );
 }

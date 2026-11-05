@@ -10,6 +10,7 @@ import {
 } from '../src/presentation/navigation/routes';
 import { CategoryManagementService } from '../src/business/categories/categoryManagement';
 import { MovementManagementService } from '../src/business/movements/movementManagement';
+import { RecommendationService } from '../src/business/recommendations/recommendationService';
 import { AccountLoginService } from '../src/services/authentication/accountLogin';
 import { AccountRecoveryService } from '../src/services/authentication/accountRecovery';
 import { AccountRegistrationService } from '../src/services/authentication/accountRegistration';
@@ -60,6 +61,7 @@ async function readyServices(withAccount = false) {
       random: nodeRandomBytes,
     }),
     receipts: fakeReceipts(),
+    recommendations: new RecommendationService({ database, sessions }),
     database,
   };
 }
@@ -227,7 +229,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1 to HU5, HU7 and HU8 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and all of them are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -244,7 +246,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU7', 'HU8']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU7', 'HU8', 'HU9', 'HU10']);
   });
 });
 
@@ -440,12 +442,12 @@ describe('HU5 history in the app (E08)', () => {
     expect(await screen.findByText('Mascotas')).toBeTruthy();
   });
 
-  test('E08-D4: the bottom bar opens «Análisis» and «Recomendaciones» and returns to «Movimientos»', async () => {
+  test('E08-D4: the bottom bar opens HU9 and HU10 and returns to «Movimientos»', async () => {
     await loggedInWithMovement();
     await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
-    expect(screen.getByTestId('provisional-HU9')).toBeTruthy();
+    expect(await screen.findByTestId('analysis-screen')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('tab-recommendations'));
-    expect(screen.getByTestId('provisional-HU10')).toBeTruthy();
+    expect(await screen.findByTestId('recommendations-screen')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('tab-movementHistory'));
     expect(await screen.findByText('Almuerzo')).toBeTruthy();
   });

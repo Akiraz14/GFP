@@ -1,5 +1,6 @@
 import type { CategoryGateway } from '../business/categories/categoryManagement';
 import type { MovementGateway } from '../business/movements/movementManagement';
+import type { RecommendationGateway } from '../business/recommendations/recommendationService';
 import type { ReceiptGateway } from '../processing/receiptGateway';
 import type { RegistrationGateway } from './authentication/accountRegistration';
 import type { LoginGateway } from './authentication/accountLogin';
@@ -14,4 +15,5 @@ export type AppServices = {
   categories: CategoryGateway;
   movements: MovementGateway;
   receipts: ReceiptGateway;
+  recommendations: RecommendationGateway;
 };

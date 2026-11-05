@@ -15,9 +15,9 @@ import {
 describe('schema migrations (E02-D5)', () => {
   test('creates the identity schema and catalogs from an empty database', async () => {
     const database = createNodeSqliteDatabase();
-    await expect(migrateDatabase(database, () => 1)).resolves.toBe(5);
+    await expect(migrateDatabase(database, () => 1)).resolves.toBe(6);
     const version = await database.execute('PRAGMA user_version');
-    expect(readInteger(version.rows[0], 'user_version')).toBe(5);
+    expect(readInteger(version.rows[0], 'user_version')).toBe(6);
     const tables = await database.execute(
       "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name",
     );
@@ -27,6 +27,7 @@ describe('schema migrations (E02-D5)', () => {
       'credentials',
       'document_types',
       'movements',
+      'recommendation_dismissals',
       'recovery_challenges',
       'schema_migrations',
       'security_answers',
@@ -42,11 +43,11 @@ describe('schema migrations (E02-D5)', () => {
 
   test('is idempotent', async () => {
     const database = await createMigratedDatabase();
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(5);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(6);
     const applied = await database.execute(
       'SELECT count(*) AS total FROM schema_migrations',
     );
-    expect(readInteger(applied.rows[0], 'total')).toBe(5);
+    expect(readInteger(applied.rows[0], 'total')).toBe(6);
   });
 
   test('upgrades version 1 to the latest version without losing data', async () => {
@@ -55,7 +56,7 @@ describe('schema migrations (E02-D5)', () => {
     await database.execute(
       "INSERT INTO document_types (code, name, sort_order) VALUES ('ZZ', 'Prueba', 99)",
     );
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(5);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(6);
     const kept = await database.execute(
       "SELECT name FROM document_types WHERE code = 'ZZ'",
     );
@@ -87,7 +88,7 @@ describe('schema migrations (E02-D5)', () => {
     const broken = [
       ...MIGRATIONS,
       {
-        version: 6,
+        version: 7,
         name: 'broken',
         statements: ['CREATE TABLE partial (id TEXT) STRICT', 'INVALID SQL'],
       },
@@ -98,7 +99,7 @@ describe('schema migrations (E02-D5)', () => {
     );
     expect(readInteger(partial.rows[0], 'total')).toBe(0);
     const version = await database.execute('PRAGMA user_version');
-    expect(readInteger(version.rows[0], 'user_version')).toBe(5);
+    expect(readInteger(version.rows[0], 'user_version')).toBe(6);
   });
 
   test('keeps migration 2 identical to the published version (E03-D5)', () => {
@@ -114,7 +115,7 @@ describe('schema migrations (E02-D5)', () => {
       'SELECT code, is_active FROM document_types ORDER BY sort_order',
     );
     expect(before.rows.map(row => row.is_active)).toEqual([1, 1, 1, 1, 1]);
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(5);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(6);
     const after = await database.execute(
       'SELECT code, is_active FROM document_types ORDER BY sort_order',
     );

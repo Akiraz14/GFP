@@ -283,6 +283,22 @@ const MOVEMENTS_SCHEMA_V5: readonly string[] = [
     BEGIN SELECT RAISE(ABORT, 'movement_owner_immutable'); END`,
 ];
 
+// HU10 (consolidación). Descartes de recomendaciones: una recomendación descartada no se vuelve a
+// mostrar durante el mes en que se descartó; el mes siguiente se evalúa de nuevo (I-27). Cada
+// descarte pertenece a un usuario y se borra con él.
+const RECOMMENDATION_DISMISSALS_SCHEMA_V6: readonly string[] = [
+  `CREATE TABLE recommendation_dismissals (
+    user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    recommendation_id TEXT NOT NULL
+      CHECK (length(recommendation_id) BETWEEN 1 AND 100),
+    period TEXT NOT NULL CHECK (
+      length(period) = 7 AND period GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]'
+    ),
+    dismissed_at INTEGER NOT NULL,
+    PRIMARY KEY (user_id, recommendation_id, period)
+  ) STRICT`,
+];
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'identity-and-security-schema', statements: SCHEMA_V1 },
   {
@@ -305,4 +321,9 @@ export const MIGRATIONS: readonly Migration[] = [
     ],
   },
   { version: 5, name: 'movements-schema', statements: MOVEMENTS_SCHEMA_V5 },
+  {
+    version: 6,
+    name: 'recommendation-dismissals',
+    statements: RECOMMENDATION_DISMISSALS_SCHEMA_V6,
+  },
 ];
