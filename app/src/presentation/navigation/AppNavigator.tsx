@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import type { AppServices } from '../../services/appServices';
 import type { UserSession } from '../../services/session/sessionManager';
 import { CategoriesScreen } from '../categories/CategoriesScreen';
-import { CATEGORY_TEXTS } from '../categories/categoryTexts';
 import { LoginScreen } from '../login/LoginScreen';
 import {
   MovementFormScreen,
   type MovementFormMode,
 } from '../movements/MovementFormScreen';
-import { MOVEMENT_TEXTS } from '../movements/movementTexts';
+import { MovementHistoryScreen } from '../movements/MovementHistoryScreen';
 import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
 import { ProvisionalScreen } from '../screens/ProvisionalScreen';
+import { BottomTabBar, type BottomTabRoute } from './BottomTabBar';
 import {
   AUTHENTICATED_HOME_ROUTE,
   INITIAL_ROUTE,
@@ -31,6 +32,14 @@ export function resolveRoute(
   return ROUTE_DEFINITIONS[route].requiresSession && !authenticated
     ? ROUTES.login
     : route;
+}
+
+// Pestaña marcada en la barra inferior: el formulario de HU4 y las categorías de HU8 se
+// abren desde «Movimientos» (E08-D4).
+function tabOf(route: RouteName): BottomTabRoute {
+  return route === ROUTES.financialAnalysis || route === ROUTES.recommendations
+    ? route
+    : ROUTES.movementHistory;
 }
 
 export function AppNavigator({ services }: { services: AppServices }) {
@@ -69,55 +78,64 @@ export function AppNavigator({ services }: { services: AppServices }) {
       />
     );
   }
-  if (visible === ROUTES.categories && session !== null) {
-    return (
-      <CategoriesScreen
-        gateway={services.categories}
-        onBack={() => setRoute(ROUTES.movementHistory)}
-        onSessionExpired={() => {
-          setSession(null);
-          setRoute(ROUTES.login);
+  if (session === null) {
+    return <ProvisionalScreen route={ROUTE_DEFINITIONS[visible]} />;
+  }
+  const expire = () => {
+    setSession(null);
+    setRoute(ROUTES.login);
+  };
+  const toHistory = () => setRoute(ROUTES.movementHistory);
+  let screen: ReactNode;
+  if (visible === ROUTES.movementHistory) {
+    screen = (
+      <MovementHistoryScreen
+        categories={services.categories}
+        movements={services.movements}
+        onEdit={movementId => {
+          setMovementForm({ mode: 'edit', movementId });
+          setRoute(ROUTES.movementForm);
         }}
+        onNewMovement={() => {
+          setMovementForm({ mode: 'create' });
+          setRoute(ROUTES.movementForm);
+        }}
+        onOpenCategories={() => setRoute(ROUTES.categories)}
+        onSessionExpired={expire}
         session={session}
       />
     );
-  }
-  if (visible === ROUTES.movementForm && session !== null) {
-    return (
+  } else if (visible === ROUTES.categories) {
+    screen = (
+      <CategoriesScreen
+        gateway={services.categories}
+        onBack={toHistory}
+        onSessionExpired={expire}
+        session={session}
+      />
+    );
+  } else if (visible === ROUTES.movementForm) {
+    screen = (
       <MovementFormScreen
         categories={services.categories}
         movements={services.movements}
-        onDone={() => setRoute(ROUTES.movementHistory)}
-        onSessionExpired={() => {
-          setSession(null);
-          setRoute(ROUTES.login);
-        }}
+        onDone={toHistory}
+        onSessionExpired={expire}
         params={movementForm}
         session={session}
       />
     );
+  } else {
+    screen = <ProvisionalScreen route={ROUTE_DEFINITIONS[visible]} />;
   }
-  // Accesos a «Nuevo movimiento» (HU4, E07) y «Categorías» (E06-D4) desde el historial; en
-  // la Etapa 08 pasan a la pantalla real del historial.
-  const actions =
-    visible === ROUTES.movementHistory
-      ? [
-          {
-            label: MOVEMENT_TEXTS.buttons.newMovement,
-            onPress: () => {
-              setMovementForm({ mode: 'create' });
-              setRoute(ROUTES.movementForm);
-            },
-            testID: 'open-movement-form',
-          },
-          {
-            label: CATEGORY_TEXTS.buttons.openCategories,
-            onPress: () => setRoute(ROUTES.categories),
-            testID: 'open-categories',
-          },
-        ]
-      : [];
   return (
-    <ProvisionalScreen actions={actions} route={ROUTE_DEFINITIONS[visible]} />
+    <View style={styles.layout}>
+      <View style={styles.layout}>{screen}</View>
+      <BottomTabBar current={tabOf(visible)} onSelect={setRoute} />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  layout: { flex: 1 },
+});

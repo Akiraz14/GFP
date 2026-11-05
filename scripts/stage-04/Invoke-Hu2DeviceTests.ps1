@@ -2,7 +2,8 @@
 # compilado en este clon o worktree y el JavaScript servido por Metro desde el mismo arbol.
 # Instala la app desde cero (con -AllowAppReset si ya esta instalada), registra una cuenta
 # sintetica por la interfaz y comprueba HU2-CA01 a HU2-CA10 y la regresion HU1-CA18.
-# Desde la Etapa 05, HU2-CA09 espera el formulario de recuperacion de HU3.
+# Desde la Etapa 05, HU2-CA09 espera el formulario de recuperacion de HU3; desde la Etapa 08,
+# el inicio de sesion correcto espera el historial de HU5 ('Movimientos de tus finanzas').
 # La contrasena de prueba se genera en cada ejecucion y no se escribe en los resumenes.
 # Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-Hu2DeviceTests.ps1 -Serial emulator-5554 [-AllowAppReset] [-EvidenceRoot <carpeta fuera del repositorio>]
 param(
@@ -46,10 +47,10 @@ function Find-Message([string]$Text) { return [bool](Locate { param($ui) Find-Te
 function Find-Both([string]$First, [string]$Second) { return [bool](Locate { param($ui) Get-Nodes $ui | Where-Object { $_.text -and $_.text.Contains($First) -and $_.text.Contains($Second) } | Select-Object -First 1 }) }
 function Login-Succeeds([string]$CheckId, [string]$Id) {
   Fill-Login $Id $secret
-  $reached = Wait-Text (U 'Pantalla provisional: se implementa con HU5.') 120
+  $reached = Wait-Text (U 'Movimientos de tus finanzas') 120
   Screenshot ("$CheckId-destino".ToLower()) | Out-Null
   Assert-AppState $CheckId
-  Check $CheckId $reached "inicio de sesion correcto con $(($Id -replace '\d', '#')): destino provisional de HU5"
+  Check $CheckId $reached "inicio de sesion correcto con $(($Id -replace '\d', '#')): historial de HU5 (Etapa 08)"
   Restart-App
   $back = Wait-Login 120
   Assert-AppState "$CheckId-RESTART"
@@ -164,7 +165,7 @@ Check 'HU2-CA06-THIRD' $found 'el tercer fallo muestra el mensaje literal y el b
 Accept-Dialog
 Fill-Login $email $secret
 Screenshot 'hu2-07-bloqueado' | Out-Null
-$lockedNow = (Find-Both 'Superaste los intentos permitidos.' 'bloqueado durante') -and -not (Find-Text (Get-Ui) (U 'Pantalla provisional: se implementa con HU5.'))
+$lockedNow = (Find-Both 'Superaste los intentos permitidos.' 'bloqueado durante') -and -not (Find-Text (Get-Ui) (U 'Movimientos de tus finanzas'))
 Assert-AppState 'HU2-CA06'
 Check 'HU2-CA06' $lockedNow 'con la contrasena correcta el acceso sigue bloqueado'
 Accept-Dialog

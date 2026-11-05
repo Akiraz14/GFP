@@ -19,8 +19,8 @@ criterio derivado figura en su columna «Origen».
 | HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada (2026-10-30); CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); integrada en `main` (`e19d9ab`); cierre documental en `cierre-etapa-05.md` (E05-APROBACION) |
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Implementada (2026-11-04) e integrada en `main` (`5d515ef`); cerrada con validación parcial (`cierre-etapa-06.md`); CA01–CA06, CA07a y CA07b verificados en Jest; CA07c completada en E07 (rama `e07/hu4-registrar-movimiento`, verificada en Jest); CA08 parcial previsto hasta E08; validación en emulador pendiente |
-| HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Implementada en la rama `e07/hu4-registrar-movimiento` (2026-11-04), sin integrar en `main`; CA01–CA06, CA09, CA11 y CA13 y el registro de CA07 y CA08 verificados en Jest; CA10, CA12 y la edición de CA07 y CA08 parciales previstos (E08); compilación Android pendiente; sin pruebas manuales hasta la validación final (D-07) |
-| HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Pendiente |
+| HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Integrada en `main` (`7558a3f`, etiqueta `etapa-07-aprobada`); CA01–CA13 verificados en Jest: CA10, CA12 y la edición de CA07 y CA08 completados en E08 (rama `e08/hu5-historial-movimientos`); sin pruebas manuales hasta la validación final (D-07) |
+| HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Implementada en la rama `e08/hu5-historial-movimientos` (2026-11-04), sin integrar en `main`; CA01–CA07 verificados en Jest; compilación Android pendiente; sin pruebas manuales hasta la validación final (D-07) |
 | HU6 Visualizar balance financiero | CA01–CA04 | 09 | Pendiente |
 | HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | 10 | Pendiente |
 | HU9 Consultar análisis financiero | CA01–CA06 | 11 | Pendiente |
@@ -36,10 +36,10 @@ criterio derivado figura en su columna «Origen».
 | HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5 con el resumen de HU6, HU7, HU8, HU9 y HU10; E04-D3) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
 | HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | E13 |
 | HU8-CA07c | HU8 | Movimientos (HU4) | Prueba de eliminación; reasignación con datos de prueba solo si el esquema existe desde E02 | E07: verificado en Jest (reasignación en la transacción de la eliminación, `categoryManagement.test.ts`, `CategoriesScreen.test.tsx`) |
-| HU8-CA08 | HU8 | Formulario HU4 y filtros HU5 | Prueba: la categoría creada o editada aparece de inmediato en la consulta de categorías activas | E07: verificado en Jest para el formulario de HU4 (`MovementFormScreen.test.tsx`); E08 para los filtros de HU5 |
-| HU4-CA07 y CA08 (variante edición) | HU4 | Punto de entrada a la edición (HU5) | Prueba de integración del modo edición: guarda y muestra el mensaje de actualización | E08 |
-| HU4-CA10 | HU4 | Botón "Editar" del historial (HU5-CA07) | Prueba de integración: el modo edición carga todos los datos del movimiento | E08 |
-| HU4-CA12 | HU4 | Historial (HU5) y decisión E07-D3 | Prueba: Cancelar descarta cambios sin persistir | E08 |
+| HU8-CA08 | HU8 | Formulario HU4 y filtros HU5 | Prueba: la categoría creada o editada aparece de inmediato en la consulta de categorías activas | E07: verificado en Jest para el formulario de HU4 (`MovementFormScreen.test.tsx`); E08: verificado en Jest para el filtro de HU5 (`MovementHistoryScreen.test.tsx`, `App.test.tsx`) |
+| HU4-CA07 y CA08 (variante edición) | HU4 | Punto de entrada a la edición (HU5) | Prueba de integración del modo edición: guarda y muestra el mensaje de actualización | E08: verificado en Jest desde el botón «Editar» del historial (`App.test.tsx`) |
+| HU4-CA10 | HU4 | Botón "Editar" del historial (HU5-CA07) | Prueba de integración: el modo edición carga todos los datos del movimiento | E08: verificado en Jest (`App.test.tsx`, `MovementHistoryScreen.test.tsx`) |
+| HU4-CA12 | HU4 | Historial (HU5) y decisión E07-D3 | Prueba: Cancelar descarta cambios sin persistir | E08: verificado en Jest con el historial real, al crear y al editar (`App.test.tsx`) |
 
 HU5-CA07 pertenece a HU5 y se verifica en E08 como criterio propio; no sustituye
 a HU4-CA10.
@@ -339,7 +339,7 @@ en `validacion/etapa-06-pruebas-dispositivo.md`, cuyos pasos C01 a C16 figuran e
 | HU8-CA07a | Eliminación y reasignación automática a "Otros": El usuario solo podrá eliminar categorías personalizadas. | `deleteOwn()` filtra por el usuario y `is_system = 0`; disparador de protección | U, I: `categoryManagement.test.ts`, `categoryMigration.test.ts`, `userIsolation.test.ts`; C: `CategoriesScreen.test.tsx` | C01, C12, C14 | Verificado (Jest) |
 | HU8-CA07b | Al presionar "Eliminar", el sistema debe desplegar un modal de confirmación con el mensaje: “¿Está seguro de eliminar esta categoría?” y la advertencia: "Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'.". | Modal con `MessageDialog`, la categoría afectada, «Cancelar» y «Confirmar» | C: `CategoriesScreen.test.tsx` | C11 | Verificado (Jest) |
 | HU8-CA07c | Al presionar "Confirmar", la categoría es eliminada de la base de datos local y todos los movimientos financieros vinculados a ella cambian automáticamente su categoría asociada al ID de "Otros". | E06: eliminación transaccional e identificador fijo `other`; E07: reasignación de los movimientos en la misma transacción, conservando su tipo (E06-D3, E06-D7) | U, I: eliminación (`categoryManagement.test.ts`, `CategoriesScreen.test.tsx`); E07: reasignación, recuento del modal y transacción (`categoryManagement.test.ts`, `CategoriesScreen.test.tsx`) | C12 (solo la eliminación); validación final: M13 de `validacion/etapa-07-verificacion.md` | Verificado (Jest) en E07 (rama `e07/hu4-registrar-movimiento`, E07-D7) |
-| HU8-CA08 | Disponibilidad en el sistema: Las categorías personalizadas creadas o modificadas deben reflejarse inmediatamente en las listas desplegables del formulario de registro (HU4) y filtros (HU5). | `listActiveCategories(session, type?)` sin caché (E06-D7) | I: `categoryManagement.test.ts` (la categoría creada o editada aparece en la consulta siguiente) | — | Parcial previsto: se completa en E07 (HU4) y E08 (HU5) |
+| HU8-CA08 | Disponibilidad en el sistema: Las categorías personalizadas creadas o modificadas deben reflejarse inmediatamente en las listas desplegables del formulario de registro (HU4) y filtros (HU5). | `listActiveCategories(session, type?)` sin caché (E06-D7); consultada al abrir el formulario de HU4 (E07) y el historial de HU5 (E08) | I: `categoryManagement.test.ts`; C: `MovementFormScreen.test.tsx` (E07), `MovementHistoryScreen.test.tsx` y `App.test.tsx` (E08) | — | Verificado (Jest) en E08 |
 
 Decisiones verificadas además en Jest: E06-D4 (acceso desde la pantalla provisional de HU5 y botón
 Atrás, `App.test.tsx` y `CategoriesScreen.test.tsx`), E06-D5 (12 íconos en el selector), E06-D6b
@@ -354,8 +354,8 @@ Transcripción literal de los criterios de HU4, en el orden del documento fuente
 (`d6c1713`).
 
 Estado al 2026-11-04: Jest en Linux sin fallos (30 suites, 491 pruebas), con `typecheck`, `lint`
-y `format:check` sin errores. La compilación Android en Windows está pendiente
-(`validacion/etapa-07-verificacion.md`). Sin pruebas manuales en esta etapa (D-07): la columna
+y `format:check` sin errores; integrada en `main` (`7558a3f`). Los criterios de edición y
+CA12 se completaron en E08 (pasos H07 y H08 de `validacion/etapa-08-verificacion.md`). Sin pruebas manuales en esta etapa (D-07): la columna
 «Validación final» remite a los pasos M01 a M14 de ese documento, que se ejecutan en la validación
 integral posterior a la Etapa 13.
 
@@ -367,12 +367,12 @@ integral posterior a la Etapa 13.
 | HU4-CA04 | La fecha no puede ser posterior a la fecha actual del sistema. De lo contrario, se muestra un mensaje: "La fecha no puede ser futura". | Validación de la fecha frente a hoy; `maximumDate` del calendario (D-03) | U: `movementRules.test.ts`, `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx` | M05, M06 | Verificado (Jest) |
 | HU4-CA05 | El campo monto debe recibir solo valores numéricos positivos mayores a cero. De lo contrario, se muestra un mensaje cerca del campo: “Ingrese un monto válido”. | `parseAmountInput()` (`money.ts`, E07-D5); mensaje bajo el campo; `CHECK` de `amount_cents` | U: `money.test.ts`, `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M07 | Verificado (Jest) |
 | HU4-CA06 | El campo "Descripción" es opcional y permite una longitud máxima de 250 caracteres. | `normalizeDescription()` y contador `n/250` (E07-D8); `CHECK` de `description` | U: `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M08 | Verificado (Jest) |
-| HU4-CA07 | Al presionar el botón "Registrar" (o “Actualizar”), si la información es válida, la transacción se almacena en la base de datos local vinculada al userId del usuario autenticado. | `MovementManagementService.create()` y `update()`; `MovementRepository` toma el usuario de la sesión (E02-D4) | U, I: `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx`, `App.test.tsx` | M09 | Registro verificado (Jest); edición: parcial previsto hasta E08 |
-| HU4-CA08 | Al guardar correctamente, el sistema muestra el mensaje de confirmación: "El movimiento fue registrado exitosamente" (o "El movimiento fue actualizado exitosamente" para ediciones). | Pantalla «¡Operación exitosa!» (E07-D4); mensaje de actualización en el formulario | C: `MovementFormScreen.test.tsx`, `App.test.tsx` | M09 | Registro verificado (Jest); edición: parcial previsto hasta E08 |
+| HU4-CA07 | Al presionar el botón "Registrar" (o “Actualizar”), si la información es válida, la transacción se almacena en la base de datos local vinculada al userId del usuario autenticado. | `MovementManagementService.create()` y `update()`; `MovementRepository` toma el usuario de la sesión (E02-D4) | U, I: `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
+| HU4-CA08 | Al guardar correctamente, el sistema muestra el mensaje de confirmación: "El movimiento fue registrado exitosamente" (o "El movimiento fue actualizado exitosamente" para ediciones). | Pantalla «¡Operación exitosa!» (E07-D4); mensaje de actualización en el formulario | C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
 | HU4-CA09 | Al completar el registro exitoso, se limpian los campos del formulario. | Estado del formulario restablecido al guardar (E07-D4) | C: `MovementFormScreen.test.tsx`, `App.test.tsx` | M10 | Verificado (Jest) |
-| HU4-CA10 | Al presionar el botón "Editar" en un movimiento existente, la vista carga previamente todos los datos registrados para su modificación. | Modo `edit` de `MovementFormScreen` con `MovementManagementService.get()` | C: `MovementFormScreen.test.tsx` (modo edición abierto directamente) | Etapa 08 | Parcial previsto: el botón «Editar» llega con HU5 (E08) |
+| HU4-CA10 | Al presionar el botón "Editar" en un movimiento existente, la vista carga previamente todos los datos registrados para su modificación. | Botón «Editar» del historial (HU5-CA07) y modo `edit` de `MovementFormScreen` con `MovementManagementService.get()` | C: `MovementFormScreen.test.tsx`; integración: `App.test.tsx` (E08) | H07 | Verificado (Jest) en E08 |
 | HU4-CA11 | El botón "Limpiar" borra el contenido de todos los campos del formulario. | «Limpiar» restablece tipo, monto, fecha, categoría, descripción y errores (E07-D2) | C: `MovementFormScreen.test.tsx` | M11 | Verificado (Jest) |
-| HU4-CA12 | El botón "Cancelar" descarta los cambios y redirige a la vista principal o al historial. | «Cancelar» y Atrás regresan al historial sin guardar (E07-D3) | C: `MovementFormScreen.test.tsx`; integración: `App.test.tsx` | M12 | Parcial previsto: verificado con la pantalla provisional del historial; se repite con HU5 (E08) |
+| HU4-CA12 | El botón "Cancelar" descarta los cambios y redirige a la vista principal o al historial. | «Cancelar», Atrás y la pestaña «Movimientos» regresan al historial sin guardar (E07-D3, E08-D4) | C: `MovementFormScreen.test.tsx`; integración: `App.test.tsx` (historial real, al crear y al editar, E08) | M12, H08 | Verificado (Jest) en E08 |
 | HU4-CA13 | Si los datos ingresados son inválidos o incompletos al intentar guardar, se debe mostrar un error con el mensaje: “Error en los campos ingresados”. | Aviso sobre el formulario con los errores de cada campo | C: `MovementFormScreen.test.tsx` | M03 | Verificado (Jest) |
 
 Criterios de otras historias completados o ampliados en esta etapa:
@@ -387,6 +387,34 @@ Criterios de otras historias completados o ampliados en esta etapa:
   `movementManagement.test.ts`).
 - **HU2-CA11:** otra cuenta no puede leer, editar ni usar las categorías de la propietaria
   (`movementManagement.test.ts`, `movementMigration.test.ts`, `categoryManagement.test.ts`).
+
+## HU5 — criterios de aceptación (Etapa 08)
+
+Transcripción literal de los criterios de HU5, en el orden del documento fuente. Verificación: U
+(unitaria), C (componente), I (integración con SQLite). Decisiones E08-D1 a E08-D7 en
+`decisiones-etapa-08.md`. Implementación en la rama `e08/hu5-historial-movimientos`, desde
+`main` (`7558a3f`).
+
+Estado al 2026-11-04: Jest en Linux sin fallos (32 suites, 519 pruebas), con `typecheck`, `lint`
+y `format:check` sin errores. La compilación Android en Windows está pendiente
+(`validacion/etapa-08-verificacion.md`). Sin pruebas manuales en esta etapa (D-07): la columna
+«Validación final» remite a los pasos H01 a H12 de ese documento.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Validación final | Estado |
+|---|---|---|---|---|---|
+| HU5-CA01 | La vista debe desplegar la lista de transacciones registradas del usuario autenticado, ordenadas cronológicamente desde la más reciente a la más antigua. | `MovementRepository.listOwn()` (usuario de la sesión; `occurred_on` y `created_at` descendentes, E08-D6); `MovementHistoryScreen` | I: `movementManagement.test.ts`; C: `MovementHistoryScreen.test.tsx`; integración: `App.test.tsx` | H01, H02 | Verificado (Jest) |
+| HU5-CA02 | Las opciones del filtro "Categoría" deben poblarse con el maestro ‘categories’. | `listActiveCategories()` al abrir el historial, con «Categoría (Todas)» (E08-D5) | C: `MovementHistoryScreen.test.tsx`; integración: `App.test.tsx` (HU8-CA08) | H03 | Verificado (Jest) |
+| HU5-CA03 | Al presionar "Filtrar", la lista debe refrescarse mostrando únicamente los movimientos que cumplan simultáneamente con los criterios aplicados. | `toMovementFilters()` y `validateFilterInput()` (`movementFilters.ts`, E08-D3); condiciones combinadas con `AND` en `listOwn()` | U: `movementFilters.test.ts`; I: `movementManagement.test.ts`; C: `MovementHistoryScreen.test.tsx` | H04, H05 | Verificado (Jest) |
+| HU5-CA04 | Si no existen registros coincidentes, la aplicación debe mostrar el contenedor de estado vacío con el título: "No se encontraron movimientos" con el subtítulo “Intenta cambiar los filtros seleccionados o realiza otra búsqueda”. | Estado vacío con filtros aplicados (E08-D5) | C: `MovementHistoryScreen.test.tsx` | H06 | Verificado (Jest) |
+| HU5-CA05 | Al hacer clic en "Eliminar", se despliega un modal flotante emergente con los botones “Cancelar” y “Confirmar” y con la pregunta: “¿Está seguro de eliminar este movimiento?” con el texto aclaratorio “Esta acción es irreversible y afectará su balance.”. | `MessageDialog` con los textos literales | C: `MovementHistoryScreen.test.tsx` | H09 | Verificado (Jest) |
+| HU5-CA06 | Al presionar “Confirmar” en el modal, el registro se elimina de la base de datos local y la lista se actualiza automáticamente mostrando el mensaje: "Movimiento eliminado correctamente". | `MovementManagementService.remove()`, borrado físico (E08-D1); recarga con los filtros aplicados | I: `movementManagement.test.ts`; C: `MovementHistoryScreen.test.tsx` | H10 | Verificado (Jest) |
+| HU5-CA07 | Al hacer clic en "Editar", el sistema redirige al formulario (HU4) cargando los datos del movimiento seleccionado. | Botón «Editar» de la tarjeta; ruta `movementForm` en modo `edit` | C: `MovementHistoryScreen.test.tsx`; integración: `App.test.tsx` | H07 | Verificado (Jest) |
+
+Criterios de otras historias completados o ampliados en esta etapa: HU4-CA07 y CA08 (edición),
+HU4-CA10, HU4-CA12 y HU8-CA08 (tablas de HU4 y HU8); HU2-CA10 (el historial con la sesión
+vencida vuelve al inicio de sesión: `App.test.tsx`, `MovementHistoryScreen.test.tsx`,
+`movementManagement.test.ts`) y HU2-CA11 (otra cuenta no lista ni elimina movimientos ajenos:
+`movementManagement.test.ts`).
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

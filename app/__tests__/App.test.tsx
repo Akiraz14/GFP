@@ -164,7 +164,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       'Nueva clave 9#',
     );
     await fireEvent.press(screen.getByTestId('login-submit'));
-    expect(await screen.findByTestId('provisional-HU5')).toBeTruthy();
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
   });
 
   test('HU2-CA07, CA10: a valid login opens the authenticated home route', async () => {
@@ -178,7 +178,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       'Clave123!',
     );
     await fireEvent.press(screen.getByTestId('login-submit'));
-    expect(await screen.findByTestId('provisional-HU5')).toBeTruthy();
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
     expect(screen.queryByTestId('login-screen')).toBeNull();
   });
 
@@ -210,7 +210,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1, HU2, HU3, HU4 and HU8 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and HU1 to HU5 and HU8 are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -227,7 +227,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU8']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU8']);
   });
 });
 
@@ -257,12 +257,12 @@ describe('HU8 access from the history (E06-D4)', () => {
     await act(async () => {
       listeners.at(-1)!({ type: 'hardwareBackPress', timeStamp: 0 });
     });
-    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    expect(screen.getByTestId('movement-history')).toBeTruthy();
     spy.mockRestore();
   });
 });
 
-describe('HU4 access from the history (E07)', () => {
+describe('HU4 access from the history (E07, E08)', () => {
   async function loggedIn() {
     const services = await readyServices(true);
     await render(<App createServices={async () => services} />);
@@ -291,7 +291,7 @@ describe('HU4 access from the history (E07)', () => {
       await screen.findByText('El movimiento fue registrado exitosamente'),
     ).toBeTruthy();
     await fireEvent.press(screen.getByTestId('movement-success-back'));
-    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    expect(screen.getByTestId('movement-history')).toBeTruthy();
     const stored = await database.execute(
       'SELECT count(*) AS total FROM movements',
     );
@@ -305,7 +305,7 @@ describe('HU4 access from the history (E07)', () => {
       '1000',
     );
     await fireEvent.press(screen.getByTestId('movement-cancel'));
-    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    expect(screen.getByTestId('movement-history')).toBeTruthy();
     const stored = await database.execute(
       'SELECT count(*) AS total FROM movements',
     );
@@ -322,6 +322,121 @@ describe('HU4 access from the history (E07)', () => {
     await fireEvent.press(screen.getByTestId('movement-category-option-food'));
     sessions.end();
     await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(await screen.findByTestId('login-screen')).toBeTruthy();
+  });
+});
+
+describe('HU5 history in the app (E08)', () => {
+  async function loggedInWithMovement() {
+    const services = await readyServices(true);
+    await render(<App createServices={async () => services} />);
+    await fireEvent.changeText(
+      await screen.findByTestId('login-identifier'),
+      '1001',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Clave123!',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await fireEvent.press(await screen.findByTestId('open-movement-form'));
+    await fireEvent.changeText(
+      await screen.findByTestId('movement-amount'),
+      '45.500',
+    );
+    await fireEvent.press(screen.getByTestId('movement-category'));
+    await fireEvent.press(screen.getByTestId('movement-category-option-food'));
+    await fireEvent.changeText(
+      screen.getByTestId('movement-description'),
+      'Almuerzo',
+    );
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    await fireEvent.press(await screen.findByTestId('movement-success-back'));
+    await screen.findByText('Almuerzo');
+    const stored = await services.database.execute('SELECT id FROM movements');
+    return { services, id: stored.rows[0].id as string };
+  }
+
+  test('HU5-CA01: the registered movement appears in the history', async () => {
+    const { id } = await loggedInWithMovement();
+    expect(screen.getByTestId(`movement-amount-${id}`).props.children).toBe(
+      '-$45.500,00',
+    );
+  });
+
+  test('HU5-CA07, HU4-CA10, CA07, CA08: «Editar» loads the data, «Actualizar» saves it', async () => {
+    const { services, id } = await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId(`movement-edit-${id}`));
+    expect(await screen.findByText('Editar movimiento')).toBeTruthy();
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-description').props.value).toBe(
+      'Almuerzo',
+    );
+    await fireEvent.changeText(screen.getByTestId('movement-amount'), '50.000');
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(
+      await screen.findByText('El movimiento fue actualizado exitosamente'),
+    ).toBeTruthy();
+    const stored = await services.database.execute(
+      'SELECT amount_cents FROM movements WHERE id = ?',
+      [id],
+    );
+    expect(stored.rows[0]).toEqual({ amount_cents: 5_000_000 });
+    await fireEvent.press(screen.getByTestId('movement-cancel'));
+    expect(
+      (await screen.findByTestId(`movement-amount-${id}`)).props.children,
+    ).toBe('-$50.000,00');
+  });
+
+  test('HU4-CA12: «Cancelar» on an edit discards the changes and returns to the history', async () => {
+    const { services, id } = await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId(`movement-edit-${id}`));
+    await fireEvent.changeText(
+      await screen.findByTestId('movement-amount'),
+      '99.999',
+    );
+    await fireEvent.press(screen.getByTestId('movement-cancel'));
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
+    expect(screen.getByTestId(`movement-amount-${id}`).props.children).toBe(
+      '-$45.500,00',
+    );
+    const stored = await services.database.execute(
+      'SELECT amount_cents FROM movements WHERE id = ?',
+      [id],
+    );
+    expect(stored.rows[0]).toEqual({ amount_cents: 4_550_000 });
+  });
+
+  test('HU8-CA08: a category created in HU8 is offered by the history filter', async () => {
+    await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('open-categories'));
+    await fireEvent.press(await screen.findByTestId('categories-new'));
+    await fireEvent.changeText(
+      await screen.findByTestId('category-name'),
+      'Mascotas',
+    );
+    await fireEvent.press(screen.getByTestId('category-icon-pet'));
+    await fireEvent.press(screen.getByTestId('category-save'));
+    await screen.findByText('Mascotas');
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    await fireEvent.press(await screen.findByTestId('history-category'));
+    expect(await screen.findByText('Mascotas')).toBeTruthy();
+  });
+
+  test('E08-D4: the bottom bar opens «Análisis» and «Recomendaciones» and returns to «Movimientos»', async () => {
+    await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
+    expect(screen.getByTestId('provisional-HU9')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    expect(screen.getByTestId('provisional-HU10')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    expect(await screen.findByText('Almuerzo')).toBeTruthy();
+  });
+
+  test('HU2-CA10: after the session expires the history returns to the login screen', async () => {
+    const { services } = await loggedInWithMovement();
+    services.sessions.end();
+    await fireEvent.press(screen.getByTestId('history-filter'));
     expect(await screen.findByTestId('login-screen')).toBeTruthy();
   });
 });
