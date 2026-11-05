@@ -1,6 +1,10 @@
 import { CategoryManagementService } from '../../src/business/categories/categoryManagement';
 import { MovementManagementService } from '../../src/business/movements/movementManagement';
 import type { MovementInput } from '../../src/business/movements/movementRules';
+import {
+  NO_MOVEMENT_FILTERS,
+  type MovementFilters,
+} from '../../src/infrastructure/database/repositories/movementRepository';
 import { readInteger } from '../../src/infrastructure/database/sqlDatabase';
 import { SessionManager } from '../../src/services/session/sessionManager';
 import { nodeRandomBytes } from '../../testing/nodeSqliteDatabase';
@@ -311,6 +315,158 @@ describe('isolation per user (HU2-CA11) and session required (HU2-CA10)', () => 
       status: 'failed',
     });
     await expect(service.get(session, 'any')).resolves.toEqual({
+      status: 'failed',
+    });
+  });
+});
+
+describe('HU5: list and delete', () => {
+  async function seeded() {
+    const context = await setup();
+    const add = async (overrides: Partial<MovementInput>) => {
+      const result = await context.service.create(context.session, {
+        ...LUNCH,
+        ...overrides,
+      });
+      if (result.status !== 'saved') {
+        throw new Error(result.status);
+      }
+      return result.movement.id;
+    };
+    const ids = {
+      oldLunch: await add({ date: '01/09/2026', description: 'A' }),
+      salary: await add({
+        type: 'income',
+        amount: '3.000.000',
+        date: '30/09/2026',
+        categoryId: 'salary',
+        description: 'B',
+      }),
+      taxi: await add({
+        date: '15/10/2026',
+        categoryId: 'transport',
+        description: 'C',
+      }),
+      sameDayFirst: await add({ date: '20/10/2026', description: 'D' }),
+      sameDaySecond: await add({ date: '20/10/2026', description: 'E' }),
+    };
+    return { ...context, ids };
+  }
+
+  const NONE: MovementFilters = NO_MOVEMENT_FILTERS;
+
+  test('HU5-CA01: lists from the most recent to the oldest, with the category', async () => {
+    const { service, session } = await seeded();
+    const result = await service.list(session, NONE);
+    if (result.status !== 'ok') {
+      throw new Error(result.status);
+    }
+    expect(result.movements.map(m => m.description)).toEqual([
+      'E',
+      'D',
+      'C',
+      'B',
+      'A',
+    ]);
+    expect(result.movements[2]).toMatchObject({
+      categoryId: 'transport',
+      categoryName: 'Transporte',
+      categoryIcon: 'car',
+    });
+  });
+
+  test('HU5-CA03: every filter applies at the same time, with inclusive dates', async () => {
+    const { service, session } = await seeded();
+    const names = async (filters: MovementFilters) => {
+      const result = await service.list(session, filters);
+      return result.status === 'ok'
+        ? result.movements.map(m => m.description)
+        : result.status;
+    };
+    expect(
+      await names({ ...NONE, from: '2026-09-30', to: '2026-10-15' }),
+    ).toEqual(['C', 'B']);
+    expect(await names({ ...NONE, type: 'income' })).toEqual(['B']);
+    expect(await names({ ...NONE, categoryId: 'food' })).toEqual([
+      'E',
+      'D',
+      'A',
+    ]);
+    expect(
+      await names({
+        from: '2026-10-01',
+        to: null,
+        type: 'expense',
+        categoryId: 'food',
+      }),
+    ).toEqual(['E', 'D']);
+    expect(
+      await names({ ...NONE, type: 'income', categoryId: 'food' }),
+    ).toEqual([]);
+  });
+
+  test('HU5-CA06: deleting removes the row physically', async () => {
+    const { database, service, session, ids } = await seeded();
+    await expect(service.remove(session, ids.taxi)).resolves.toEqual({
+      status: 'deleted',
+    });
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements WHERE id = ?',
+      [ids.taxi],
+    );
+    expect(readInteger(stored.rows[0], 'total')).toBe(0);
+    await expect(service.remove(session, ids.taxi)).resolves.toEqual({
+      status: 'not_found',
+    });
+  });
+
+  test('HU2-CA11: another user lists nothing and cannot delete', async () => {
+    const { database, sessions, service, ids } = await seeded();
+    const otherId = await createAccount(
+      database,
+      profile({
+        documentNumber: '2002',
+        email: 'luis@example.com',
+        phoneNumber: '3002223344',
+      }),
+    );
+    sessions.end();
+    const other = sessions.start(otherId);
+    await expect(service.list(other, NONE)).resolves.toEqual({
+      status: 'ok',
+      movements: [],
+    });
+    await expect(service.remove(other, ids.salary)).resolves.toEqual({
+      status: 'not_found',
+    });
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(readInteger(stored.rows[0], 'total')).toBe(5);
+  });
+
+  test('HU2-CA10: list and delete need the active session', async () => {
+    const { database, service, sessions, session, ids } = await seeded();
+    sessions.end();
+    await expect(service.list(session, NONE)).resolves.toEqual({
+      status: 'session_expired',
+    });
+    await expect(service.remove(session, ids.salary)).resolves.toEqual({
+      status: 'session_expired',
+    });
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(readInteger(stored.rows[0], 'total')).toBe(5);
+  });
+
+  test('a database failure is reported without details', async () => {
+    const { database, service, session } = await seeded();
+    database.close();
+    await expect(service.list(session, NONE)).resolves.toEqual({
+      status: 'failed',
+    });
+    await expect(service.remove(session, 'any')).resolves.toEqual({
       status: 'failed',
     });
   });

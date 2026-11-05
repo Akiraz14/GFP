@@ -2,6 +2,8 @@ import { CategoryRepository } from '../../infrastructure/database/repositories/c
 import {
   MovementRepository,
   type Movement,
+  type MovementFilters,
+  type MovementListItem,
 } from '../../infrastructure/database/repositories/movementRepository';
 import type {
   SqlDatabase,
@@ -43,7 +45,23 @@ export type MovementSaveResult =
   | { status: 'session_expired' }
   | { status: 'failed' };
 
+export type MovementListResult =
+  | { status: 'ok'; movements: MovementListItem[] }
+  | { status: 'session_expired' }
+  | { status: 'failed' };
+
+export type MovementDeleteResult =
+  | { status: 'deleted' }
+  | { status: 'not_found' }
+  | { status: 'session_expired' }
+  | { status: 'failed' };
+
 export interface MovementGateway {
+  // HU5-CA01 y CA03.
+  list(
+    session: UserSession,
+    filters: MovementFilters,
+  ): Promise<MovementListResult>;
   get(session: UserSession, id: string): Promise<MovementGetResult>;
   create(
     session: UserSession,
@@ -54,6 +72,8 @@ export interface MovementGateway {
     id: string,
     input: MovementInput,
   ): Promise<MovementSaveResult>;
+  // HU5-CA06.
+  remove(session: UserSession, id: string): Promise<MovementDeleteResult>;
 }
 
 export type MovementManagementDependencies = {
@@ -82,6 +102,35 @@ export class MovementManagementService implements MovementGateway {
 
   private categories(executor: SqlExecutor): CategoryRepository {
     return new CategoryRepository(executor, this.dependencies.sessions);
+  }
+
+  async list(
+    session: UserSession,
+    filters: MovementFilters,
+  ): Promise<MovementListResult> {
+    try {
+      const movements = await this.movements(
+        this.dependencies.database,
+      ).listOwn(session, filters);
+      return { status: 'ok', movements };
+    } catch (error) {
+      return { status: failureStatus(error) };
+    }
+  }
+
+  async remove(
+    session: UserSession,
+    id: string,
+  ): Promise<MovementDeleteResult> {
+    try {
+      const deleted = await serializedByDatabase(
+        this.dependencies.database,
+        () => this.movements(this.dependencies.database).deleteOwn(session, id),
+      );
+      return deleted ? { status: 'deleted' } : { status: 'not_found' };
+    } catch (error) {
+      return { status: failureStatus(error) };
+    }
   }
 
   async get(session: UserSession, id: string): Promise<MovementGetResult> {
