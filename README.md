@@ -22,7 +22,7 @@ responsable, y siguen siendo la fuente de verdad del proyecto:
 | `app/src/` | Capas según C4 Nivel 3 (ver `app/src/README.md`) |
 | `docs/` | Plan de etapas, decisiones, trazabilidad y guías de validación |
 | `evidencias/` | Evidencias históricas de las Etapas 01 y 02; las siguientes se guardan fuera del repositorio (`docs/flujo-de-trabajo.md`) |
-| `scripts/` | `validar-etapa.ps1` (validación Android en Windows) |
+| `scripts/` | `stage-04/` y `stage-07/` (controles, compilación Debug y revisión del APK), `release/` (clave propia y APK Release firmado, D-06) y `validar-etapa.ps1` (histórico) |
 
 ## Comandos (desde `app/`)
 
@@ -34,7 +34,9 @@ npm run format:check
 npm test
 ```
 
-Validación Android completa: ver `docs/validacion/ETAPA-01.md`.
+Instalación, compilación Debug y Release y validación final: `docs/guia-instalacion-ejecucion.md`
+y `docs/validacion/guia-pruebas-manuales-finales.md`. Estado de la consolidación:
+`docs/informe-consolidacion.md`.
 
 ## Ramas
 

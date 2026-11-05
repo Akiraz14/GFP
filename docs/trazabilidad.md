@@ -16,15 +16,15 @@ criterio derivado figura en su columna «Origen».
 | Historia | Criterios | Etapa | Estado |
 |---|---|---|---|
 | HU1 Registrar usuario | CA01–CA19 | 03 | Implementada (2026-10-26) con correcciones de usabilidad y reglas de documento definitivas (2026-10-26 y 2026-10-27); CA01–CA19 verificados en Jest y en emulador; integrada en `main` (`14f2c88`) y publicada el 2026-10-28; cierre aprobado formalmente con reservas el 2026-10-28 (`cierre-etapa-03.md`, E03-APROBACION) |
-| HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09–CA11 parciales; integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
+| HU2 Iniciar sesión | CA01–CA11 | 04 | Implementada (2026-10-28) con la corrección de memoria de PBKDF2; CA01–CA08 verificados en Jest y en Android 10 y 14 (`2e5fd6c`, 2026-10-29); CA09 verificado en E05; CA10 y CA11 verificados en Jest en la consolidación (pendiente la validación manual final); integrada en `main` (`96d00cb`, `611a7ef`) el 2026-10-30; cierre aprobado con reservas (`cierre-etapa-04.md`, E04-APROBACION) |
 | HU3 Recuperar contraseña | CA01–CA13 | 05 | Implementada (2026-10-30); CA01–CA13 verificados en Jest; pruebas manuales en Android 10 y 14 culminadas el 2026-11-04: CA01–CA05 y CA07–CA13 verificados con excepciones aceptadas, CA06 sin verificación en dispositivo (R16 no verificable); integrada en `main` (`e19d9ab`); cierre documental en `cierre-etapa-05.md` (E05-APROBACION) |
-| HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Implementada (2026-11-04) e integrada en `main` (`5d515ef`); cerrada con validación parcial (`cierre-etapa-06.md`); CA01–CA06, CA07a y CA07b verificados en Jest; CA07c completada en E07 (rama `e07/hu4-registrar-movimiento`, verificada en Jest); CA08 parcial previsto hasta E08; validación en emulador pendiente |
+| HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Implementada (2026-11-04) e integrada en `main` (`5d515ef`); cerrada con validación parcial (`cierre-etapa-06.md`); CA01–CA06, CA07a y CA07b verificados en Jest; CA07c completada en E07 y CA08 en E08 (verificados en Jest); validación manual final pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Integrada en `main` (`7558a3f`, etiqueta `etapa-07-aprobada`); CA01–CA13 verificados en Jest: CA10, CA12 y la edición de CA07 y CA08 completados en E08 (rama `e08/hu5-historial-movimientos`); sin pruebas manuales hasta la validación final (D-07) |
-| HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Implementada en la rama `e08/hu5-historial-movimientos` (2026-11-04), sin integrar en `main`; CA01–CA07 verificados en Jest; compilación Android pendiente; sin pruebas manuales hasta la validación final (D-07) |
-| HU6 Visualizar balance financiero | CA01–CA04 | 09 | Pendiente |
-| HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | 10 | Pendiente |
-| HU9 Consultar análisis financiero | CA01–CA06 | 11 | Pendiente |
-| HU10 Consultar recomendaciones financieras automáticas | CA01–CA06 (CA02 con subcriterios a, b, c) | 12 | Pendiente |
+| HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Integrada en `main` (`5dd2071`, etiqueta `etapa-08-aprobada`); CA01–CA07 verificados en Jest; ampliada en la consolidación con filtros iniciales y el acceso a HU7; sin pruebas manuales hasta la validación final (D-07) |
+| HU6 Visualizar balance financiero | CA01–CA04 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA04 verificados en Jest; adaptada de `daniela888-li/GFP` (E-CONS-D2) |
+| HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA12 verificados en Jest con cámara, galería y OCR simulados; cámara real, ML Kit y borrado nativo sin ejecutar (validación final); calidad del OCR sin evaluar (P-CONS-03) |
+| HU9 Consultar análisis financiero | CA01–CA06 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA06 verificados en Jest (la dona y las líneas se renderizan en Jest; su aspecto requiere validación manual) |
+| HU10 Consultar recomendaciones financieras automáticas | CA01–CA06 (CA02 con subcriterios a, b, c) | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA06 verificados en Jest; descartes por mes (I-27, migración 6) |
 | **Total** | **99** | | |
 
 ## Criterios parciales previstos
@@ -33,8 +33,8 @@ criterio derivado figura en su columna «Origen».
 |---|---|---|---|---|
 | HU1-CA18 | HU1 | Pantalla de inicio de sesión (HU2) | Prueba: Cancelar limpia todos los campos y emite navegación a la ruta de inicio de sesión | Verificado en E03 (2026-10-27): el criterio exige regresar a la vista de inicio de sesión, no autenticar; en E04 se repite como regresión cuando HU2 sustituya la pantalla provisional |
 | HU2-CA09 | HU2 | Pantalla de recuperación (HU3) | Prueba: el enlace emite navegación a la ruta de recuperación (cumplida en E04: `LoginScreen.test.tsx`, `App.test.tsx`) | E05: verificado en Jest (`App.test.tsx`: el enlace abre el formulario de HU3) y en Android 10 y 14 (`HU2-CA09`, 2026-10-30; R01, 2026-11-04) |
-| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5 con el resumen de HU6, HU7, HU8, HU9 y HU10; E04-D3) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | E13 |
-| HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | E13 |
+| HU2-CA10 | HU2 | Pantallas con información financiera (HU4, HU5 con el resumen de HU6, HU7, HU8, HU9 y HU10; E04-D3) | Prueba: rutas autenticadas inaccesibles sin sesión válida; re-verificación en E07–E12 (cumplida en E04 para el registro de rutas: `resolveRoute()`, `App.test.tsx`) | Consolidación: verificado en Jest para todas las pantallas con sesión (`App.test.tsx`: rutas con sesión; servicios de HU4, HU5, HU6, HU8, HU10 con `session_expired`); validación final: G2-10 |
+| HU2-CA11 | HU2 | Datos financieros de dos o más usuarios | Prueba: la sesión queda asociada a un único usuario; aislamiento verificado en E07, E08, E11, E12 (cumplida en E04 para la sesión: `accountLogin.test.ts`) | Consolidación: verificado en Jest para movimientos, categorías, totales, recomendaciones y descartes (`movementManagement.test.ts`, `categoryManagement.test.ts`, `recommendationService.test.ts`, migraciones 5 y 6); validación final: G2-11 |
 | HU8-CA07c | HU8 | Movimientos (HU4) | Prueba de eliminación; reasignación con datos de prueba solo si el esquema existe desde E02 | E07: verificado en Jest (reasignación en la transacción de la eliminación, `categoryManagement.test.ts`, `CategoriesScreen.test.tsx`) |
 | HU8-CA08 | HU8 | Formulario HU4 y filtros HU5 | Prueba: la categoría creada o editada aparece de inmediato en la consulta de categorías activas | E07: verificado en Jest para el formulario de HU4 (`MovementFormScreen.test.tsx`); E08: verificado en Jest para el filtro de HU5 (`MovementHistoryScreen.test.tsx`, `App.test.tsx`) |
 | HU4-CA07 y CA08 (variante edición) | HU4 | Punto de entrada a la edición (HU5) | Prueba de integración del modo edición: guarda y muestra el mensaje de actualización | E08: verificado en Jest desde el botón «Editar» del historial (`App.test.tsx`) |
@@ -263,8 +263,8 @@ registro de la cuenta sintética, con la app fuera del primer plano. La ejecuci�
 | HU2-CA07 | El botón “Ingresar” debe validar la información contra los datos almacenados en la base de datos. | `AccountLoginService` sobre la base cifrada; sesión del `SessionManager` | U, I, C: `accountLogin.test.ts`, `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA07` | Verificado (Jest; Android 10 y 14) |
 | HU2-CA08 | El botón “Registrar” debe redirigir al formulario de registro de usuario. | Navegación a `register` | C: `LoginScreen.test.tsx`, `App.test.tsx` | `HU2-CA08` | Verificado (Jest; Android 10 y 14) |
 | HU2-CA09 | El vínculo “Olvidé mi contraseña” redirige al formulario de recuperación de contraseña. | Navegación a `passwordRecovery` (pantalla provisional de G-07 hasta HU3) | C | `HU2-CA09` | Verificado en la rama de E05 (Jest; Android 10 y 14 con el formulario real de HU3, 2026-10-30); en `main` sigue la pantalla provisional hasta integrar E05 |
-| HU2-CA10 | La información financiera no debe estar disponible mediante la aplicación sin una autenticación válida. | `requiresSession` y `resolveRoute()` (E04-D3) | C: `App.test.tsx` | `HU2-CA10` (reinicio: vuelve al inicio de sesión) | Parcial: verificado en Jest y en Android 10 y 14 (la sesión no se conserva al reabrir); re-verificación en E07–E12 y E13 |
-| HU2-CA11 | Después de una autenticación válida, el usuario debe acceder únicamente a la información asociada a su cuenta. | Sesión de un único usuario; cada inicio de sesión sustituye la anterior (E04-D4); repositorios basados en la sesión (E02-D4) | U: `accountLogin.test.ts`, `userIsolation.test.ts` | — | Parcial: aislamiento de datos en E07, E08, E11, E12 y E13 |
+| HU2-CA10 | La información financiera no debe estar disponible mediante la aplicación sin una autenticación válida. | `requiresSession` y `resolveRoute()` (E04-D3) | C: `App.test.tsx` | `HU2-CA10` (reinicio: vuelve al inicio de sesión) | Verificado (Jest) en la consolidación para todas las pantallas con sesión; validación manual final G2-10 |
+| HU2-CA11 | Después de una autenticación válida, el usuario debe acceder únicamente a la información asociada a su cuenta. | Sesión de un único usuario; cada inicio de sesión sustituye la anterior (E04-D4); repositorios basados en la sesión (E02-D4) | U: `accountLogin.test.ts`, `userIsolation.test.ts` | — | Verificado (Jest) en la consolidación para todos los datos financieros; validación manual final G2-11 |
 
 Regresión de HU1 en la Etapa 04: HU1-CA18 se verifica en Jest con la pantalla real de inicio
 de sesión (`App.test.tsx`: «Cancelar» vuelve a HU2 con los campos vacíos) y en Android 10 y 14
@@ -415,6 +415,77 @@ HU4-CA10, HU4-CA12 y HU8-CA08 (tablas de HU4 y HU8); HU2-CA10 (el historial con 
 vencida vuelve al inicio de sesión: `App.test.tsx`, `MovementHistoryScreen.test.tsx`,
 `movementManagement.test.ts`) y HU2-CA11 (otra cuenta no lista ni elimina movimientos ajenos:
 `movementManagement.test.ts`).
+
+## HU6 — criterios de aceptación (consolidación)
+
+Transcripción literal de los criterios de HU6. Verificación: U (unitaria), C (componente), I
+(integración con SQLite). Decisión E-CONS-D2 en `decisiones-consolidacion.md`. Estado al
+2026-11-04: Jest en Linux, 38 suites y 605 pruebas sin fallos. La columna «Validación final»
+remite a `validacion/guia-pruebas-manuales-finales.md`.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Validación final | Estado |
+|---|---|---|---|---|---|
+| HU6-CA01 | El cálculo del balance consolidado debe realizarse dinámicamente y en tiempo real mediante la fórmula: Balance = sum(Ingresos) - sum(Gastos) de los registros del usuario. | `MovementRepository.totalsOwn()`; `BalanceSummary` | I: `movementManagement.test.ts`; C: `MovementHistoryScreen.test.tsx` | G6-01 | Verificado (Jest) |
+| HU6-CA02 | Los valores monetarios deben mostrarse con el formato de moneda estándar local con separador de miles y dos decimales (p. ej., $1.250.000,00). | `formatMoney()` (D-01) | U: `money.test.ts`; C: `MovementHistoryScreen.test.tsx` | G6-01 | Verificado (Jest) |
+| HU6-CA03 | Si el resultado del balance es negativo, el valor del balance debe resaltarse visualmente en color rojo. | Estilo rojo del bloque BALANCE | C: `MovementHistoryScreen.test.tsx` | G6-02 | Verificado (Jest); el color se confirma en la validación final |
+| HU6-CA04 | Los valores de Ingresos, Gastos y Balance deben recalcularse automáticamente en tiempo real ante cualquier evento de creación, edición o eliminación de un movimiento. | Totales leídos con cada carga del historial | I: `movementManagement.test.ts`; C: `MovementHistoryScreen.test.tsx`; integración: `App.test.tsx` | G6-03 | Verificado (Jest) |
+
+## HU7 — criterios de aceptación (consolidación)
+
+Decisiones E-CONS-D3 y E-CONS-D4. En Jest la cámara, la galería, ML Kit y el borrado nativo se
+sustituyen por dobles (`ReceiptGateway`); el código nativo (`nativeReceiptGateway.ts`,
+`GfpFilesModule.kt`) solo se verifica en la validación final.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Validación final | Estado |
+|---|---|---|---|---|---|
+| HU7-CA01 | El sistema debe permitir capturar una foto directamente desde la cámara o seleccionar una imagen existente desde la galería local del dispositivo. | `nativeReceiptGateway` (`launchCamera`, `launchImageLibrary`); `ReceiptCaptureScreen` | C: `ReceiptCaptureScreen.test.tsx` (con dobles) | G7-01, G7-02 | Implementado; flujo verificado en Jest; cámara y galería reales pendientes de validación manual |
+| HU7-CA02 | La imagen debe pertenecer a un formato válido (‘.jpg’, ‘.jpeg’, ‘.png’) y no superar un tamaño máximo de 5 MB. De lo contrario, muestra el mensaje: "Formato o tamaño de imagen no soportado. Usa una imagen JPG o PNG de máximo 5 MB.". | `isSupportedReceiptImage()` | U: `receiptExtraction.test.ts`; C: `ReceiptCaptureScreen.test.tsx` | G7-03 | Verificado (Jest) |
+| HU7-CA03 | Al presionar “Tomar fotografia”, la aplicación debe procesar la imagen mediante el servicio de OCR para extraer los siguientes campos clave: Monto, Fecha y Comercio/Descripción. | OCR tras la captura (ML Kit local); `extractReceiptData()` | U: `receiptExtraction.test.ts`; C: `ReceiptCaptureScreen.test.tsx` | G7-04 | Extracción verificada en Jest; OCR real pendiente de validación manual; calidad sin evaluar (P-CONS-03) |
+| HU7-CA04 | Una vez procesada la imagen, el sistema debe desplegar en la misma pantalla: la vista previa (preview) de la fotografía; la barra de botones en línea (Cancelar, Reintentar, Continuar); la tarjeta de resumen con los datos extraídos, ubicada debajo de los botones en línea. | Vista de revisión de `ReceiptCaptureScreen` | C: `ReceiptCaptureScreen.test.tsx` | G7-04 | Verificado (Jest); disposición visual en la validación final |
+| HU7-CA05 | Ninguna transacción leída por OCR debe guardarse de forma automática en la base de datos sin la revisión y confirmación explícita del usuario. | La pantalla no escribe; solo `MovementFormScreen` guarda | Integración: `App.test.tsx` (sin filas hasta «Guardar movimiento») | G7-06 | Verificado (Jest) |
+| HU7-CA06 | Si al finalizar el procesamiento de la imagen, ningún dato pudo ser identificado, se mostrará la previsualización con un mensaje de advertencia: "No se pudo leer la información de la imagen. Por favor, intente con otra imagen o continúe para ingresar los datos manualmente". | Estado `none`; fallo del OCR tratado igual | C: `ReceiptCaptureScreen.test.tsx` | G7-05 | Verificado (Jest) |
+| HU7-CA07 | Si el OCR identifica total o parcialmente la información (ej. detecta el monto pero no la fecha), cargará únicamente los datos detectados y dejará los campos restantes en blanco. | Precarga parcial (`MovementPrefill`) | C: `ReceiptCaptureScreen.test.tsx`, `MovementFormScreen.test.tsx` | G7-05 | Verificado (Jest) |
+| HU7-CA08 | Si tras un fallo de lectura (ningún dato capturado) el usuario hace clic en el botón “Continuar”, el sistema redirigirá al formulario de registro (HU4) fijando el tipo en ‘Gasto’ y los demás campos totalmente limpios para su llenado manual. | Precarga vacía, tipo Gasto | C: `ReceiptCaptureScreen.test.tsx`, `MovementFormScreen.test.tsx` | G7-05 | Verificado (Jest) |
+| HU7-CA09 | Al presionar "Continuar" con datos extraídos (parcial o totalmente), el sistema redirigirá al formulario de registro (HU4) fijando el tipo en Gasto y precargando los campos reconocidos para su edición final antes de guardar. | `onContinue` → `movementForm` con `prefill` | Integración: `App.test.tsx`; C: `MovementFormScreen.test.tsx` | G7-06 | Verificado (Jest) |
+| HU7-CA10 | El usuario puede modificar o corregir cualquier campo precargado en la vista del formulario (HU4) antes de presionar el botón "Registrar". | Campos editables de HU4 | Integración: `App.test.tsx` (monto corregido antes de guardar) | G7-06 | Verificado (Jest) |
+| HU7-CA11 | Al presionar “Reintentar”, la vista restablece el estado inicial, permitiendo capturar o subir una nueva imagen. | `retry()`; borra la imagen temporal | C: `ReceiptCaptureScreen.test.tsx` | G7-07 | Verificado (Jest) |
+| HU7-CA12 | Al presionar “Cancelar”, se aborta el flujo y se regresa a la pantalla de historial (HU5). | `cancel()`; Atrás de Android | C: `ReceiptCaptureScreen.test.tsx`; integración: `App.test.tsx` | G7-07 | Verificado (Jest) |
+
+Decisión verificada además en Jest: borrado de la imagen temporal al reintentar, cancelar,
+continuar, salir y rechazar una imagen (`ReceiptCaptureScreen.test.tsx`, `App.test.tsx`). El
+borrado real en la caché (`GfpFiles`) se comprueba en G7-08.
+
+## HU9 — criterios de aceptación (consolidación)
+
+Decisión E-CONS-D5.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Validación final | Estado |
+|---|---|---|---|---|---|
+| HU9-CA01 | Cálculo dinámico de KPIs: Las tarjetas informativas de la cabecera deben calcular en tiempo real: Total Ingresos = sum(Ingresos del período). Total Gastos = sum(Gastos del período). Balance = Total Ingresos - Total Gastos. | `summarize()` sobre el período | U: `financialAnalysis.test.ts`; C: `AnalysisAndRecommendations.test.tsx` | G9-01 | Verificado (Jest) |
+| HU9-CA02 | Gráfico de Distribución por Categoría: Debe representar visualmente el porcentaje correspondiente a cada categoría sobre el total de gastos del período. Al interactuar con un segmento, se despliega el monto total de esa categoría. | `categoryShares()`; `DonutChart`; detalle de la categoría elegida | U: `financialAnalysis.test.ts`; C: `AnalysisAndRecommendations.test.tsx` | G9-02 | Verificado (Jest); el dibujo se confirma en la validación final |
+| HU9-CA03 | Gráfico de Evolución Temporal: Debe mostrar la relación o tendencia entre Ingresos y Gastos agrupados por mes o semana según el rango seleccionado. | `evolution()`; `LineChart` | U: `financialAnalysis.test.ts`; C: `AnalysisAndRecommendations.test.tsx` | G9-03 | Verificado (Jest); el dibujo se confirma en la validación final |
+| HU9-CA04 | Reactividad ante cambios: Todos los gráficos y totales de esta vista deben recalcularse automáticamente cuando el usuario cree (HU4), edite (HU4), elimine (HU5) o escanee (HU7) movimientos que correspondan al período consultado. | Lectura de la base al abrir la pantalla y al cambiar el período | Integración: `App.test.tsx` (crear y eliminar) | G9-04 | Verificado (Jest) para crear y eliminar; editar y escanear usan el mismo camino y se cubren en la validación final |
+| HU9-CA05 | Formato monetario unificado: Todos los montos deben desplegarse con el estándar de moneda local y dos decimales (ej. $1,250.00). | `formatMoney()` (D-01; E11-D4) | C: `AnalysisAndRecommendations.test.tsx` | G9-01 | Verificado (Jest) con el formato D-01 |
+| HU9-CA06 | Manejo de estado sin datos: Si no existen registros en el período seleccionado, la vista ocultará los gráficos y mostrará el mensaje: "No hay suficientes movimientos registrados para generar el análisis financiero de este período". | Estado vacío | C: `AnalysisAndRecommendations.test.tsx`; integración: `App.test.tsx` | G9-05 | Verificado (Jest) |
+
+## HU10 — criterios de aceptación (consolidación)
+
+Decisión E-CONS-D6.
+
+| ID | Criterio (literal) | Implementación | Pruebas automatizadas | Validación final | Estado |
+|---|---|---|---|---|---|
+| HU10-CA01 | Ejecución local y privada: El motor de reglas debe ejecutarse de manera 100% local en el dispositivo, procesando únicamente los movimientos registrados de la base de datos SQLite del usuario autenticado. | `RecommendationService` lee `listOwn()` de la sesión; sin red | I: `recommendationService.test.ts` (aislamiento y sesión) | G10-01 | Verificado (Jest) |
+| HU10-CA02a | Regla 1 (Balance negativo): Si la suma de gastos supera la suma de ingresos en el mes actual. | `evaluateRecommendations()` | U: `recommendations.test.ts` | G10-02 | Verificado (Jest) |
+| HU10-CA02b | Regla 2 (Categoría crítica): Si una sola categoría representa más del 50% del total de gastos del período. | Ídem, sobre el mes actual (E12-D1) | U: `recommendations.test.ts` | G10-02 | Verificado (Jest) |
+| HU10-CA02c | Regla 3 (Incremento inusual): Si los gastos de la categoría en el mes actual superan en más de un 30% a los del mes anterior. | Ídem; exige gastos de la categoría en el mes anterior | U: `recommendations.test.ts` | G10-02 | Verificado (Jest) |
+| HU10-CA03 | Estructura de la recomendación: Cada tarjeta de recomendación presentada en la vista debe incluir: Título y Descripción: Explicación clara del hallazgo (ej. "Tus gastos en Alimentación subieron un 35% este mes"). Datos de origen: Referencia explícita al período, monto o categoría evaluada. Ícono de severidad: Identificador visual representativo. | Tarjeta de `RecommendationsScreen` | U: `recommendations.test.ts`; C: `AnalysisAndRecommendations.test.tsx` | G10-03 | Verificado (Jest) |
+| HU10-CA04 | Estado vacío (sin recomendaciones): Si el comportamiento financiero no activa ninguna regla, la vista debe mostrar el estado vacío con el mensaje: "¡Todo en orden! No hay recomendaciones o alertas por el momento.". | Estado vacío | C: `AnalysisAndRecommendations.test.tsx`; integración: `App.test.tsx` | G10-04 | Verificado (Jest) |
+| HU10-CA05 | Navegación al detalle: Al hacer clic en "Ver movimientos asociados", el sistema redirige a la pantalla de Historial (HU5) aplicando automáticamente los filtros de la categoría y período que generaron la alerta. | `historyFiltersOf()`; filtros iniciales del historial | C: `AnalysisAndRecommendations.test.tsx`, `MovementHistoryScreen.test.tsx`; integración: `App.test.tsx` | G10-05 | Verificado (Jest) |
+| HU10-CA06 | Limitación de responsabilidad (Disclaimer): Toda recomendación o la vista debe incluir visiblemente la leyenda estática: "Las recomendaciones son generadas automáticamente con fines informativos basados en tus registros y no constituyen asesoramiento financiero profesional ni sobre productos de inversión o crédito.". | Pie de la vista | C: `AnalysisAndRecommendations.test.tsx` | G10-04 | Verificado (Jest) |
+
+Decisión verificada además en Jest: descarte guardado por usuario y mes, oculto al reabrir la
+pantalla y evaluado de nuevo el mes siguiente (I-27; `recommendationService.test.ts`,
+`AnalysisAndRecommendations.test.tsx`, `movementMigration.test.ts`).
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
