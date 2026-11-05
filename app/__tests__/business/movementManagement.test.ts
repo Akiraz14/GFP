@@ -471,3 +471,66 @@ describe('HU5: list and delete', () => {
     });
   });
 });
+
+describe('HU6: totals', () => {
+  test('HU6-CA01: sums every movement of the user, without filters', async () => {
+    const { service, session } = await setup();
+    await expect(service.totals(session)).resolves.toEqual({
+      status: 'ok',
+      totals: { incomeCents: 0, expenseCents: 0 },
+    });
+    await service.create(session, LUNCH);
+    await service.create(session, { ...LUNCH, date: '01/01/2025' });
+    await service.create(session, {
+      ...LUNCH,
+      type: 'income',
+      amount: '1.200.350',
+      categoryId: 'salary',
+    });
+    await expect(service.totals(session)).resolves.toEqual({
+      status: 'ok',
+      totals: { incomeCents: 120_035_000, expenseCents: 9_100_000 },
+    });
+  });
+
+  test('HU6-CA04: totals change after editing and deleting', async () => {
+    const { service, session } = await setup();
+    const saved = await service.create(session, LUNCH);
+    if (saved.status !== 'saved') {
+      throw new Error(saved.status);
+    }
+    await service.update(session, saved.movement.id, {
+      ...LUNCH,
+      amount: '10.000',
+    });
+    await expect(service.totals(session)).resolves.toMatchObject({
+      totals: { expenseCents: 1_000_000 },
+    });
+    await service.remove(session, saved.movement.id);
+    await expect(service.totals(session)).resolves.toMatchObject({
+      totals: { expenseCents: 0 },
+    });
+  });
+
+  test('HU2-CA10 and CA11: totals need the session and only count the owner', async () => {
+    const { database, service, sessions, session } = await setup();
+    await service.create(session, LUNCH);
+    const otherId = await createAccount(
+      database,
+      profile({
+        documentNumber: '2002',
+        email: 'luis@example.com',
+        phoneNumber: '3002223344',
+      }),
+    );
+    sessions.end();
+    await expect(service.totals(session)).resolves.toEqual({
+      status: 'session_expired',
+    });
+    const other = sessions.start(otherId);
+    await expect(service.totals(other)).resolves.toEqual({
+      status: 'ok',
+      totals: { incomeCents: 0, expenseCents: 0 },
+    });
+  });
+});

@@ -2,7 +2,11 @@ import type {
   MovementFilters,
   MovementType,
 } from '../../infrastructure/database/repositories/movementRepository';
-import { isAfter, parseDisplayDate } from '../dates/localDate';
+import {
+  formatDisplayDate,
+  isAfter,
+  parseDisplayDate,
+} from '../dates/localDate';
 import { isMovementType } from './movementRules';
 
 // Filtros del historial tal como los escribe el usuario (HU5). Un campo vacío no filtra.
@@ -65,4 +69,15 @@ export function hasActiveFilters(filters: MovementFilters): boolean {
     filters.type !== null ||
     filters.categoryId !== null
   );
+}
+
+// Filtros de entrada que corresponden a unos filtros ya aplicados, para abrir el historial
+// desde Análisis (HU9) o Recomendaciones (HU10).
+export function filterInputFrom(filters: MovementFilters): MovementFilterInput {
+  return {
+    from: filters.from === null ? '' : formatDisplayDate(filters.from),
+    to: filters.to === null ? '' : formatDisplayDate(filters.to),
+    type: filters.type ?? '',
+    categoryId: filters.categoryId ?? '',
+  };
 }

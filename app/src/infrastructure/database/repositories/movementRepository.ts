@@ -55,6 +55,9 @@ export type MovementListItem = Movement & {
   categoryIcon: CategoryIconId;
 };
 
+// Totales de HU6 en centavos.
+export type MovementTotals = { incomeCents: number; expenseCents: number };
+
 const COLUMNS =
   'id, type, amount_cents, occurred_on, category_id, description, created_at, updated_at';
 
@@ -180,6 +183,27 @@ export class MovementRepository extends OwnedRepository {
       params,
     );
     return result.rows.map(toListItem);
+  }
+
+  // HU6-CA01: totales de todos los movimientos del usuario, sin los filtros del historial
+  // (plan aprobado: balance sobre todos los movimientos). Adaptado de daniela888-li/GFP
+  // (a3764a1).
+  async totalsOwn(session: UserSession): Promise<MovementTotals> {
+    const userId = this.ownerOf(session);
+    const result = await this.executor.execute(
+      `SELECT type, sum(amount_cents) AS total FROM movements
+        WHERE user_id = ? GROUP BY type`,
+      [userId],
+    );
+    const totals: MovementTotals = { incomeCents: 0, expenseCents: 0 };
+    for (const row of result.rows) {
+      if (readText(row, 'type') === 'income') {
+        totals.incomeCents = readInteger(row, 'total');
+      } else {
+        totals.expenseCents = readInteger(row, 'total');
+      }
+    }
+    return totals;
   }
 
   // HU5-CA06: borrado físico (plan aprobado). Devuelve false si el movimiento no existe o es

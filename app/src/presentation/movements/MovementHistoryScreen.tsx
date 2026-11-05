@@ -9,7 +9,7 @@ import {
 import type { CategoryGateway } from '../../business/categories/categoryManagement';
 import { formatDisplayDate, todayIso } from '../../business/dates/localDate';
 import {
-  EMPTY_FILTER_INPUT,
+  filterInputFrom,
   hasActiveFilters,
   toMovementFilters,
   validateFilterInput,
@@ -23,6 +23,7 @@ import {
   NO_MOVEMENT_FILTERS,
   type MovementFilters,
   type MovementListItem,
+  type MovementTotals,
   type MovementType,
 } from '../../infrastructure/database/repositories/movementRepository';
 import type { UserSession } from '../../services/session/sessionManager';
@@ -33,12 +34,15 @@ import { FormScrollView } from '../components/FormScrollView';
 import { MessageDialog } from '../components/MessageDialog';
 import { SelectField } from '../components/SelectField';
 import { COLORS } from '../components/theme';
+import { BalanceSummary } from './BalanceSummary';
 import { HISTORY_TEXTS as TEXTS } from './historyTexts';
 
 type MovementHistoryScreenProps = {
   movements: MovementGateway;
   categories: CategoryGateway;
   session: UserSession;
+  // Filtros con los que abre al llegar desde Análisis (HU9) o Recomendaciones (HU10).
+  initialFilters?: MovementFilters;
   onNewMovement: () => void;
   // HU5-CA07: abre HU4 en modo edición.
   onEdit: (movementId: string) => void;
@@ -133,14 +137,19 @@ export function MovementHistoryScreen({
   movements,
   categories,
   session,
+  initialFilters = NO_MOVEMENT_FILTERS,
   onNewMovement,
   onEdit,
   onOpenCategories,
   onSessionExpired,
   now = Date.now,
 }: MovementHistoryScreenProps) {
-  const [draft, setDraft] = useState<MovementFilterInput>(EMPTY_FILTER_INPUT);
-  const [applied, setApplied] = useState<MovementFilters>(NO_MOVEMENT_FILTERS);
+  const [draft, setDraft] = useState<MovementFilterInput>(() =>
+    filterInputFrom(initialFilters),
+  );
+  const [applied, setApplied] = useState<MovementFilters>(initialFilters);
+  const [totals, setTotals] = useState<MovementTotals | null>(null);
+  const startFilters = useRef(initialFilters);
   const [errors, setErrors] = useState<MovementFilterErrors>({});
   const [items, setItems] = useState<MovementListItem[] | null>(null);
   const [options, setOptions] = useState<Category[]>([]);
@@ -177,6 +186,12 @@ export function MovementHistoryScreen({
         return;
       }
       setItems(result.movements);
+      // HU6-CA01 y CA04: los totales se leen de la base con cada carga de la lista, también
+      // al volver de crear o editar y después de eliminar.
+      const summary = await movements.totals(session);
+      if (mounted.current && summary.status === 'ok') {
+        setTotals(summary.totals);
+      }
     },
     [movements, session],
   );
@@ -194,7 +209,7 @@ export function MovementHistoryScreen({
         setOptions(result.categories);
       }
     });
-    load(NO_MOVEMENT_FILTERS);
+    load(startFilters.current);
     return () => {
       active = false;
     };
@@ -218,7 +233,7 @@ export function MovementHistoryScreen({
   }
 
   function clearFilters() {
-    setDraft(EMPTY_FILTER_INPUT);
+    setDraft(filterInputFrom(NO_MOVEMENT_FILTERS));
     setErrors({});
     setDeleted(false);
     setApplied(NO_MOVEMENT_FILTERS);
@@ -278,6 +293,7 @@ export function MovementHistoryScreen({
             </Text>
           </Pressable>
         </View>
+        <BalanceSummary totals={totals} />
         <Text style={styles.sectionTitle}>{TEXTS.filtersTitle}</Text>
         <View style={styles.row}>
           <View style={styles.half}>
