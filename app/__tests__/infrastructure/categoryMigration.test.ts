@@ -111,7 +111,7 @@ describe('HU8-CA01: system categories seeding (migration 4)', () => {
     const database = createNodeSqliteDatabase();
     await migrateDatabase(database, () => 1, MIGRATIONS.slice(0, 3));
     const userId = await createAccount(database, profile());
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(4);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(5);
     expect(await count(database, 'is_system = 1')).toBe(9);
     const users = await database.execute('SELECT id FROM users');
     expect(users.rows).toEqual([{ id: userId }]);
