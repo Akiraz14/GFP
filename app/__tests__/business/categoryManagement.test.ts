@@ -1,4 +1,5 @@
 import { CategoryManagementService } from '../../src/business/categories/categoryManagement';
+import { MovementManagementService } from '../../src/business/movements/movementManagement';
 import { readInteger } from '../../src/infrastructure/database/sqlDatabase';
 import { SessionManager } from '../../src/services/session/sessionManager';
 import { nodeRandomBytes } from '../../testing/nodeSqliteDatabase';
@@ -289,6 +290,145 @@ describe('HU8-CA07a: deleting', () => {
   });
 });
 
+describe('HU8-CA07c: reassignment to «Otros» (E07)', () => {
+  async function withMovements() {
+    const context = await setup();
+    const movements = new MovementManagementService({
+      database: context.database,
+      sessions: context.sessions,
+      random: nodeRandomBytes,
+    });
+    const pets = await created(context.service, context.session);
+    const ids: string[] = [];
+    for (const amount of ['10000', '2500,50']) {
+      const result = await movements.create(context.session, {
+        type: 'expense',
+        amount,
+        date: '01/10/2026',
+        categoryId: pets.id,
+        description: 'Concentrado',
+      });
+      if (result.status !== 'saved') {
+        throw new Error(result.status);
+      }
+      ids.push(result.movement.id);
+    }
+    return { ...context, movements, pets, ids };
+  }
+
+  test('countMovements reports the movements that will be reassigned', async () => {
+    const { service, session, pets } = await withMovements();
+    await expect(service.countMovements(session, pets.id)).resolves.toEqual({
+      status: 'ok',
+      count: 2,
+    });
+    await expect(service.countMovements(session, 'food')).resolves.toEqual({
+      status: 'ok',
+      count: 0,
+    });
+  });
+
+  test('deleting moves the movements to «Otros» keeping type and amount (E06-D3)', async () => {
+    const { service, movements, session, pets, ids } = await withMovements();
+    await expect(service.remove(session, pets.id)).resolves.toEqual({
+      status: 'deleted',
+    });
+    for (const id of ids) {
+      const result = await movements.get(session, id);
+      expect(result).toMatchObject({
+        status: 'ok',
+        movement: { categoryId: 'other', type: 'expense' },
+      });
+    }
+  });
+
+  test('income movements also move to «Otros»', async () => {
+    const { service, movements, session } = await setup().then(async c => ({
+      ...c,
+      movements: new MovementManagementService({
+        database: c.database,
+        sessions: c.sessions,
+        random: nodeRandomBytes,
+      }),
+    }));
+    const bonus = await created(service, session, {
+      name: 'Bonos',
+      type: 'income',
+      icon: 'gift',
+    });
+    const saved = await movements.create(session, {
+      type: 'income',
+      amount: '500000',
+      date: '02/10/2026',
+      categoryId: bonus.id,
+      description: '',
+    });
+    expect(saved.status).toBe('saved');
+    await service.remove(session, bonus.id);
+    if (saved.status === 'saved') {
+      await expect(
+        movements.get(session, saved.movement.id),
+      ).resolves.toMatchObject({
+        movement: {
+          categoryId: 'other',
+          type: 'income',
+          amountCents: 50000000,
+        },
+      });
+    }
+  });
+
+  test('another user cannot count or delete the category, nor touch its movements', async () => {
+    const { database, service, sessions, session, pets } =
+      await withMovements();
+    const otherId = await createAccount(
+      database,
+      profile({
+        documentNumber: '2002',
+        email: 'luis@example.com',
+        phoneNumber: '3002223344',
+      }),
+    );
+    sessions.end();
+    const other = sessions.start(otherId);
+    await expect(service.countMovements(other, pets.id)).resolves.toEqual({
+      status: 'ok',
+      count: 0,
+    });
+    await expect(service.remove(other, pets.id)).resolves.toEqual({
+      status: 'not_found',
+    });
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements WHERE category_id = ?',
+      [pets.id],
+    );
+    expect(readInteger(stored.rows[0], 'total')).toBe(2);
+    expect(other).not.toBe(session);
+  });
+
+  test('if the deletion fails nothing is reassigned', async () => {
+    const { database, service, session, pets } = await withMovements();
+    await database.execute(
+      `CREATE TRIGGER tr_test_block_delete BEFORE DELETE ON categories
+       BEGIN SELECT RAISE(ABORT, 'blocked_by_test'); END`,
+    );
+    await expect(service.remove(session, pets.id)).resolves.toEqual({
+      status: 'failed',
+    });
+    await expect(service.countMovements(session, pets.id)).resolves.toEqual({
+      status: 'ok',
+      count: 2,
+    });
+  });
+
+  test('the foreign key blocks deleting a category that still has movements', async () => {
+    const { database, pets } = await withMovements();
+    await expect(
+      database.execute('DELETE FROM categories WHERE id = ?', [pets.id]),
+    ).rejects.toThrow(/FOREIGN KEY/);
+  });
+});
+
 describe('session required (HU2-CA10)', () => {
   test('every operation answers session_expired after logging out', async () => {
     const { database, service, sessions, session } = await setup();
@@ -307,6 +447,9 @@ describe('session required (HU2-CA10)', () => {
       status: 'session_expired',
     });
     await expect(service.remove(session, pets.id)).resolves.toEqual({
+      status: 'session_expired',
+    });
+    await expect(service.countMovements(session, pets.id)).resolves.toEqual({
       status: 'session_expired',
     });
     const total = await database.execute(

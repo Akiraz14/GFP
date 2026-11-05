@@ -72,6 +72,7 @@ export function CategoriesScreen({
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [form, setForm] = useState<FormState>(null);
   const [toDelete, setToDelete] = useState<Category | null>(null);
+  const [reassignCount, setReassignCount] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [dialog, setDialog] = useState<string | null>(null);
   const mounted = useRef(true);
@@ -112,6 +113,21 @@ export function CategoriesScreen({
     );
     return () => subscription.remove();
   }, [onBack]);
+
+  // Abre el modal de eliminación con el recuento de movimientos que pasarán a «Otros»
+  // (HU8-CA07b, HU8-CA07c).
+  async function askDelete(category: Category) {
+    const result = await gateway.countMovements(session, category.id);
+    if (!mounted.current) {
+      return;
+    }
+    if (result.status === 'session_expired') {
+      onSessionExpired();
+      return;
+    }
+    setReassignCount(result.status === 'ok' ? result.count : 0);
+    setToDelete(category);
+  }
 
   async function confirmDelete() {
     if (toDelete === null || deleting) {
@@ -205,7 +221,9 @@ export function CategoriesScreen({
                 <Pressable
                   accessibilityLabel={TEXTS.accessibility.delete(category.name)}
                   accessibilityRole="button"
-                  onPress={() => setToDelete(category)}
+                  onPress={() => {
+                    askDelete(category);
+                  }}
                   style={styles.action}
                   testID={`category-delete-${category.id}`}
                 >
@@ -254,9 +272,14 @@ export function CategoriesScreen({
               testID: 'category-delete-confirm',
             },
           ]}
-          message={`${TEXTS.messages.deleteQuestion}\n\n«${toDelete.name}» · ${
-            TEXTS.types[toDelete.type]
-          }\n\n${TEXTS.messages.deleteWarning}`}
+          message={[
+            TEXTS.messages.deleteQuestion,
+            `«${toDelete.name}» · ${TEXTS.types[toDelete.type]}`,
+            TEXTS.messages.deleteWarning,
+            ...(reassignCount > 0
+              ? [TEXTS.messages.reassignCount(reassignCount)]
+              : []),
+          ].join('\n\n')}
           onRequestClose={() => setToDelete(null)}
           testID="category-delete-dialog"
         />
