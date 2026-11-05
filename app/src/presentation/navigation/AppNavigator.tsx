@@ -4,6 +4,11 @@ import type { UserSession } from '../../services/session/sessionManager';
 import { CategoriesScreen } from '../categories/CategoriesScreen';
 import { CATEGORY_TEXTS } from '../categories/categoryTexts';
 import { LoginScreen } from '../login/LoginScreen';
+import {
+  MovementFormScreen,
+  type MovementFormMode,
+} from '../movements/MovementFormScreen';
+import { MOVEMENT_TEXTS } from '../movements/movementTexts';
 import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
 import { ProvisionalScreen } from '../screens/ProvisionalScreen';
@@ -31,6 +36,10 @@ export function resolveRoute(
 export function AppNavigator({ services }: { services: AppServices }) {
   const [route, setRoute] = useState<RouteName>(INITIAL_ROUTE);
   const [session, setSession] = useState<UserSession | null>(null);
+  // Parámetros de HU4: registro nuevo o edición (la edición se abre desde HU5, Etapa 08).
+  const [movementForm, setMovementForm] = useState<MovementFormMode>({
+    mode: 'create',
+  });
   const visible = resolveRoute(route, session, services.sessions.current());
   if (visible === ROUTES.register) {
     return (
@@ -73,11 +82,34 @@ export function AppNavigator({ services }: { services: AppServices }) {
       />
     );
   }
-  // Acceso a «Categorías» desde el historial (E06-D4); en la Etapa 08 pasa a la pantalla
-  // real del historial.
+  if (visible === ROUTES.movementForm && session !== null) {
+    return (
+      <MovementFormScreen
+        categories={services.categories}
+        movements={services.movements}
+        onDone={() => setRoute(ROUTES.movementHistory)}
+        onSessionExpired={() => {
+          setSession(null);
+          setRoute(ROUTES.login);
+        }}
+        params={movementForm}
+        session={session}
+      />
+    );
+  }
+  // Accesos a «Nuevo movimiento» (HU4, E07) y «Categorías» (E06-D4) desde el historial; en
+  // la Etapa 08 pasan a la pantalla real del historial.
   const actions =
     visible === ROUTES.movementHistory
       ? [
+          {
+            label: MOVEMENT_TEXTS.buttons.newMovement,
+            onPress: () => {
+              setMovementForm({ mode: 'create' });
+              setRoute(ROUTES.movementForm);
+            },
+            testID: 'open-movement-form',
+          },
           {
             label: CATEGORY_TEXTS.buttons.openCategories,
             onPress: () => setRoute(ROUTES.categories),
