@@ -452,6 +452,44 @@ describe('HU5 history in the app (E08)', () => {
     expect(await screen.findByText('Almuerzo')).toBeTruthy();
   });
 
+  test('HU9-CA04 and HU10: analysis and recommendations follow creating and deleting movements', async () => {
+    const { id } = await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
+    expect((await screen.findByTestId('analysis-expense')).props.children).toBe(
+      '$45.500,00',
+    );
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    expect(
+      await screen.findByTestId('recommendation-negative-balance'),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    await fireEvent.press(await screen.findByTestId(`movement-delete-${id}`));
+    await fireEvent.press(screen.getByTestId('movement-delete-confirm'));
+    await screen.findByTestId('history-deleted');
+    await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
+    expect(await screen.findByTestId('analysis-empty')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    expect(await screen.findByTestId('recommendations-empty')).toBeTruthy();
+  });
+
+  test('HU9 and HU10 links open the history with their filters', async () => {
+    await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    await fireEvent.press(
+      await screen.findByTestId('recommendation-open-critical-category-food'),
+    );
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
+    expect(screen.getByTestId('history-from').props.value).toMatch(
+      /^01\/\d{2}\/\d{4}$/,
+    );
+    expect(
+      screen.getByTestId('history-category').props.accessibilityLabel,
+    ).toBe('Categoría');
+    // La pestaña «Movimientos» vuelve a abrir el historial sin filtros.
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    expect(screen.getByTestId('history-from').props.value).toBe('');
+  });
+
   test('HU2-CA10: after the session expires the history returns to the login screen', async () => {
     const { services } = await loggedInWithMovement();
     services.sessions.end();

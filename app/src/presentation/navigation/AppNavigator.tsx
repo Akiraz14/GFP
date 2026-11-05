@@ -60,6 +60,9 @@ export function AppNavigator({ services }: { services: AppServices }) {
   // historial lo abre sin filtros.
   const [historyFilters, setHistoryFilters] =
     useState<MovementFilters>(NO_MOVEMENT_FILTERS);
+  // Cada navegación abre una pantalla nueva: así el historial aplica sus filtros iniciales
+  // aunque ya estuviera abierto (por ejemplo, al pulsar «Movimientos» estando en él).
+  const [visit, setVisit] = useState(0);
   const visible = resolveRoute(route, session, services.sessions.current());
   if (visible === ROUTES.register) {
     return (
@@ -98,11 +101,13 @@ export function AppNavigator({ services }: { services: AppServices }) {
   };
   const go = (next: RouteName) => {
     setHistoryFilters(NO_MOVEMENT_FILTERS);
+    setVisit(count => count + 1);
     setRoute(next);
   };
   const toHistory = () => go(ROUTES.movementHistory);
   const toFilteredHistory = (filters: MovementFilters) => {
     setHistoryFilters(filters);
+    setVisit(count => count + 1);
     setRoute(ROUTES.movementHistory);
   };
   const newMovement = () => {
@@ -114,6 +119,7 @@ export function AppNavigator({ services }: { services: AppServices }) {
     screen = (
       <MovementHistoryScreen
         categories={services.categories}
+        key={visit}
         initialFilters={historyFilters}
         movements={services.movements}
         onEdit={movementId => {
