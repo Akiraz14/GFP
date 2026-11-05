@@ -66,7 +66,7 @@ describe('migration 5: movements (HU4)', () => {
     const database = createNodeSqliteDatabase();
     await migrateDatabase(database, () => 1, MIGRATIONS.slice(0, 4));
     const userId = await createAccount(database, profile());
-    await expect(migrateDatabase(database, () => 2)).resolves.toBe(5);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(6);
     await insert(database, userId);
     const total = await database.execute(
       'SELECT count(*) AS total FROM movements',
@@ -147,5 +147,43 @@ describe('migration 5: movements (HU4)', () => {
       'SELECT count(*) AS total FROM movements',
     );
     expect(total.rows[0]).toEqual({ total: 0 });
+  });
+});
+
+// Migración 5 publicada en `main` (etapa-07-aprobada).
+const MIGRATION_5_CHECKSUM =
+  '8b0a11f06a1ff5b1c0977b9c78b29b316d8a996001408efbaf9d0f6363493171';
+
+describe('migration 6: recommendation dismissals (HU10, I-27)', () => {
+  test('keeps migration 5 identical to the published version', () => {
+    expect(migrationChecksum(MIGRATIONS[4])).toBe(MIGRATION_5_CHECKSUM);
+  });
+
+  test('upgrades a version 5 database with movements', async () => {
+    const database = createNodeSqliteDatabase();
+    await migrateDatabase(database, () => 1, MIGRATIONS.slice(0, 5));
+    const userId = await createAccount(database, profile());
+    const id = await insert(database, userId);
+    await expect(migrateDatabase(database, () => 2)).resolves.toBe(6);
+    const kept = await database.execute(
+      'SELECT count(*) AS total FROM movements WHERE id = ?',
+      [id],
+    );
+    expect(kept.rows[0]).toEqual({ total: 1 });
+    await database.execute(
+      `INSERT INTO recommendation_dismissals VALUES (?, 'negative-balance', '2026-11', 1)`,
+      [userId],
+    );
+    await expect(
+      database.execute(
+        `INSERT INTO recommendation_dismissals VALUES (?, 'negative-balance', '2026-11-04', 1)`,
+        [userId],
+      ),
+    ).rejects.toThrow();
+    await database.execute('DELETE FROM users WHERE id = ?', [userId]);
+    const left = await database.execute(
+      'SELECT count(*) AS total FROM recommendation_dismissals',
+    );
+    expect(left.rows[0]).toEqual({ total: 0 });
   });
 });

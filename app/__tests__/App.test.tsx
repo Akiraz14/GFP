@@ -10,6 +10,7 @@ import {
 } from '../src/presentation/navigation/routes';
 import { CategoryManagementService } from '../src/business/categories/categoryManagement';
 import { MovementManagementService } from '../src/business/movements/movementManagement';
+import { RecommendationService } from '../src/business/recommendations/recommendationService';
 import { AccountLoginService } from '../src/services/authentication/accountLogin';
 import { AccountRecoveryService } from '../src/services/authentication/accountRecovery';
 import { AccountRegistrationService } from '../src/services/authentication/accountRegistration';
@@ -59,7 +60,25 @@ async function readyServices(withAccount = false) {
       sessions,
       random: nodeRandomBytes,
     }),
+    receipts: fakeReceipts(),
+    recommendations: new RecommendationService({ database, sessions }),
     database,
+  };
+}
+
+// Cámara y OCR falsos (HU7): devuelven una foto válida y el texto de un comprobante.
+function fakeReceipts(text = 'Tienda Sol\nFecha 20/10/2026\nTOTAL 45.500') {
+  const image = {
+    uri: 'file:///cache/rn_image_picker_lib_temp_1.jpg',
+    fileName: 'rn_image_picker_lib_temp_1.jpg',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1000,
+  };
+  return {
+    takePhoto: jest.fn(async () => image),
+    pickFromGallery: jest.fn(async () => image),
+    recognizeText: jest.fn(async () => text),
+    discardImage: jest.fn(async () => {}),
   };
 }
 
@@ -210,7 +229,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1 to HU5 and HU8 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and all of them are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -227,7 +246,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU8']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU7', 'HU8', 'HU9', 'HU10']);
   });
 });
 
@@ -423,14 +442,52 @@ describe('HU5 history in the app (E08)', () => {
     expect(await screen.findByText('Mascotas')).toBeTruthy();
   });
 
-  test('E08-D4: the bottom bar opens «Análisis» and «Recomendaciones» and returns to «Movimientos»', async () => {
+  test('E08-D4: the bottom bar opens HU9 and HU10 and returns to «Movimientos»', async () => {
     await loggedInWithMovement();
     await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
-    expect(screen.getByTestId('provisional-HU9')).toBeTruthy();
+    expect(await screen.findByTestId('analysis-screen')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('tab-recommendations'));
-    expect(screen.getByTestId('provisional-HU10')).toBeTruthy();
+    expect(await screen.findByTestId('recommendations-screen')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('tab-movementHistory'));
     expect(await screen.findByText('Almuerzo')).toBeTruthy();
+  });
+
+  test('HU9-CA04 and HU10: analysis and recommendations follow creating and deleting movements', async () => {
+    const { id } = await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
+    expect((await screen.findByTestId('analysis-expense')).props.children).toBe(
+      '$45.500,00',
+    );
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    expect(
+      await screen.findByTestId('recommendation-negative-balance'),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    await fireEvent.press(await screen.findByTestId(`movement-delete-${id}`));
+    await fireEvent.press(screen.getByTestId('movement-delete-confirm'));
+    await screen.findByTestId('history-deleted');
+    await fireEvent.press(screen.getByTestId('tab-financialAnalysis'));
+    expect(await screen.findByTestId('analysis-empty')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    expect(await screen.findByTestId('recommendations-empty')).toBeTruthy();
+  });
+
+  test('HU9 and HU10 links open the history with their filters', async () => {
+    await loggedInWithMovement();
+    await fireEvent.press(screen.getByTestId('tab-recommendations'));
+    await fireEvent.press(
+      await screen.findByTestId('recommendation-open-critical-category-food'),
+    );
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
+    expect(screen.getByTestId('history-from').props.value).toMatch(
+      /^01\/\d{2}\/\d{4}$/,
+    );
+    expect(
+      screen.getByTestId('history-category').props.accessibilityLabel,
+    ).toBe('Categoría');
+    // La pestaña «Movimientos» vuelve a abrir el historial sin filtros.
+    await fireEvent.press(screen.getByTestId('tab-movementHistory'));
+    expect(screen.getByTestId('history-from').props.value).toBe('');
   });
 
   test('HU2-CA10: after the session expires the history returns to the login screen', async () => {
@@ -438,5 +495,67 @@ describe('HU5 history in the app (E08)', () => {
     services.sessions.end();
     await fireEvent.press(screen.getByTestId('history-filter'));
     expect(await screen.findByTestId('login-screen')).toBeTruthy();
+  });
+});
+
+describe('HU7 capture in the app', () => {
+  async function loggedIn() {
+    const services = await readyServices(true);
+    await render(<App createServices={async () => services} />);
+    await fireEvent.changeText(
+      await screen.findByTestId('login-identifier'),
+      '1001',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Clave123!',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await fireEvent.press(await screen.findByTestId('open-receipt-capture'));
+    expect(screen.getByText('Movimiento con foto')).toBeTruthy();
+    return services;
+  }
+
+  test('HU7-CA05, CA09, CA10: «Continuar» prefills HU4 as an expense and nothing is saved until confirmed', async () => {
+    const services = await loggedIn();
+    await fireEvent.press(screen.getByTestId('receipt-take-photo'));
+    await fireEvent.press(await screen.findByTestId('receipt-continue'));
+    expect(await screen.findByTestId('movement-form')).toBeTruthy();
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-date').props.value).toBe('20/10/2026');
+    expect(screen.getByTestId('movement-description').props.value).toBe(
+      'Tienda Sol',
+    );
+    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    let stored = await services.database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({ total: 0 });
+    // La foto temporal se borra al continuar (la imagen no se conserva).
+    expect(services.receipts.discardImage).toHaveBeenCalledWith(
+      'file:///cache/rn_image_picker_lib_temp_1.jpg',
+    );
+    await fireEvent.changeText(screen.getByTestId('movement-amount'), '46.000');
+    await fireEvent.press(screen.getByTestId('movement-category'));
+    await fireEvent.press(screen.getByTestId('movement-category-option-food'));
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(
+      await screen.findByText('El movimiento fue registrado exitosamente'),
+    ).toBeTruthy();
+    stored = await services.database.execute(
+      'SELECT amount_cents, description FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({
+      amount_cents: 4_600_000,
+      description: 'Tienda Sol',
+    });
+  });
+
+  test('HU7-CA12: «Cancelar» returns to the history and discards the photo', async () => {
+    const services = await loggedIn();
+    await fireEvent.press(screen.getByTestId('receipt-take-photo'));
+    await fireEvent.press(await screen.findByTestId('receipt-cancel'));
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
+    expect(services.receipts.discardImage).toHaveBeenCalled();
   });
 });

@@ -42,8 +42,16 @@ import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { MOVEMENT_TEXTS as TEXTS } from './movementTexts';
 
+// Datos leídos de un comprobante (HU7-CA07 a CA09): el tipo queda en Gasto y lo que el OCR no
+// identificó va vacío. Nada se guarda hasta que el usuario pulse «Guardar movimiento».
+export type MovementPrefill = {
+  amount: string;
+  date: string;
+  description: string;
+};
+
 export type MovementFormMode =
-  | { mode: 'create' }
+  | { mode: 'create'; prefill?: MovementPrefill }
   | { mode: 'edit'; movementId: string };
 
 type MovementFormScreenProps = {
@@ -138,7 +146,17 @@ export function MovementFormScreen({
 }: MovementFormScreenProps) {
   const editing = params.mode === 'edit';
   const today = todayIso(now());
-  const [input, setInput] = useState<MovementInput>(() => emptyInput(today));
+  const [input, setInput] = useState<MovementInput>(() =>
+    params.mode === 'create' && params.prefill !== undefined
+      ? { ...emptyInput(today), ...params.prefill, type: 'expense' }
+      : emptyInput(today),
+  );
+  // Aviso de HU7 cuando el comprobante no se leyó completo (adaptado de daniela888-li/GFP).
+  const [prefillNote, setPrefillNote] = useState(
+    params.mode === 'create' &&
+      params.prefill !== undefined &&
+      Object.values(params.prefill).some(value => value === ''),
+  );
   const [original, setOriginal] = useState<Movement | null>(null);
   const [options, setOptions] = useState<Category[] | null>(null);
   const [errors, setErrors] = useState<MovementFieldErrors>({});
@@ -243,6 +261,7 @@ export function MovementFormScreen({
 
   // HU4-CA11: «Limpiar» vuelve a los valores iniciales del formulario nuevo.
   function clear() {
+    setPrefillNote(false);
     setInput(emptyInput(todayIso(now())));
     setErrors({});
     setBanner(null);
@@ -365,6 +384,15 @@ export function MovementFormScreen({
           </View>
           <TypeIndicator type={type} />
         </View>
+        {prefillNote && (
+          <Text
+            accessibilityRole="alert"
+            style={[styles.banner, styles.bannerNotice]}
+            testID="movement-prefill-note"
+          >
+            {TEXTS.prefill.partial}
+          </Text>
+        )}
         {banner === 'error' && (
           <Text
             accessibilityRole="alert"
@@ -559,6 +587,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   bannerError: { backgroundColor: '#FBE6E4', color: COLORS.error },
+  bannerNotice: { backgroundColor: '#FFF4CE', color: COLORS.text },
   bannerSuccess: { backgroundColor: '#E3F4E8', color: COLORS.success },
   loading: { marginTop: 24 },
   label: { color: COLORS.text, fontSize: 15, marginBottom: 6 },

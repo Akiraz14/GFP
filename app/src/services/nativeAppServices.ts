@@ -1,8 +1,13 @@
 import { CategoryManagementService } from '../business/categories/categoryManagement';
 import { MovementManagementService } from '../business/movements/movementManagement';
+import { RecommendationService } from '../business/recommendations/recommendationService';
 import { openEncryptedDatabase } from '../infrastructure/database/encryptedDatabase';
 import { createNativeDatabaseDependencies } from '../infrastructure/database/nativeDatabaseDependencies';
 import { createNativePbkdf2Engine } from '../infrastructure/security/pbkdf2Engine';
+import {
+  clearTemporaryReceiptImages,
+  nativeReceiptGateway,
+} from '../processing/nativeReceiptGateway';
 import type { AppServices } from './appServices';
 import { AccountLoginService } from './authentication/accountLogin';
 import { AccountRecoveryService } from './authentication/accountRecovery';
@@ -15,6 +20,8 @@ export async function createNativeAppServices(): Promise<AppServices> {
   const database = await openEncryptedDatabase(
     createNativeDatabaseDependencies(),
   );
+  // HU7: borra fotos temporales que hayan quedado de una ejecución anterior.
+  clearTemporaryReceiptImages();
   const engine = createNativePbkdf2Engine();
   const sessions = new SessionManager();
   return {
@@ -24,5 +31,7 @@ export async function createNativeAppServices(): Promise<AppServices> {
     sessions,
     categories: new CategoryManagementService({ database, sessions }),
     movements: new MovementManagementService({ database, sessions }),
+    receipts: nativeReceiptGateway,
+    recommendations: new RecommendationService({ database, sessions }),
   };
 }

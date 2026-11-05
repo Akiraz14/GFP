@@ -4,6 +4,7 @@ import {
   type Movement,
   type MovementFilters,
   type MovementListItem,
+  type MovementTotals,
 } from '../../infrastructure/database/repositories/movementRepository';
 import type {
   SqlDatabase,
@@ -50,6 +51,11 @@ export type MovementListResult =
   | { status: 'session_expired' }
   | { status: 'failed' };
 
+export type MovementTotalsResult =
+  | { status: 'ok'; totals: MovementTotals }
+  | { status: 'session_expired' }
+  | { status: 'failed' };
+
 export type MovementDeleteResult =
   | { status: 'deleted' }
   | { status: 'not_found' }
@@ -62,6 +68,8 @@ export interface MovementGateway {
     session: UserSession,
     filters: MovementFilters,
   ): Promise<MovementListResult>;
+  // HU6-CA01.
+  totals(session: UserSession): Promise<MovementTotalsResult>;
   get(session: UserSession, id: string): Promise<MovementGetResult>;
   create(
     session: UserSession,
@@ -113,6 +121,17 @@ export class MovementManagementService implements MovementGateway {
         this.dependencies.database,
       ).listOwn(session, filters);
       return { status: 'ok', movements };
+    } catch (error) {
+      return { status: failureStatus(error) };
+    }
+  }
+
+  async totals(session: UserSession): Promise<MovementTotalsResult> {
+    try {
+      const totals = await this.movements(this.dependencies.database).totalsOwn(
+        session,
+      );
+      return { status: 'ok', totals };
     } catch (error) {
       return { status: failureStatus(error) };
     }

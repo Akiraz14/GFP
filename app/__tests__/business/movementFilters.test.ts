@@ -1,5 +1,6 @@
 import {
   EMPTY_FILTER_INPUT,
+  filterInputFrom,
   hasActiveFilters,
   toMovementFilters,
   validateFilterInput,
@@ -66,5 +67,24 @@ describe('HU5 filters (E08-D3)', () => {
         to: '14/10/2026',
       }),
     ).toEqual({ to: 'before_start' });
+  });
+});
+
+describe('filterInputFrom (HU9, HU10 links)', () => {
+  test('converts applied filters back to the form', () => {
+    expect(
+      filterInputFrom({
+        from: '2026-10-01',
+        to: '2026-10-31',
+        type: 'expense',
+        categoryId: 'food',
+      }),
+    ).toEqual({
+      from: '01/10/2026',
+      to: '31/10/2026',
+      type: 'expense',
+      categoryId: 'food',
+    });
+    expect(filterInputFrom(NO_MOVEMENT_FILTERS)).toEqual(EMPTY_FILTER_INPUT);
   });
 });

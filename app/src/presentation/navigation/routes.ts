@@ -57,7 +57,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   receiptCapture: {
     story: 'HU7',
     title: 'Movimiento con foto',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   categories: {
@@ -69,13 +69,13 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   financialAnalysis: {
     story: 'HU9',
     title: 'Análisis financiero',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   recommendations: {
     story: 'HU10',
     title: 'Recomendaciones',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
 };

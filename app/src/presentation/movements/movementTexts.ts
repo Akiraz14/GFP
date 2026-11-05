@@ -59,6 +59,10 @@ export const MOVEMENT_TEXTS = {
     created: 'El movimiento fue registrado exitosamente',
     updated: 'El movimiento fue actualizado exitosamente',
   },
+  prefill: {
+    partial:
+      'No fue posible identificar toda la información. Complete los datos manualmente',
+  },
   messages: {
     loadFailed: 'No fue posible cargar los datos. Intenta de nuevo',
     saveFailed: 'No fue posible guardar el movimiento. Intenta de nuevo',

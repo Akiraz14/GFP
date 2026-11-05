@@ -59,6 +59,7 @@ type Context = Awaited<ReturnType<typeof setup>>;
 async function show(context: Context) {
   const callbacks = {
     onNewMovement: jest.fn(),
+    onCaptureReceipt: jest.fn(),
     onEdit: jest.fn(),
     onOpenCategories: jest.fn(),
     onSessionExpired: jest.fn(),
@@ -276,12 +277,93 @@ describe('HU5 history screen', () => {
     expect(onEdit).toHaveBeenCalledWith(id);
   });
 
-  test('«Nuevo movimiento» and «Categorías» open their screens', async () => {
-    const { onNewMovement, onOpenCategories } = await show(await setup());
+  test('«Nuevo movimiento», «Movimiento con foto» and «Categorías» open their screens', async () => {
+    const { onNewMovement, onOpenCategories, onCaptureReceipt } = await show(
+      await setup(),
+    );
     await fireEvent.press(screen.getByTestId('open-movement-form'));
+    await fireEvent.press(screen.getByTestId('open-receipt-capture'));
     await fireEvent.press(screen.getByTestId('open-categories'));
     expect(onNewMovement).toHaveBeenCalledTimes(1);
+    expect(onCaptureReceipt).toHaveBeenCalledTimes(1);
     expect(onOpenCategories).toHaveBeenCalledTimes(1);
+  });
+
+  test('HU6-CA01 to CA03: the summary shows every movement with the Colombian format', async () => {
+    const context = await setup();
+    await context.add({
+      type: 'income',
+      amount: '1.200.350',
+      categoryId: 'salary',
+    });
+    await context.add({ amount: '650.000' });
+    await show(context);
+    expect(screen.getByTestId('balance-income').props.children).toBe(
+      '$1.200.350,00',
+    );
+    expect(screen.getByTestId('balance-expense').props.children).toBe(
+      '$650.000,00',
+    );
+    expect(screen.getByTestId('balance-total').props.children).toBe(
+      '$550.350,00',
+    );
+    // Los filtros del historial no cambian el resumen (plan aprobado).
+    await choose('history-type', 'expense');
+    await pressFilter();
+    expect(screen.getByTestId('balance-income').props.children).toBe(
+      '$1.200.350,00',
+    );
+  });
+
+  test('HU6-CA03: a negative balance is red; HU6-CA04: deleting recalculates it', async () => {
+    const context = await setup();
+    const salary = await context.add({
+      type: 'income',
+      amount: '100.000',
+      categoryId: 'salary',
+    });
+    await context.add({ amount: '150.000' });
+    await show(context);
+    const total = screen.getByTestId('balance-total');
+    expect(total.props.children).toBe('-$50.000,00');
+    expect(total.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ color: '#B3261E' })]),
+    );
+    await fireEvent.press(screen.getByTestId(`movement-delete-${salary}`));
+    await fireEvent.press(screen.getByTestId('movement-delete-confirm'));
+    await act(async () => {});
+    expect(screen.getByTestId('balance-income').props.children).toBe('$0,00');
+    expect(screen.getByTestId('balance-total').props.children).toBe(
+      '-$150.000,00',
+    );
+  });
+
+  test('opens with the filters given by HU9 or HU10', async () => {
+    const context = await setup();
+    const food = await context.add({ date: '10/10/2026' });
+    await context.add({ date: '10/10/2026', categoryId: 'transport' });
+    await render(
+      <MovementHistoryScreen
+        categories={context.categories}
+        initialFilters={{
+          from: '2026-10-01',
+          to: '2026-10-31',
+          type: 'expense',
+          categoryId: 'food',
+        }}
+        movements={context.movements}
+        now={() => NOW}
+        onCaptureReceipt={jest.fn()}
+        onEdit={jest.fn()}
+        onNewMovement={jest.fn()}
+        onOpenCategories={jest.fn()}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await act(async () => {});
+    expect(rowDescriptions()).toEqual([`movement-row-${food}`]);
+    expect(screen.getByTestId('history-from').props.value).toBe('01/10/2026');
   });
 
   test('HU2-CA10: an expired session leaves the history without deleting', async () => {

@@ -406,3 +406,46 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
     expect(onDone).toHaveBeenCalled();
   });
 });
+
+describe('HU4 form prefilled from HU7', () => {
+  test('HU7-CA07 and CA09: loads only the detected data as an expense and warns', async () => {
+    const context = await setup();
+    await show(context, {
+      mode: 'create',
+      prefill: { amount: '45500,00', date: '', description: 'Tienda Sol' },
+    });
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-date').props.value).toBe('');
+    expect(screen.getByTestId('movement-description').props.value).toBe(
+      'Tienda Sol',
+    );
+    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    expect(screen.getByTestId('movement-prefill-note').props.children).toBe(
+      'No fue posible identificar toda la información. Complete los datos manualmente',
+    );
+    expect(await storedMovements(context)).toEqual([]);
+  });
+
+  test('HU7-CA08: without data every field is empty and the type is Gasto', async () => {
+    await show(await setup(), {
+      mode: 'create',
+      prefill: { amount: '', date: '', description: '' },
+    });
+    expect(screen.getByTestId('movement-amount').props.value).toBe('');
+    expect(screen.getByTestId('movement-date').props.value).toBe('');
+    expect(screen.getByTestId('movement-description').props.value).toBe('');
+    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+  });
+
+  test('a complete reading shows no warning', async () => {
+    await show(await setup(), {
+      mode: 'create',
+      prefill: {
+        amount: '45500,00',
+        date: '20/10/2026',
+        description: 'Tienda Sol',
+      },
+    });
+    expect(screen.queryByTestId('movement-prefill-note')).toBeNull();
+  });
+});

@@ -32,6 +32,7 @@ export const HISTORY_TEXTS = {
     edit: 'Editar',
     delete: 'Eliminar',
     newMovement: '+ Nuevo movimiento',
+    receipt: '📷 Movimiento con foto',
     categories: 'Categorías',
     cancel: 'Cancelar',
     confirm: 'Confirmar',

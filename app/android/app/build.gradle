@@ -72,6 +72,30 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// D-06: datos de la clave release. Se buscan en las propiedades de Gradle y, si no están, en
+// las variables de entorno del proceso.
+def gfpReleaseSetting(String name) {
+    def value = project.findProperty(name) ?: System.getenv(name)
+    return value == null || value.toString().trim().isEmpty() ? null : value.toString()
+}
+
+def gfpReleaseStoreFile = gfpReleaseSetting('GFP_RELEASE_STORE_FILE')
+if (gfpReleaseStoreFile != null) {
+    def keystore = file(gfpReleaseStoreFile).canonicalFile
+    def repository = rootProject.file('../..').canonicalFile
+    if (keystore.path.startsWith(repository.path + File.separator)) {
+        throw new GradleException("D-06: the release keystore must live outside the repository (${keystore})")
+    }
+    if (!keystore.isFile()) {
+        throw new GradleException("D-06: release keystore not found: ${keystore}")
+    }
+    ['GFP_RELEASE_STORE_PASSWORD', 'GFP_RELEASE_KEY_ALIAS', 'GFP_RELEASE_KEY_PASSWORD'].each { name ->
+        if (gfpReleaseSetting(name) == null) {
+            throw new GradleException("D-06: ${name} is required together with GFP_RELEASE_STORE_FILE")
+        }
+    }
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -92,15 +116,26 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // D-06: clave release propia, fuera del repositorio. La ruta y las contraseñas llegan por
+        // variables de entorno del proceso (scripts/release/Invoke-ReleaseBuild.ps1) o por
+        // propiedades de Gradle de ~/.gradle; nunca se guardan en el repositorio.
+        if (gfpReleaseStoreFile != null) {
+            release {
+                storeFile file(gfpReleaseStoreFile)
+                storePassword gfpReleaseSetting('GFP_RELEASE_STORE_PASSWORD')
+                keyAlias gfpReleaseSetting('GFP_RELEASE_KEY_ALIAS')
+                keyPassword gfpReleaseSetting('GFP_RELEASE_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Sin la clave propia el APK release queda sin firmar: nunca se firma con la clave
+            // de depuración (D-06).
+            signingConfig gfpReleaseStoreFile != null ? signingConfigs.release : null
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
