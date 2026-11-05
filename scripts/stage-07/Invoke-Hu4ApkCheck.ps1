@@ -7,6 +7,7 @@ param(
   [string]$EvidenceRoot = ''
 )
 . (Join-Path $PSScriptRoot '..\stage-04\lib\Common.ps1')
+. (Join-Path $PSScriptRoot 'lib\ApkBadging.ps1')
 try { $null = Initialize-Run 'hu4-apk' $EvidenceRoot } catch { Write-Host "BLOCKED INIT $($_.Exception.Message)"; exit 2 }
 
 # Permisos del APK Debug registrados en E02-D7 (decisiones.md). El calendario no declara
@@ -32,9 +33,15 @@ Note "INFO aapt2=$($aapt2.FullName)"
 
 $badging = & $aapt2.FullName dump badging $apk 2>&1 | Out-String
 $badging | Out-File (Join-Path $script:Out 'aapt2-badging.txt') -Encoding UTF8
-Check 'MIN-SDK' ($badging -match "(?m)^sdkVersion:'29'") 'minSdkVersion 29 (Android 10)'
+$RequiredMinSdk = 29
+$minSdk = Get-BadgingMinSdk $badging
+if ($null -eq $minSdk) {
+  Record 'FAIL' 'MIN-SDK' "aapt2 no informo minSdkVersion (ver aapt2-badging.txt)"
+} else {
+  Check 'MIN-SDK' ($minSdk -eq $RequiredMinSdk) "minSdkVersion=$minSdk; se esperaba $RequiredMinSdk (Android 10)"
+}
 
-$permissions = @([regex]::Matches($badging, "uses-permission: name='([^']+)'") | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+$permissions = Get-BadgingPermissions $badging
 Note "INFO permisos: $($permissions -join ', ')"
 $unexpected = @($permissions | Where-Object { $KnownPermissions -notcontains $_ })
 Check 'PERMISSIONS' ($unexpected.Count -eq 0) "sin permisos fuera de E02-D7 (inesperados: $($unexpected -join ', '))"

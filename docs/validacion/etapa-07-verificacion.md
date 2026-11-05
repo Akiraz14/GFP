@@ -29,6 +29,7 @@ git log --oneline -1              # commit entregado
 $Ev = "C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-evidencias\e07"
 New-Item -ItemType Directory -Force $Ev | Out-Null
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Test-ScriptSyntax.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-07\tests\Test-ApkBadging.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 -ExpectedBranch e07/hu4-registrar-movimiento -ExpectedTests 491 -EvidenceRoot $Ev
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-AndroidBuild.ps1 -EvidenceRoot $Ev
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-07\Invoke-Hu4ApkCheck.ps1 -EvidenceRoot $Ev
@@ -37,9 +38,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-07\Invoke-Hu4A
 | Paso | Resultado esperado |
 |---|---|
 | `Test-ScriptSyntax.ps1` | Sin errores (analiza `scripts\stage-04`) |
+| `Test-ApkBadging.ps1` | `RESULTADO pruebas=10 fallos=0`: lectura de `minSdkVersion` y de los permisos con salidas sintéticas en el formato real de aapt2 |
 | `Invoke-StaticChecks.ps1` | PASS=8 FAIL=0; Jest 491/491 |
 | `Invoke-AndroidBuild.ps1` | PASS=4 FAIL=0; registra el SHA-256 del APK Debug. Gradle descarga una sola vez `com.google.android.material:material` 1.12.0, que requiere el calendario |
 | `Invoke-Hu4ApkCheck.ps1` | PASS=3 FAIL=0: `MIN-SDK` (API 29), `PERMISSIONS` (sin permisos fuera de E02-D7) y `DATE-PICKER-NATIVE` (módulo `com.reactcommunity.rndatetimepicker` en el APK) |
+
+`MIN-SDK` lee la línea `minSdkVersion:'NN'` de aapt2 y compara el valor con 29. La primera
+versión del script buscaba `sdkVersion:'29'`, que aapt2 no imprime, y fallaba con un APK correcto;
+se corrigió en un commit posterior de la misma rama (la evidencia de esa ejecución se conserva).
 
 Si `PERMISSIONS` falla, el resumen indica qué permisos no están en la lista de E02-D7; se
 reporta sin cambiar el script.
