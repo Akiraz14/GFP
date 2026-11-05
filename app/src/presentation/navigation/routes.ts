@@ -63,7 +63,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   categories: {
     story: 'HU8',
     title: 'Categorías',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   financialAnalysis: {

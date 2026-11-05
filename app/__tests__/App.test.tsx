@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
 import App from '../App';
 import { DatabaseOpenError } from '../src/infrastructure/database/encryptedDatabase';
 import { MigrationError } from '../src/infrastructure/database/migrator';
@@ -7,6 +8,7 @@ import {
   ROUTE_DEFINITIONS,
   type RouteName,
 } from '../src/presentation/navigation/routes';
+import { CategoryManagementService } from '../src/business/categories/categoryManagement';
 import { AccountLoginService } from '../src/services/authentication/accountLogin';
 import { AccountRecoveryService } from '../src/services/authentication/accountRecovery';
 import { AccountRegistrationService } from '../src/services/authentication/accountRegistration';
@@ -46,6 +48,11 @@ async function readyServices(withAccount = false) {
     login: new AccountLoginService({ ...dependencies, sessions }),
     recovery: new AccountRecoveryService(dependencies),
     sessions,
+    categories: new CategoryManagementService({
+      database,
+      sessions,
+      random: nodeRandomBytes,
+    }),
   };
 }
 
@@ -196,7 +203,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1 to HU3 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and HU1, HU2, HU3 and HU8 are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -213,6 +220,37 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU8']);
+  });
+});
+
+describe('HU8 access from the history (E06-D4)', () => {
+  test('after logging in, «Categorías» opens the categories screen and the Android back button returns', async () => {
+    const listeners: Array<Parameters<typeof BackHandler.addEventListener>[1]> =
+      [];
+    const spy = jest
+      .spyOn(BackHandler, 'addEventListener')
+      .mockImplementation((_event, handler) => {
+        listeners.push(handler);
+        return { remove: jest.fn() };
+      });
+    await render(<App createServices={() => readyServices(true)} />);
+    await fireEvent.changeText(
+      await screen.findByTestId('login-identifier'),
+      '1001',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Clave123!',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await fireEvent.press(await screen.findByTestId('open-categories'));
+    expect(await screen.findByTestId('categories-screen')).toBeTruthy();
+    expect(await screen.findByText('Alimentación')).toBeTruthy();
+    await act(async () => {
+      listeners.at(-1)!({ type: 'hardwareBackPress', timeStamp: 0 });
+    });
+    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    spy.mockRestore();
   });
 });

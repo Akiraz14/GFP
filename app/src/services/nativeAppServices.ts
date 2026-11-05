@@ -1,3 +1,4 @@
+import { CategoryManagementService } from '../business/categories/categoryManagement';
 import { openEncryptedDatabase } from '../infrastructure/database/encryptedDatabase';
 import { createNativeDatabaseDependencies } from '../infrastructure/database/nativeDatabaseDependencies';
 import { createNativePbkdf2Engine } from '../infrastructure/security/pbkdf2Engine';
@@ -20,5 +21,6 @@ export async function createNativeAppServices(): Promise<AppServices> {
     login: new AccountLoginService({ database, engine, sessions }),
     recovery: new AccountRecoveryService({ database, engine }),
     sessions,
+    categories: new CategoryManagementService({ database, sessions }),
   };
 }

@@ -1,3 +1,4 @@
+import { CategoryManagementService } from '../../../src/business/categories/categoryManagement';
 import {
   AccountAlreadyRegisteredError,
   IdentityRepository,
@@ -151,5 +152,73 @@ describe('already registered users (E03-D3)', () => {
     await expect(
       repository.findUserIdByIdentifier('3001112233'),
     ).resolves.toBeNull();
+  });
+});
+
+describe('category isolation between users (HU8, E06-D1)', () => {
+  const PETS = { name: 'Mascotas', type: 'expense', icon: 'pet' };
+
+  async function twoUsersWithCategories() {
+    const { database, ana, luis } = await twoUsers();
+    const sessions = new SessionManager(nodeRandomBytes);
+    const service = new CategoryManagementService({
+      database,
+      sessions,
+      random: nodeRandomBytes,
+    });
+    const anaSession = sessions.start(ana);
+    const anaPets = await service.create(anaSession, PETS);
+    if (anaPets.status !== 'saved') {
+      throw new Error(anaPets.status);
+    }
+    const luisSession = sessions.start(luis);
+    return {
+      database,
+      sessions,
+      service,
+      luisSession,
+      anaPets: anaPets.category,
+    };
+  }
+
+  test('another user does not see, edit or delete the categories of the first one', async () => {
+    const { database, service, luisSession, anaPets } =
+      await twoUsersWithCategories();
+    const visible = await service.listActiveCategories(luisSession);
+    expect(
+      visible.status === 'ok' && visible.categories.map(c => c.id),
+    ).not.toContain(anaPets.id);
+    await expect(
+      service.update(luisSession, anaPets.id, { ...PETS, name: 'Robada' }),
+    ).resolves.toEqual({ status: 'not_found' });
+    await expect(service.remove(luisSession, anaPets.id)).resolves.toEqual({
+      status: 'not_found',
+    });
+    const stored = await database.execute(
+      'SELECT name FROM categories WHERE id = ?',
+      [anaPets.id],
+    );
+    expect(stored.rows).toEqual([{ name: 'Mascotas' }]);
+  });
+
+  test('the same name is allowed in different accounts and does not reveal the other one', async () => {
+    const { service, luisSession } = await twoUsersWithCategories();
+    await expect(service.checkName(luisSession, 'mascotas')).resolves.toEqual({
+      status: 'available',
+    });
+    await expect(service.create(luisSession, PETS)).resolves.toMatchObject({
+      status: 'saved',
+    });
+  });
+
+  test('the previous session can no longer reach categories', async () => {
+    const { database, ana } = await twoUsers();
+    const sessions = new SessionManager(nodeRandomBytes);
+    const service = new CategoryManagementService({ database, sessions });
+    const anaSession = sessions.start(ana);
+    sessions.start(ana);
+    await expect(service.listActiveCategories(anaSession)).resolves.toEqual({
+      status: 'session_expired',
+    });
   });
 });

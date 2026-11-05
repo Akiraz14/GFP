@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { AppServices } from '../../services/appServices';
 import type { UserSession } from '../../services/session/sessionManager';
+import { CategoriesScreen } from '../categories/CategoriesScreen';
+import { CATEGORY_TEXTS } from '../categories/categoryTexts';
 import { LoginScreen } from '../login/LoginScreen';
 import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
@@ -58,5 +60,32 @@ export function AppNavigator({ services }: { services: AppServices }) {
       />
     );
   }
-  return <ProvisionalScreen route={ROUTE_DEFINITIONS[visible]} />;
+  if (visible === ROUTES.categories && session !== null) {
+    return (
+      <CategoriesScreen
+        gateway={services.categories}
+        onBack={() => setRoute(ROUTES.movementHistory)}
+        onSessionExpired={() => {
+          setSession(null);
+          setRoute(ROUTES.login);
+        }}
+        session={session}
+      />
+    );
+  }
+  // Acceso a «Categorías» desde el historial (E06-D4); en la Etapa 08 pasa a la pantalla
+  // real del historial.
+  const actions =
+    visible === ROUTES.movementHistory
+      ? [
+          {
+            label: CATEGORY_TEXTS.buttons.openCategories,
+            onPress: () => setRoute(ROUTES.categories),
+            testID: 'open-categories',
+          },
+        ]
+      : [];
+  return (
+    <ProvisionalScreen actions={actions} route={ROUTE_DEFINITIONS[visible]} />
+  );
 }
