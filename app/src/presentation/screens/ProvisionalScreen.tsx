@@ -10,8 +10,8 @@ export type ProvisionalAction = {
 };
 
 // `actions` permite que una pantalla provisional ofrezca accesos a historias ya
-// implementadas; hoy, los botones «Nuevo movimiento» (E07) y «Categorías» (E06-D4) del
-// historial.
+// implementadas (E06-D4, E07). Desde la Etapa 08 el historial es la pantalla real de HU5 y
+// ninguna pantalla provisional ofrece accesos.
 export function ProvisionalScreen({
   route,
   actions = [],

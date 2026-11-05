@@ -51,7 +51,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   movementHistory: {
     story: 'HU5',
     title: 'Historial',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   receiptCapture: {
