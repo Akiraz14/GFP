@@ -9,6 +9,7 @@ import {
   type RouteName,
 } from '../src/presentation/navigation/routes';
 import { CategoryManagementService } from '../src/business/categories/categoryManagement';
+import { MovementManagementService } from '../src/business/movements/movementManagement';
 import { AccountLoginService } from '../src/services/authentication/accountLogin';
 import { AccountRecoveryService } from '../src/services/authentication/accountRecovery';
 import { AccountRegistrationService } from '../src/services/authentication/accountRegistration';
@@ -53,6 +54,12 @@ async function readyServices(withAccount = false) {
       sessions,
       random: nodeRandomBytes,
     }),
+    movements: new MovementManagementService({
+      database,
+      sessions,
+      random: nodeRandomBytes,
+    }),
+    database,
   };
 }
 
@@ -203,7 +210,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1, HU2, HU3 and HU8 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and HU1, HU2, HU3, HU4 and HU8 are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -220,7 +227,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3', 'HU8']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU8']);
   });
 });
 
@@ -252,5 +259,69 @@ describe('HU8 access from the history (E06-D4)', () => {
     });
     expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
     spy.mockRestore();
+  });
+});
+
+describe('HU4 access from the history (E07)', () => {
+  async function loggedIn() {
+    const services = await readyServices(true);
+    await render(<App createServices={async () => services} />);
+    await fireEvent.changeText(
+      await screen.findByTestId('login-identifier'),
+      '1001',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Clave123!',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await fireEvent.press(await screen.findByTestId('open-movement-form'));
+    expect(await screen.findByTestId('movement-form')).toBeTruthy();
+    return services;
+  }
+
+  test('«Nuevo movimiento» opens the form; saving shows the confirmation and returns to the history', async () => {
+    const { database } = await loggedIn();
+    await fireEvent.press(await screen.findByTestId('movement-type-expense'));
+    await fireEvent.changeText(screen.getByTestId('movement-amount'), '45500');
+    await fireEvent.press(screen.getByTestId('movement-category'));
+    await fireEvent.press(screen.getByTestId('movement-category-option-food'));
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(
+      await screen.findByText('El movimiento fue registrado exitosamente'),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('movement-success-back'));
+    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({ total: 1 });
+  });
+
+  test('HU4-CA12: «Cancelar» returns to the history without saving', async () => {
+    const { database } = await loggedIn();
+    await fireEvent.changeText(
+      await screen.findByTestId('movement-amount'),
+      '1000',
+    );
+    await fireEvent.press(screen.getByTestId('movement-cancel'));
+    expect(screen.getByTestId('provisional-HU5')).toBeTruthy();
+    const stored = await database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({ total: 0 });
+  });
+
+  test('HU2-CA10: an expired session on the form returns to the login screen', async () => {
+    const { sessions } = await loggedIn();
+    await fireEvent.changeText(
+      await screen.findByTestId('movement-amount'),
+      '1000',
+    );
+    await fireEvent.press(screen.getByTestId('movement-category'));
+    await fireEvent.press(screen.getByTestId('movement-category-option-food'));
+    sessions.end();
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(await screen.findByTestId('login-screen')).toBeTruthy();
   });
 });

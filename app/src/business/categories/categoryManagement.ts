@@ -1,8 +1,12 @@
-import type { CategoryType } from '../../infrastructure/database/categoryCatalogs';
+import {
+  OTHER_CATEGORY_ID,
+  type CategoryType,
+} from '../../infrastructure/database/categoryCatalogs';
 import {
   CategoryRepository,
   type Category,
 } from '../../infrastructure/database/repositories/categoryRepository';
+import { MovementRepository } from '../../infrastructure/database/repositories/movementRepository';
 import type {
   SqlDatabase,
   SqlExecutor,
@@ -50,6 +54,11 @@ export type CategoryDeleteResult =
   | { status: 'session_expired' }
   | { status: 'failed' };
 
+export type CategoryMovementCountResult =
+  | { status: 'ok'; count: number }
+  | { status: 'session_expired' }
+  | { status: 'failed' };
+
 export type CategoryNameCheckResult =
   | { status: 'available' }
   | { status: 'taken' }
@@ -77,6 +86,11 @@ export interface CategoryGateway {
     id: string,
     input: CategoryInput,
   ): Promise<CategorySaveResult>;
+  // Movimientos que se reasignarán a «Otros» si se elimina la categoría (HU8-CA07b).
+  countMovements(
+    session: UserSession,
+    id: string,
+  ): Promise<CategoryMovementCountResult>;
   remove(session: UserSession, id: string): Promise<CategoryDeleteResult>;
 }
 
@@ -240,6 +254,23 @@ export class CategoryManagementService implements CategoryGateway {
     }
   }
 
+  async countMovements(
+    session: UserSession,
+    id: string,
+  ): Promise<CategoryMovementCountResult> {
+    try {
+      const count = await new MovementRepository(
+        this.dependencies.database,
+        this.dependencies.sessions,
+      ).countByCategory(session, id);
+      return { status: 'ok', count };
+    } catch (error) {
+      return {
+        status: error instanceof SessionError ? 'session_expired' : 'failed',
+      };
+    }
+  }
+
   async remove(
     session: UserSession,
     id: string,
@@ -256,8 +287,12 @@ export class CategoryManagementService implements CategoryGateway {
             if (current.isSystem) {
               return { status: 'protected' };
             }
-            // Etapa 07: aquí se reasignan los movimientos de la categoría a «Otros»
-            // (OTHER_CATEGORY_ID), en esta misma transacción (HU8-CA07c, E06-D7).
+            // HU8-CA07c con E06-D3 y E06-D7: los movimientos pasan a «Otros» en esta misma
+            // transacción, antes de borrar la categoría; si algo falla no cambia nada.
+            await new MovementRepository(
+              executor,
+              this.dependencies.sessions,
+            ).reassignCategory(session, id, OTHER_CATEGORY_ID, this.now());
             return (await repository.deleteOwn(session, id))
               ? { status: 'deleted' }
               : { status: 'not_found' };

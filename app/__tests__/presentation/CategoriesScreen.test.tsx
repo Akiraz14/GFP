@@ -7,6 +7,7 @@ import {
 } from '@testing-library/react-native';
 import { BackHandler } from 'react-native';
 import { CategoryManagementService } from '../../src/business/categories/categoryManagement';
+import { MovementManagementService } from '../../src/business/movements/movementManagement';
 import { CategoriesScreen } from '../../src/presentation/categories/CategoriesScreen';
 import { SessionManager } from '../../src/services/session/sessionManager';
 import { nodeRandomBytes } from '../../testing/nodeSqliteDatabase';
@@ -234,7 +235,7 @@ describe('HU8 categories screen', () => {
     await createFromScreen('Gimnasio', 'expense', 'dumbbell');
     const id = ownRowId('Gimnasio');
     await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
-    const dialog = screen.getByTestId('category-delete-dialog');
+    const dialog = await screen.findByTestId('category-delete-dialog');
     expect(
       within(dialog).getByText(
         /¿Está seguro de eliminar esta categoría\?[\s\S]*Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'\./,
@@ -250,7 +251,7 @@ describe('HU8 categories screen', () => {
     await createFromScreen('Gimnasio', 'expense', 'dumbbell');
     const id = ownRowId('Gimnasio');
     await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
-    await fireEvent.press(screen.getByTestId('category-delete-confirm'));
+    await fireEvent.press(await screen.findByTestId('category-delete-confirm'));
     await act(async () => {});
     expect(screen.queryByText('Gimnasio')).toBeNull();
     const stored = await database.execute(
@@ -258,6 +259,47 @@ describe('HU8 categories screen', () => {
       [id],
     );
     expect(stored.rows).toEqual([]);
+  });
+
+  test('HU8-CA07b/c: the dialog counts the movements and «Confirmar» moves them to «Otros»', async () => {
+    const { database, sessions, session } = await setup();
+    await createFromScreen('Gimnasio', 'expense', 'dumbbell');
+    const id = ownRowId('Gimnasio');
+    const movements = new MovementManagementService({
+      database,
+      sessions,
+      random: nodeRandomBytes,
+    });
+    for (const amount of ['80000', '95000']) {
+      await movements.create(session, {
+        type: 'expense',
+        amount,
+        date: '03/10/2026',
+        categoryId: id,
+        description: '',
+      });
+    }
+    await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
+    const dialog = await screen.findByTestId('category-delete-dialog');
+    expect(
+      within(dialog).getByText(/2 movimientos serán reasignados\./),
+    ).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('category-delete-confirm'));
+    await act(async () => {});
+    const stored = await database.execute(
+      "SELECT count(*) AS total FROM movements WHERE category_id = 'other'",
+    );
+    expect(stored.rows[0]).toEqual({ total: 2 });
+  });
+
+  test('HU8-CA07b: without movements the dialog has no count line', async () => {
+    await setup();
+    await createFromScreen('Gimnasio', 'expense', 'dumbbell');
+    await fireEvent.press(
+      screen.getByTestId(`category-delete-${ownRowId('Gimnasio')}`),
+    );
+    const dialog = await screen.findByTestId('category-delete-dialog');
+    expect(within(dialog).queryByText(/reasignados?\./)).toBeNull();
   });
 
   test('E06-D4: the Android back button returns to the history', async () => {

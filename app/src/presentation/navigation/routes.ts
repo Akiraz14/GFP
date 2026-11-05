@@ -45,7 +45,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   movementForm: {
     story: 'HU4',
     title: 'Registro de movimiento',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   movementHistory: {

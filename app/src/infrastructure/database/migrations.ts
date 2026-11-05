@@ -245,6 +245,44 @@ const CATEGORY_TRIGGERS_V4: readonly string[] = [
     BEGIN SELECT RAISE(ABORT, 'category_name_taken'); END`,
 ];
 
+// HU4 (Etapa 07). Cada movimiento pertenece a un usuario (E02-D4) y se borra con él. Los
+// montos se guardan en centavos (D-01, I-04) y las fechas sin hora en `AAAA-MM-DD` (I-06).
+// La clave hacia `categories` no borra en cascada: al eliminar una categoría sus
+// movimientos se reasignan antes a «Otros» (HU8-CA07c, E06-D7). Los disparadores impiden
+// asociar una categoría de otro usuario y cambiar el propietario.
+const MOVEMENTS_SCHEMA_V5: readonly string[] = [
+  `CREATE TABLE movements (
+    id TEXT PRIMARY KEY CHECK (length(id) BETWEEN 1 AND 36),
+    user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+    amount_cents INTEGER NOT NULL CHECK (amount_cents BETWEEN 1 AND 99999999999999),
+    occurred_on TEXT NOT NULL CHECK (
+      length(occurred_on) = 10 AND date(occurred_on) IS occurred_on
+    ),
+    category_id TEXT NOT NULL REFERENCES categories (id),
+    description TEXT CHECK (description IS NULL OR length(description) BETWEEN 1 AND 250),
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  ) STRICT`,
+  'CREATE INDEX ix_movements_user_id_occurred_on ON movements (user_id, occurred_on)',
+  'CREATE INDEX ix_movements_category_id ON movements (category_id)',
+  `CREATE TRIGGER tr_movements_category_insert BEFORE INSERT ON movements
+    WHEN NOT EXISTS (
+      SELECT 1 FROM categories
+       WHERE id = NEW.category_id AND (is_system = 1 OR user_id = NEW.user_id)
+    )
+    BEGIN SELECT RAISE(ABORT, 'movement_category_not_accessible'); END`,
+  `CREATE TRIGGER tr_movements_category_update BEFORE UPDATE OF category_id ON movements
+    WHEN NOT EXISTS (
+      SELECT 1 FROM categories
+       WHERE id = NEW.category_id AND (is_system = 1 OR user_id = NEW.user_id)
+    )
+    BEGIN SELECT RAISE(ABORT, 'movement_category_not_accessible'); END`,
+  `CREATE TRIGGER tr_movements_owner_update BEFORE UPDATE OF user_id ON movements
+    WHEN NEW.user_id IS NOT OLD.user_id
+    BEGIN SELECT RAISE(ABORT, 'movement_owner_immutable'); END`,
+];
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'identity-and-security-schema', statements: SCHEMA_V1 },
   {
@@ -266,4 +304,5 @@ export const MIGRATIONS: readonly Migration[] = [
       ...CATEGORY_TRIGGERS_V4,
     ],
   },
+  { version: 5, name: 'movements-schema', statements: MOVEMENTS_SCHEMA_V5 },
 ];

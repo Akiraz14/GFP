@@ -13,6 +13,7 @@
   "dependencies": {
     "@noble/hashes": "2.4.0",
     "@op-engineering/op-sqlite": "18.2.5",
+    "@react-native-community/datetimepicker": "9.2.2",
     "@react-native-ml-kit/text-recognition": "2.0.0",
     "react": "19.2.3",
     "react-native": "0.87.1",
