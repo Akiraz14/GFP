@@ -59,6 +59,7 @@ type Context = Awaited<ReturnType<typeof setup>>;
 async function show(context: Context) {
   const callbacks = {
     onNewMovement: jest.fn(),
+    onCaptureReceipt: jest.fn(),
     onEdit: jest.fn(),
     onOpenCategories: jest.fn(),
     onSessionExpired: jest.fn(),
@@ -276,11 +277,15 @@ describe('HU5 history screen', () => {
     expect(onEdit).toHaveBeenCalledWith(id);
   });
 
-  test('«Nuevo movimiento» and «Categorías» open their screens', async () => {
-    const { onNewMovement, onOpenCategories } = await show(await setup());
+  test('«Nuevo movimiento», «Movimiento con foto» and «Categorías» open their screens', async () => {
+    const { onNewMovement, onOpenCategories, onCaptureReceipt } = await show(
+      await setup(),
+    );
     await fireEvent.press(screen.getByTestId('open-movement-form'));
+    await fireEvent.press(screen.getByTestId('open-receipt-capture'));
     await fireEvent.press(screen.getByTestId('open-categories'));
     expect(onNewMovement).toHaveBeenCalledTimes(1);
+    expect(onCaptureReceipt).toHaveBeenCalledTimes(1);
     expect(onOpenCategories).toHaveBeenCalledTimes(1);
   });
 
@@ -348,6 +353,7 @@ describe('HU5 history screen', () => {
         }}
         movements={context.movements}
         now={() => NOW}
+        onCaptureReceipt={jest.fn()}
         onEdit={jest.fn()}
         onNewMovement={jest.fn()}
         onOpenCategories={jest.fn()}

@@ -57,7 +57,7 @@ export const ROUTE_DEFINITIONS: Record<RouteName, RouteDefinition> = {
   receiptCapture: {
     story: 'HU7',
     title: 'Movimiento con foto',
-    implemented: false,
+    implemented: true,
     requiresSession: true,
   },
   categories: {

@@ -9,6 +9,7 @@ import {
   type MovementFormMode,
 } from '../movements/MovementFormScreen';
 import { MovementHistoryScreen } from '../movements/MovementHistoryScreen';
+import { ReceiptCaptureScreen } from '../receipts/ReceiptCaptureScreen';
 import { PasswordRecoveryScreen } from '../recovery/PasswordRecoveryScreen';
 import { RegistrationWizard } from '../registration/RegistrationWizard';
 import { ProvisionalScreen } from '../screens/ProvisionalScreen';
@@ -100,9 +101,21 @@ export function AppNavigator({ services }: { services: AppServices }) {
           setMovementForm({ mode: 'create' });
           setRoute(ROUTES.movementForm);
         }}
+        onCaptureReceipt={() => setRoute(ROUTES.receiptCapture)}
         onOpenCategories={() => setRoute(ROUTES.categories)}
         onSessionExpired={expire}
         session={session}
+      />
+    );
+  } else if (visible === ROUTES.receiptCapture) {
+    screen = (
+      <ReceiptCaptureScreen
+        gateway={services.receipts}
+        onCancel={toHistory}
+        onContinue={prefill => {
+          setMovementForm({ mode: 'create', prefill });
+          setRoute(ROUTES.movementForm);
+        }}
       />
     );
   } else if (visible === ROUTES.categories) {

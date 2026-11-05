@@ -44,6 +44,8 @@ type MovementHistoryScreenProps = {
   // Filtros con los que abre al llegar desde Análisis (HU9) o Recomendaciones (HU10).
   initialFilters?: MovementFilters;
   onNewMovement: () => void;
+  // HU7: «Movimiento con foto».
+  onCaptureReceipt: () => void;
   // HU5-CA07: abre HU4 en modo edición.
   onEdit: (movementId: string) => void;
   onOpenCategories: () => void;
@@ -139,6 +141,7 @@ export function MovementHistoryScreen({
   session,
   initialFilters = NO_MOVEMENT_FILTERS,
   onNewMovement,
+  onCaptureReceipt,
   onEdit,
   onOpenCategories,
   onSessionExpired,
@@ -412,6 +415,13 @@ export function MovementHistoryScreen({
             onPress={onNewMovement}
             testID="open-movement-form"
             variant="primary"
+          />
+        </View>
+        <View style={styles.buttons}>
+          <ActionButton
+            label={TEXTS.buttons.receipt}
+            onPress={onCaptureReceipt}
+            testID="open-receipt-capture"
           />
         </View>
       </FormScrollView>

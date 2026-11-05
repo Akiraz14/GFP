@@ -59,7 +59,24 @@ async function readyServices(withAccount = false) {
       sessions,
       random: nodeRandomBytes,
     }),
+    receipts: fakeReceipts(),
     database,
+  };
+}
+
+// Cámara y OCR falsos (HU7): devuelven una foto válida y el texto de un comprobante.
+function fakeReceipts(text = 'Tienda Sol\nFecha 20/10/2026\nTOTAL 45.500') {
+  const image = {
+    uri: 'file:///cache/rn_image_picker_lib_temp_1.jpg',
+    fileName: 'rn_image_picker_lib_temp_1.jpg',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1000,
+  };
+  return {
+    takePhoto: jest.fn(async () => image),
+    pickFromGallery: jest.fn(async () => image),
+    recognizeText: jest.fn(async () => text),
+    discardImage: jest.fn(async () => {}),
   };
 }
 
@@ -210,7 +227,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
     );
   });
 
-  test('the route registry declares HU1 to HU10 and HU1 to HU5 and HU8 are implemented', () => {
+  test('the route registry declares HU1 to HU10 and HU1 to HU5, HU7 and HU8 are implemented', () => {
     const stories = Object.values(ROUTE_DEFINITIONS).map(route => route.story);
     expect(stories).toEqual([
       'HU1',
@@ -227,7 +244,7 @@ describe('App startup and navigation (A-W9, G-07, HU2)', () => {
       Object.values(ROUTE_DEFINITIONS)
         .filter(route => route.implemented)
         .map(route => route.story),
-    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU8']);
+    ).toEqual(['HU1', 'HU2', 'HU3', 'HU4', 'HU5', 'HU7', 'HU8']);
   });
 });
 
@@ -438,5 +455,67 @@ describe('HU5 history in the app (E08)', () => {
     services.sessions.end();
     await fireEvent.press(screen.getByTestId('history-filter'));
     expect(await screen.findByTestId('login-screen')).toBeTruthy();
+  });
+});
+
+describe('HU7 capture in the app', () => {
+  async function loggedIn() {
+    const services = await readyServices(true);
+    await render(<App createServices={async () => services} />);
+    await fireEvent.changeText(
+      await screen.findByTestId('login-identifier'),
+      '1001',
+    );
+    await fireEvent.changeText(
+      screen.getByTestId('login-password'),
+      'Clave123!',
+    );
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await fireEvent.press(await screen.findByTestId('open-receipt-capture'));
+    expect(screen.getByText('Movimiento con foto')).toBeTruthy();
+    return services;
+  }
+
+  test('HU7-CA05, CA09, CA10: «Continuar» prefills HU4 as an expense and nothing is saved until confirmed', async () => {
+    const services = await loggedIn();
+    await fireEvent.press(screen.getByTestId('receipt-take-photo'));
+    await fireEvent.press(await screen.findByTestId('receipt-continue'));
+    expect(await screen.findByTestId('movement-form')).toBeTruthy();
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-date').props.value).toBe('20/10/2026');
+    expect(screen.getByTestId('movement-description').props.value).toBe(
+      'Tienda Sol',
+    );
+    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    let stored = await services.database.execute(
+      'SELECT count(*) AS total FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({ total: 0 });
+    // La foto temporal se borra al continuar (la imagen no se conserva).
+    expect(services.receipts.discardImage).toHaveBeenCalledWith(
+      'file:///cache/rn_image_picker_lib_temp_1.jpg',
+    );
+    await fireEvent.changeText(screen.getByTestId('movement-amount'), '46.000');
+    await fireEvent.press(screen.getByTestId('movement-category'));
+    await fireEvent.press(screen.getByTestId('movement-category-option-food'));
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(
+      await screen.findByText('El movimiento fue registrado exitosamente'),
+    ).toBeTruthy();
+    stored = await services.database.execute(
+      'SELECT amount_cents, description FROM movements',
+    );
+    expect(stored.rows[0]).toEqual({
+      amount_cents: 4_600_000,
+      description: 'Tienda Sol',
+    });
+  });
+
+  test('HU7-CA12: «Cancelar» returns to the history and discards the photo', async () => {
+    const services = await loggedIn();
+    await fireEvent.press(screen.getByTestId('receipt-take-photo'));
+    await fireEvent.press(await screen.findByTestId('receipt-cancel'));
+    expect(await screen.findByTestId('movement-history')).toBeTruthy();
+    expect(services.receipts.discardImage).toHaveBeenCalled();
   });
 });
