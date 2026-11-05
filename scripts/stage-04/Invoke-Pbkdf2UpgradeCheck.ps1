@@ -42,7 +42,7 @@ Check 'UPGRADE-OLD-APK-INSTALLED' ($installedOld -eq $oldHash) "el APK instalado
 $Identifier = 'Identificador'
 $Password = U 'Contrase\u00f1a'
 $Invalid = U 'El campo identificaci\u00f3n o contrase\u00f1a son incorrectos'
-$HomeText = U 'Pantalla provisional: se implementa con HU5.'
+$HomeText = U 'Movimientos de tus finanzas'
 $run = Get-Date -Format 'HHmmss'
 $doc = '8' + $run + '2'
 $phone = '32' + $run + '77'
