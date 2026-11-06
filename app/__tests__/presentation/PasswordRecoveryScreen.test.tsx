@@ -427,3 +427,25 @@ describe('Bug 39: focus of the recovery answers', () => {
     expect(screen.getByTestId('recovery-answer-0')).toHaveDisplayValue('Azul');
   });
 });
+
+describe('Task 29: steps and sections of the HU3 prototype', () => {
+  test('shows step 1 of 2 and then step 2 with question captions and sections', async () => {
+    await setup();
+    expect(screen.getByTestId('recovery-step')).toHaveTextContent(
+      'Paso 1 de 2',
+    );
+    await startWith();
+    await screen.findByTestId('recovery-challenge');
+    expect(screen.getByTestId('recovery-step')).toHaveTextContent(
+      'Paso 2 de 2',
+    );
+    expect(screen.getByText('Preguntas de seguridad')).toBeTruthy();
+    expect(screen.getByText('Credenciales de acceso')).toBeTruthy();
+    expect(screen.getByTestId('recovery-question-caption-0')).toHaveTextContent(
+      'PREGUNTA DE SEGURIDAD 1',
+    );
+    expect(screen.getByTestId('recovery-question-caption-1')).toHaveTextContent(
+      'PREGUNTA DE SEGURIDAD 2',
+    );
+  });
+});

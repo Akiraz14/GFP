@@ -4,6 +4,13 @@
 // A-ID2. Los demás son propuestas de E05-D5 (`decisiones-etapa-05.md`).
 export const RECOVERY_TEXTS = {
   screenTitle: 'Recuperar contraseña',
+  // Task 29: indicador y secciones del prototipo de HU3.
+  stepIndicator: (step: number) => `Paso ${step} de 2`,
+  sections: {
+    questions: 'Preguntas de seguridad',
+    password: 'Credenciales de acceso',
+  },
+  questionCaption: (index: number) => `Pregunta de seguridad ${index}`,
   labels: {
     identifier: 'Identificador',
     newPassword: 'Nueva contraseña',

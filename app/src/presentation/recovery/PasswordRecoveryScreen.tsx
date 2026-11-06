@@ -252,6 +252,9 @@ export function PasswordRecoveryScreen({
         <Text accessibilityRole="header" style={styles.title}>
           {TEXTS.screenTitle}
         </Text>
+        <Text style={styles.stepIndicator} testID="recovery-step">
+          {TEXTS.stepIndicator(challenge === null ? 1 : 2)}
+        </Text>
         <TextField
           autoCapitalize="none"
           autoComplete="username"
@@ -288,39 +291,52 @@ export function PasswordRecoveryScreen({
           </View>
         ) : (
           <View testID="recovery-challenge">
+            <Text accessibilityRole="header" style={styles.section}>
+              {TEXTS.sections.questions}
+            </Text>
             <Text style={styles.subtitle}>{TEXTS.questionsTitle}</Text>
             {challenge.questions.map((question, index) => (
-              <TextField
-                autoCorrect={false}
-                editable={!busy}
-                error={
-                  answerErrors[index] ? TEXTS.messages.answerRequired : null
-                }
-                key={question.id}
-                label={question.prompt}
-                maxLength={SECURITY_ANSWER_MAX_LENGTH}
-                onSubmitEditing={() =>
-                  index + 1 < challenge.questions.length
-                    ? answerRefs.current[index + 1]?.focus()
-                    : newPasswordRef.current?.focus()
-                }
-                ref={input => {
-                  answerRefs.current[index] = input;
-                }}
-                returnKeyType="next"
-                submitBehavior="submit"
-                onChangeText={value => {
-                  setAnswers(current =>
-                    index === 0 ? [value, current[1]] : [current[0], value],
-                  );
-                  setAnswerErrors(current =>
-                    index === 0 ? [false, current[1]] : [current[0], false],
-                  );
-                }}
-                testID={`recovery-answer-${index}`}
-                value={answers[index]}
-              />
+              <View key={question.id}>
+                <Text
+                  style={styles.caption}
+                  testID={`recovery-question-caption-${index}`}
+                >
+                  {TEXTS.questionCaption(index + 1).toLocaleUpperCase('es')}
+                </Text>
+                <TextField
+                  autoCorrect={false}
+                  editable={!busy}
+                  error={
+                    answerErrors[index] ? TEXTS.messages.answerRequired : null
+                  }
+                  label={question.prompt}
+                  maxLength={SECURITY_ANSWER_MAX_LENGTH}
+                  onSubmitEditing={() =>
+                    index + 1 < challenge.questions.length
+                      ? answerRefs.current[index + 1]?.focus()
+                      : newPasswordRef.current?.focus()
+                  }
+                  ref={input => {
+                    answerRefs.current[index] = input;
+                  }}
+                  returnKeyType="next"
+                  submitBehavior="submit"
+                  onChangeText={value => {
+                    setAnswers(current =>
+                      index === 0 ? [value, current[1]] : [current[0], value],
+                    );
+                    setAnswerErrors(current =>
+                      index === 0 ? [false, current[1]] : [current[0], false],
+                    );
+                  }}
+                  testID={`recovery-answer-${index}`}
+                  value={answers[index]}
+                />
+              </View>
             ))}
+            <Text accessibilityRole="header" style={styles.section}>
+              {TEXTS.sections.password}
+            </Text>
             <TextField
               autoCapitalize="none"
               autoComplete="new-password"
@@ -422,14 +438,26 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 20,
   },
-  subtitle: {
-    color: COLORS.text,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
+  stepIndicator: {
+    color: COLORS.mutedText,
+    fontSize: 15,
+    marginBottom: 16,
+    marginTop: 6,
+  },
+  section: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 6,
     marginTop: 8,
+  },
+  subtitle: { color: COLORS.mutedText, fontSize: 15, marginBottom: 12 },
+  caption: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   helper: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
   progress: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
