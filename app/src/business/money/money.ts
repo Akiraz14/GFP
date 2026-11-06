@@ -89,9 +89,27 @@ export function formatMoney(cents: number): string {
   return `${sign}$${groupThousands(integer)},${fraction}`;
 }
 
-// Valor del campo «Monto» al editar un movimiento: «1250000,50».
+// Máscara continua del campo «Monto» (Bug 40 con Task 37): el usuario escribe solo dígitos y
+// los dos últimos son siempre los centavos, como en un cajero. «4», «45», «4550» y «455000» se
+// muestran «0,04», «0,45», «45,50» y «4.550,00». Borrar quita el último dígito. No hace falta
+// mover el cursor para escribir los decimales y el texto siempre se puede leer con
+// `parseAmountInput()`. Admite hasta 14 dígitos (MAX_AMOUNT_CENTS).
+export const MAX_AMOUNT_DIGITS = MAX_AMOUNT_CENTS.toString().length;
+
+export function maskAmountInput(raw: string): string {
+  const digits = raw
+    .replace(/\D/g, '')
+    .replace(/^0+/, '')
+    .slice(0, MAX_AMOUNT_DIGITS);
+  if (digits.length === 0) {
+    return '';
+  }
+  const padded = digits.padStart(3, '0');
+  return `${groupThousands(padded.slice(0, -2))},${padded.slice(-2)}`;
+}
+
+// Valor del campo «Monto» al editar un movimiento o al precargarlo desde HU7: el mismo texto
+// que produce la máscara, «1.250.000,50».
 export function amountInputFromCents(cents: number): string {
-  const integer = Math.floor(cents / 100).toString();
-  const fraction = (cents % 100).toString().padStart(2, '0');
-  return `${integer},${fraction}`;
+  return maskAmountInput(Math.trunc(cents).toString());
 }

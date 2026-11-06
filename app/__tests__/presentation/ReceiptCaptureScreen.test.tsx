@@ -73,7 +73,7 @@ describe('HU7 capture', () => {
     expect(screen.getAllByText('No identificado')).toHaveLength(2);
     await fireEvent.press(screen.getByTestId('receipt-continue'));
     expect(onContinue).toHaveBeenCalledWith({
-      amount: '45500,00',
+      amount: '45.500,00',
       date: '',
       description: '',
     });

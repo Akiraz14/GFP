@@ -26,7 +26,11 @@ import {
   type MovementFieldErrors,
   type MovementInput,
 } from '../../business/movements/movementRules';
-import { amountInputFromCents, formatMoney } from '../../business/money/money';
+import {
+  amountInputFromCents,
+  formatMoney,
+  maskAmountInput,
+} from '../../business/money/money';
 import type { Category } from '../../infrastructure/database/repositories/categoryRepository';
 import type {
   Movement,
@@ -148,7 +152,12 @@ export function MovementFormScreen({
   const today = todayIso(now());
   const [input, setInput] = useState<MovementInput>(() =>
     params.mode === 'create' && params.prefill !== undefined
-      ? { ...emptyInput(today), ...params.prefill, type: 'expense' }
+      ? {
+          ...emptyInput(today),
+          ...params.prefill,
+          amount: maskAmountInput(params.prefill.amount),
+          type: 'expense',
+        }
       : emptyInput(today),
   );
   // Aviso de HU7 cuando el comprobante no se leyó completo (adaptado de daniela888-li/GFP).
@@ -452,10 +461,16 @@ export function MovementFormScreen({
             <TextField
               editable={!busy}
               error={messages.amount}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
               label={TEXTS.labels.amount}
-              onChangeText={amount => change({ amount })}
+              onChangeText={amount =>
+                change({ amount: maskAmountInput(amount) })
+              }
               placeholder={TEXTS.placeholders.amount}
+              selection={{
+                start: input.amount.length,
+                end: input.amount.length,
+              }}
               testID="movement-amount"
               value={input.amount}
             />

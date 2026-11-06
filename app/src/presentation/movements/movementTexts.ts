@@ -22,7 +22,7 @@ export const MOVEMENT_TEXTS = {
     description: 'Descripción (opcional)',
   },
   placeholders: {
-    amount: 'Ej: 45.500',
+    amount: '0,00',
     date: 'DD/MM/AAAA',
     category: 'Selecciona una categoría',
     description: 'Ej: Almuerzo con el equipo',

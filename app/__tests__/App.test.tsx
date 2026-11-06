@@ -302,7 +302,10 @@ describe('HU4 access from the history (E07, E08)', () => {
   test('«Nuevo movimiento» opens the form; saving shows the confirmation and returns to the history', async () => {
     const { database } = await loggedIn();
     await fireEvent.press(await screen.findByTestId('movement-type-expense'));
-    await fireEvent.changeText(screen.getByTestId('movement-amount'), '45500');
+    await fireEvent.changeText(
+      screen.getByTestId('movement-amount'),
+      '4550000',
+    );
     await fireEvent.press(screen.getByTestId('movement-category'));
     await fireEvent.press(screen.getByTestId('movement-category-option-food'));
     await fireEvent.press(screen.getByTestId('movement-save'));
@@ -361,7 +364,7 @@ describe('HU5 history in the app (E08)', () => {
     await fireEvent.press(await screen.findByTestId('open-movement-form'));
     await fireEvent.changeText(
       await screen.findByTestId('movement-amount'),
-      '45.500',
+      '4550000',
     );
     await fireEvent.press(screen.getByTestId('movement-category'));
     await fireEvent.press(screen.getByTestId('movement-category-option-food'));
@@ -387,11 +390,14 @@ describe('HU5 history in the app (E08)', () => {
     const { services, id } = await loggedInWithMovement();
     await fireEvent.press(screen.getByTestId(`movement-edit-${id}`));
     expect(await screen.findByText('Editar movimiento')).toBeTruthy();
-    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500,00');
     expect(screen.getByTestId('movement-description').props.value).toBe(
       'Almuerzo',
     );
-    await fireEvent.changeText(screen.getByTestId('movement-amount'), '50.000');
+    await fireEvent.changeText(
+      screen.getByTestId('movement-amount'),
+      '5000000',
+    );
     await fireEvent.press(screen.getByTestId('movement-save'));
     expect(
       await screen.findByText('El movimiento fue actualizado exitosamente'),
@@ -412,7 +418,7 @@ describe('HU5 history in the app (E08)', () => {
     await fireEvent.press(screen.getByTestId(`movement-edit-${id}`));
     await fireEvent.changeText(
       await screen.findByTestId('movement-amount'),
-      '99.999',
+      '9999900',
     );
     await fireEvent.press(screen.getByTestId('movement-cancel'));
     expect(await screen.findByTestId('movement-history')).toBeTruthy();
@@ -521,7 +527,7 @@ describe('HU7 capture in the app', () => {
     await fireEvent.press(screen.getByTestId('receipt-take-photo'));
     await fireEvent.press(await screen.findByTestId('receipt-continue'));
     expect(await screen.findByTestId('movement-form')).toBeTruthy();
-    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500,00');
     expect(screen.getByTestId('movement-date').props.value).toBe('20/10/2026');
     expect(screen.getByTestId('movement-description').props.value).toBe(
       'Tienda Sol',
@@ -535,7 +541,10 @@ describe('HU7 capture in the app', () => {
     expect(services.receipts.discardImage).toHaveBeenCalledWith(
       'file:///cache/rn_image_picker_lib_temp_1.jpg',
     );
-    await fireEvent.changeText(screen.getByTestId('movement-amount'), '46.000');
+    await fireEvent.changeText(
+      screen.getByTestId('movement-amount'),
+      '4600000',
+    );
     await fireEvent.press(screen.getByTestId('movement-category'));
     await fireEvent.press(screen.getByTestId('movement-category-option-food'));
     await fireEvent.press(screen.getByTestId('movement-save'));

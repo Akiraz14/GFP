@@ -227,14 +227,43 @@ describe('HU4 form (create mode)', () => {
     const context = await setup();
     await show(context);
     await chooseCategory('food');
-    for (const amount of ['0', '-10', 'abc']) {
+    // Con la máscara (Bug 40) no se pueden escribir signos ni letras: lo que queda es un
+    // monto vacío o cero.
+    for (const amount of ['0', '000', 'abc', '']) {
       await fireEvent.changeText(screen.getByTestId('movement-amount'), amount);
+      expect(screen.getByTestId('movement-amount').props.value).toBe('');
       await fireEvent.press(screen.getByTestId('movement-save'));
       expect(screen.getByTestId('movement-amount-error').props.children).toBe(
         'Ingrese un monto válido',
       );
     }
     expect(await storedMovements(context)).toEqual([]);
+  });
+
+  test('Bug 40 and Task 37: the amount is typed continuously with its decimals', async () => {
+    const context = await setup();
+    await show(context);
+    const field = () => screen.getByTestId('movement-amount');
+    expect(field().props.keyboardType).toBe('number-pad');
+    let typed = '';
+    for (const key of '4550075') {
+      typed = field().props.value + key;
+      await fireEvent.changeText(field(), typed);
+    }
+    expect(field().props.value).toBe('45.500,75');
+    // El cursor queda siempre al final: no hace falta moverlo para los decimales.
+    expect(field().props.selection).toEqual({ start: 9, end: 9 });
+    await fireEvent.changeText(field(), '45.500,7');
+    expect(field().props.value).toBe('4.550,07');
+    await chooseCategory('food');
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(await screen.findByTestId('movement-success')).toBeTruthy();
+    expect(
+      within(screen.getByTestId('movement-success-summary')).getByText(
+        '$4.550,07',
+      ),
+    ).toBeTruthy();
+    expect((await storedMovements(context))[0].amount_cents).toBe(455_007);
   });
 
   test('HU4-CA06: the description is optional and limited to 250 characters', async () => {
@@ -369,7 +398,7 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
     const { context, id } = await withMovement();
     await show(context, { mode: 'edit', movementId: id });
     expect(screen.getByText('Editar movimiento')).toBeTruthy();
-    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500,00');
     expect(screen.getByTestId('movement-date').props.value).toBe('20/10/2026');
     expect(
       within(screen.getByTestId('movement-category')).getByText('Alimentación'),
@@ -384,7 +413,10 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
   test('HU4-CA07 and CA08: «Actualizar» saves and shows the update message', async () => {
     const { context, id } = await withMovement();
     await show(context, { mode: 'edit', movementId: id });
-    await fireEvent.changeText(screen.getByTestId('movement-amount'), '50.000');
+    await fireEvent.changeText(
+      screen.getByTestId('movement-amount'),
+      '5000000',
+    );
     await fireEvent.press(screen.getByTestId('movement-save'));
     expect(
       await screen.findByText('El movimiento fue actualizado exitosamente'),
@@ -412,9 +444,9 @@ describe('HU4 form prefilled from HU7', () => {
     const context = await setup();
     await show(context, {
       mode: 'create',
-      prefill: { amount: '45500,00', date: '', description: 'Tienda Sol' },
+      prefill: { amount: '45.500,00', date: '', description: 'Tienda Sol' },
     });
-    expect(screen.getByTestId('movement-amount').props.value).toBe('45500,00');
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500,00');
     expect(screen.getByTestId('movement-date').props.value).toBe('');
     expect(screen.getByTestId('movement-description').props.value).toBe(
       'Tienda Sol',
@@ -441,7 +473,7 @@ describe('HU4 form prefilled from HU7', () => {
     await show(await setup(), {
       mode: 'create',
       prefill: {
-        amount: '45500,00',
+        amount: '45.500,00',
         date: '20/10/2026',
         description: 'Tienda Sol',
       },
