@@ -42,7 +42,11 @@ import {
 import { ActionButton } from '../components/ActionButton';
 import { FormScrollView } from '../components/FormScrollView';
 import { MessageDialog } from '../components/MessageDialog';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { SectionCard } from '../components/SectionCard';
+import { SecurityNote } from '../components/SecurityNote';
 import { SelectField } from '../components/SelectField';
+import { StepProgress } from '../components/StepProgress';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { ROUTES, type RouteName } from '../navigation/routes';
@@ -94,6 +98,11 @@ const ACCOUNT_TEXT_FIELDS = [
 // keyboard opens once the selector modal has finished its fade animation.
 export const ANSWER_FOCUS_DELAY_MS = 250;
 
+const OPTIONAL_NAME_FIELDS: readonly TextFieldName[] = [
+  'middleName',
+  'secondLastName',
+];
+
 const NAME_FIELDS = [
   'firstName',
   'middleName',
@@ -106,6 +115,7 @@ type Dialog =
   | 'registered'
   | 'failed'
   | 'confirm_clear'
+  | 'help'
   | null;
 
 type Busy = 'idle' | 'checking' | 'registering';
@@ -510,122 +520,140 @@ export function RegistrationWizard({
       .map(question => ({ value: question.id, label: question.prompt }));
   }
 
-  function sectionHeader(title: string, testID: string) {
-    return (
-      <Text accessibilityRole="header" style={styles.section} testID={testID}>
-        {title}
-      </Text>
-    );
-  }
-
   function renderAccount() {
     return (
       <>
-        {sectionHeader(
-          TEXTS.sections.identification,
-          'registration-section-identification',
-        )}
-        <SelectField
-          disabled={disabled}
-          error={fieldMessage('documentTypeCode')}
-          label={TEXTS.labels.documentTypeCode}
-          onChange={value => {
-            setData(current => ({ ...current, documentTypeCode: value }));
-            clearFieldError('documentTypeCode');
-            revalidateDocumentNumber(value);
-          }}
-          options={documentTypeOptions}
-          placeholder={TEXTS.selectPlaceholder}
-          testID="registration-documentTypeCode"
-          value={data.documentTypeCode}
-        />
-        <TextField
-          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'documentNumber')}
-          autoCapitalize={digitsOnlyDocument ? 'none' : 'characters'}
-          autoCorrect={false}
-          editable={!disabled}
-          error={fieldMessage('documentNumber')}
-          keyboardType={digitsOnlyDocument ? 'numeric' : 'default'}
-          label={TEXTS.labels.documentNumber}
-          onChangeText={value => updateText('documentNumber', value)}
-          testID="registration-documentNumber"
-          value={data.documentNumber}
-        />
-        {sectionHeader(
-          TEXTS.sections.personal,
-          'registration-section-personal',
-        )}
-        {NAME_FIELDS.map(field => (
+        <SectionCard
+          icon="idCard"
+          testID="registration-section-identification"
+          title={TEXTS.sections.identification}
+        >
+          <SelectField
+            disabled={disabled}
+            error={fieldMessage('documentTypeCode')}
+            label={TEXTS.labels.documentTypeCode}
+            onChange={value => {
+              setData(current => ({ ...current, documentTypeCode: value }));
+              clearFieldError('documentTypeCode');
+              revalidateDocumentNumber(value);
+            }}
+            options={documentTypeOptions}
+            placeholder={TEXTS.selectPlaceholder}
+            required
+            testID="registration-documentTypeCode"
+            value={data.documentTypeCode}
+          />
           <TextField
-            {...navigationProps(ACCOUNT_TEXT_FIELDS, field)}
-            autoCapitalize="words"
+            {...navigationProps(ACCOUNT_TEXT_FIELDS, 'documentNumber')}
+            autoCapitalize={digitsOnlyDocument ? 'none' : 'characters'}
             autoCorrect={false}
             editable={!disabled}
-            error={fieldMessage(field)}
-            key={field}
-            label={TEXTS.labels[field]}
-            onChangeText={value => updateText(field, value)}
-            testID={`registration-${field}`}
-            value={data[field]}
+            error={fieldMessage('documentNumber')}
+            keyboardType={digitsOnlyDocument ? 'numeric' : 'default'}
+            label={TEXTS.labels.documentNumber}
+            onChangeText={value => updateText('documentNumber', value)}
+            placeholder={TEXTS.placeholders.documentNumber}
+            required
+            testID="registration-documentNumber"
+            value={data.documentNumber}
           />
-        ))}
-        {sectionHeader(TEXTS.sections.access, 'registration-section-access')}
-        <SelectField
-          disabled={disabled}
-          error={fieldMessage('phoneCountryCode')}
-          label={TEXTS.labels.phoneCountryCode}
-          onChange={value => {
-            setData(current => ({ ...current, phoneRegion: value }));
-            clearFieldError('phoneCountryCode');
-            refreshShownError('phoneNumber', { ...data, phoneRegion: value });
-          }}
-          options={COUNTRY_OPTIONS}
-          placeholder={TEXTS.selectPlaceholder}
-          testID="registration-phoneCountryCode"
-          value={data.phoneRegion}
-        />
-        <TextField
-          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'phoneNumber')}
-          editable={!disabled}
-          error={fieldMessage('phoneNumber')}
-          keyboardType="phone-pad"
-          label={TEXTS.labels.phoneNumber}
-          onChangeText={value => updateText('phoneNumber', value)}
-          testID="registration-phoneNumber"
-          value={data.phoneNumber}
-        />
-        <TextField
-          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'email')}
-          autoCapitalize="none"
-          autoComplete="email"
-          autoCorrect={false}
-          editable={!disabled}
-          error={fieldMessage('email')}
-          keyboardType="email-address"
-          label={TEXTS.labels.email}
-          onChangeText={value => updateText('email', value)}
-          testID="registration-email"
-          value={data.email}
-        />
-        <TextField
-          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'password')}
-          autoCapitalize="none"
-          autoComplete="new-password"
-          autoCorrect={false}
-          editable={!disabled}
-          error={fieldMessage('password')}
-          helper={
-            <PasswordRequirements
-              password={data.password}
-              testID="registration-password-requirements"
+        </SectionCard>
+        <SectionCard
+          icon="user"
+          testID="registration-section-personal"
+          title={TEXTS.sections.personal}
+        >
+          {NAME_FIELDS.map(field => (
+            <TextField
+              {...navigationProps(ACCOUNT_TEXT_FIELDS, field)}
+              autoCapitalize="words"
+              autoCorrect={false}
+              editable={!disabled}
+              error={fieldMessage(field)}
+              key={field}
+              label={TEXTS.labels[field]}
+              onChangeText={value => updateText(field, value)}
+              optional={OPTIONAL_NAME_FIELDS.includes(field)}
+              placeholder={TEXTS.placeholders[field]}
+              required={!OPTIONAL_NAME_FIELDS.includes(field)}
+              testID={`registration-${field}`}
+              value={data[field]}
             />
-          }
-          label={TEXTS.labels.password}
-          onChangeText={value => updateText('password', value)}
-          secureTextEntry
-          testID="registration-password"
-          value={data.password}
-        />
+          ))}
+        </SectionCard>
+        <SectionCard
+          icon="lock"
+          testID="registration-section-access"
+          title={TEXTS.sections.access}
+        >
+          <SelectField
+            disabled={disabled}
+            error={fieldMessage('phoneCountryCode')}
+            label={TEXTS.labels.phoneCountryCode}
+            onChange={value => {
+              setData(current => ({ ...current, phoneRegion: value }));
+              clearFieldError('phoneCountryCode');
+              refreshShownError('phoneNumber', {
+                ...data,
+                phoneRegion: value,
+              });
+            }}
+            options={COUNTRY_OPTIONS}
+            placeholder={TEXTS.selectPlaceholder}
+            required
+            testID="registration-phoneCountryCode"
+            value={data.phoneRegion}
+          />
+          <TextField
+            {...navigationProps(ACCOUNT_TEXT_FIELDS, 'phoneNumber')}
+            editable={!disabled}
+            error={fieldMessage('phoneNumber')}
+            keyboardType="phone-pad"
+            label={TEXTS.labels.phoneNumber}
+            onChangeText={value => updateText('phoneNumber', value)}
+            placeholder={TEXTS.placeholders.phoneNumber}
+            required
+            testID="registration-phoneNumber"
+            value={data.phoneNumber}
+          />
+          <TextField
+            {...navigationProps(ACCOUNT_TEXT_FIELDS, 'email')}
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            editable={!disabled}
+            error={fieldMessage('email')}
+            helper={<Text style={styles.hint}>{TEXTS.hints.email}</Text>}
+            keyboardType="email-address"
+            label={TEXTS.labels.email}
+            onChangeText={value => updateText('email', value)}
+            placeholder={TEXTS.placeholders.email}
+            required
+            testID="registration-email"
+            value={data.email}
+          />
+          <TextField
+            {...navigationProps(ACCOUNT_TEXT_FIELDS, 'password')}
+            autoCapitalize="none"
+            autoComplete="new-password"
+            autoCorrect={false}
+            editable={!disabled}
+            error={fieldMessage('password')}
+            helper={
+              <PasswordRequirements
+                password={data.password}
+                testID="registration-password-requirements"
+              />
+            }
+            label={TEXTS.labels.password}
+            onChangeText={value => updateText('password', value)}
+            placeholder={TEXTS.placeholders.password}
+            required
+            secureToggle
+            testID="registration-password"
+            value={data.password}
+          />
+        </SectionCard>
       </>
     );
   }
@@ -653,33 +681,58 @@ export function RegistrationWizard({
   }
 
   function renderSecurityQuestions() {
-    return data.securityAnswers.map((slot, index) => (
-      <View key={index} style={styles.slot}>
-        <SelectField
-          disabled={disabled}
-          error={questionMessage(slotErrors[index]?.question ?? null)}
-          label={TEXTS.labels.securityQuestion(index + 1)}
-          onChange={value => {
-            updateSlot(index, { questionId: value });
-            setPendingFocus(`answer-${index}`);
-          }}
-          options={questionOptions(index)}
-          placeholder={TEXTS.selectPlaceholder}
-          testID={`registration-question-${index}`}
-          value={slot.questionId}
-        />
-        <TextField
-          {...answerNavigationProps(index)}
-          autoCorrect={false}
-          editable={!disabled}
-          error={answerMessage(slotErrors[index]?.answer ?? null)}
-          label={TEXTS.labels.securityAnswer(index + 1)}
-          onChangeText={value => updateSlot(index, { answer: value })}
-          testID={`registration-answer-${index}`}
-          value={slot.answer}
-        />
-      </View>
-    ));
+    return (
+      <SectionCard
+        icon="shield"
+        testID="registration-section-security"
+        title={TEXTS.sections.security}
+      >
+        <Text style={styles.cardIntro}>{TEXTS.securityIntro}</Text>
+        {data.securityAnswers.map((slot, index) => (
+          <View
+            key={index}
+            style={styles.slot}
+            testID={`registration-slot-${index}`}
+          >
+            <View style={styles.slotHeader}>
+              <Text style={styles.slotCaption}>
+                {TEXTS.labels
+                  .securityQuestion(index + 1)
+                  .toLocaleUpperCase('es')}
+              </Text>
+              <Text style={styles.slotRequired}>{TEXTS.requiredTag}</Text>
+            </View>
+            <SelectField
+              accessibilityLabel={TEXTS.labels.securityQuestion(index + 1)}
+              disabled={disabled}
+              error={questionMessage(slotErrors[index]?.question ?? null)}
+              label={TEXTS.labels.chooseQuestion}
+              onChange={value => {
+                updateSlot(index, { questionId: value });
+                setPendingFocus(`answer-${index}`);
+              }}
+              options={questionOptions(index)}
+              placeholder={TEXTS.labels.chooseQuestion}
+              testID={`registration-question-${index}`}
+              value={slot.questionId}
+              valueNumberOfLines={1}
+            />
+            <TextField
+              {...answerNavigationProps(index)}
+              accessibilityLabel={TEXTS.labels.securityAnswer(index + 1)}
+              autoCorrect={false}
+              editable={!disabled}
+              error={answerMessage(slotErrors[index]?.answer ?? null)}
+              label={TEXTS.labels.yourAnswer}
+              onChangeText={value => updateSlot(index, { answer: value })}
+              placeholder={TEXTS.placeholders.answer}
+              testID={`registration-answer-${index}`}
+              value={slot.answer}
+            />
+          </View>
+        ))}
+      </SectionCard>
+    );
   }
 
   function summaryRow(label: string, value: string, testID: string) {
@@ -693,8 +746,6 @@ export function RegistrationWizard({
     );
   }
 
-  // Bug 38: read-only review before «Registrar», as in the third screen of the prototype.
-  // Secrets are never shown: the password and the answers appear masked.
   function renderConfirmation() {
     const documentType =
       catalog.documentTypes.find(type => type.code === data.documentTypeCode)
@@ -709,72 +760,89 @@ export function RegistrationWizard({
       .filter(name => name.length > 0)
       .join(' ');
     return (
-      <View style={styles.summary} testID="registration-summary">
-        {sectionHeader(
-          TEXTS.sections.identification,
-          'registration-summary-identification',
-        )}
-        {summaryRow(
-          TEXTS.summary.document,
-          `${documentType} ${data.documentNumber.trim()}`,
-          'registration-summary-document',
-        )}
-        {summaryRow(
-          TEXTS.summary.fullName,
-          fullName,
-          'registration-summary-name',
-        )}
-        {sectionHeader(TEXTS.sections.access, 'registration-summary-access')}
-        {summaryRow(
-          TEXTS.labels.phoneNumber,
-          `${callingCodeOf(data.phoneRegion)} ${data.phoneNumber.trim()}`,
-          'registration-summary-phone',
-        )}
-        {summaryRow(
-          TEXTS.labels.email,
-          data.email.trim(),
-          'registration-summary-email',
-        )}
-        {summaryRow(
-          TEXTS.labels.password,
-          MASKED_SECRET,
-          'registration-summary-password',
-        )}
-        {sectionHeader(TEXTS.stepTitles[1], 'registration-summary-security')}
-        {data.securityAnswers.map((slot, index) =>
-          summaryRow(
-            TEXTS.labels.securityQuestion(index + 1),
-            catalog.questions.find(question => question.id === slot.questionId)
-              ?.prompt ?? '',
-            `registration-summary-question-${index}`,
-          ),
-        )}
-        <Text style={styles.summaryNote}>{TEXTS.summary.note}</Text>
+      <View testID="registration-summary">
+        <SectionCard
+          icon="idCard"
+          testID="registration-summary-identification"
+          title={TEXTS.sections.identification}
+        >
+          {summaryRow(
+            TEXTS.summary.document,
+            `${documentType} ${data.documentNumber.trim()}`,
+            'registration-summary-document',
+          )}
+        </SectionCard>
+        <SectionCard
+          icon="user"
+          testID="registration-summary-personal"
+          title={TEXTS.sections.personal}
+        >
+          {summaryRow(
+            TEXTS.summary.fullName,
+            fullName,
+            'registration-summary-name',
+          )}
+        </SectionCard>
+        <SectionCard
+          icon="lock"
+          testID="registration-summary-access"
+          title={TEXTS.sections.access}
+        >
+          {summaryRow(
+            TEXTS.labels.phoneNumber,
+            `${callingCodeOf(data.phoneRegion)} ${data.phoneNumber.trim()}`,
+            'registration-summary-phone',
+          )}
+          {summaryRow(
+            TEXTS.labels.email,
+            data.email.trim(),
+            'registration-summary-email',
+          )}
+          {summaryRow(
+            TEXTS.labels.password,
+            MASKED_SECRET,
+            'registration-summary-password',
+          )}
+        </SectionCard>
+        <SectionCard
+          icon="shield"
+          testID="registration-summary-security"
+          title={TEXTS.sections.security}
+        >
+          {data.securityAnswers.map((slot, index) => (
+            <View
+              key={index}
+              style={styles.summarySlot}
+              testID={`registration-summary-slot-${index}`}
+            >
+              {summaryRow(
+                TEXTS.labels.securityQuestion(index + 1),
+                catalog.questions.find(
+                  question => question.id === slot.questionId,
+                )?.prompt ?? '',
+                `registration-summary-question-${index}`,
+              )}
+              {summaryRow(
+                TEXTS.labels.yourAnswer,
+                slot.answer.trim(),
+                `registration-summary-answer-${index}`,
+              )}
+            </View>
+          ))}
+        </SectionCard>
       </View>
     );
   }
 
-  function renderProgress() {
-    return (
-      <View
-        importantForAccessibility="no-hide-descendants"
-        style={styles.progressBar}
-      >
-        {([1, 2, 3] as const).map(index => (
-          <View
-            key={index}
-            style={[
-              styles.progressSegment,
-              index <= step && styles.progressSegmentDone,
-            ]}
-            testID={`registration-progress-${index}${
-              index <= step ? '-done' : ''
-            }`}
-          />
-        ))}
-      </View>
-    );
+  function handleBack() {
+    if (step === 1) {
+      handleCancel();
+    } else {
+      goToStep((step - 1) as Step);
+    }
   }
+
+  const intro = step === 3 ? TEXTS.confirmationIntro : TEXTS.intro;
 
   return (
     <View style={styles.screen} testID="registration-wizard">
@@ -783,14 +851,33 @@ export function RegistrationWizard({
         key={step}
         testID="registration-scroll"
       >
-        <Text accessibilityRole="header" style={styles.title}>
-          {TEXTS.screenTitle}
-        </Text>
+        <ScreenHeader
+          disabled={disabled}
+          onBack={handleBack}
+          onHelp={() => setDialog('help')}
+          testID="registration"
+          title={TEXTS.screenTitle}
+        />
         <Text style={styles.stepIndicator} testID="registration-step">
           {TEXTS.stepIndicator(step)}
         </Text>
-        {renderProgress()}
-        <Text style={styles.stepTitle}>{TEXTS.stepTitles[step - 1]}</Text>
+        <StepProgress current={step} steps={3} testID="registration-progress" />
+        <Text style={styles.stepTitle} testID="registration-step-title">
+          {TEXTS.stepTitles[step - 1]}
+        </Text>
+        <View style={styles.introCard} testID="registration-intro">
+          <Text style={styles.introTitle}>{intro.title}</Text>
+          <Text style={styles.introText}>
+            {intro.text}
+            {step < 3 && (
+              <>
+                {TEXTS.intro.requiredPrefix}
+                <Text style={styles.required}>(*)</Text>
+                {TEXTS.intro.requiredSuffix}
+              </>
+            )}
+          </Text>
+        </View>
         {step === 1 && renderAccount()}
         {step === 2 && renderSecurityQuestions()}
         {step === 3 && renderConfirmation()}
@@ -855,8 +942,10 @@ export function RegistrationWizard({
             label={TEXTS.buttons.cancel}
             onPress={handleCancel}
             testID="registration-cancel"
+            variant="danger"
           />
         </View>
+        <SecurityNote />
       </FormScrollView>
       {dialog === 'confirm_clear' && (
         <MessageDialog
@@ -879,6 +968,20 @@ export function RegistrationWizard({
           message={TEXTS.messages.clearConfirmation}
           onRequestClose={() => setDialog(null)}
           testID="dialog-clear"
+        />
+      )}
+      {dialog === 'help' && (
+        <MessageDialog
+          actions={[
+            {
+              label: TEXTS.buttons.accept,
+              onPress: () => setDialog(null),
+              testID: 'dialog-accept',
+            },
+          ]}
+          message={TEXTS.help}
+          onRequestClose={() => setDialog(null)}
+          testID="dialog-help"
         />
       )}
       {dialog === 'registered' && (
@@ -926,42 +1029,70 @@ export function RegistrationWizard({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 20, paddingBottom: 40 },
-  title: { color: COLORS.text, fontSize: 24, fontWeight: '700' },
-  stepIndicator: { color: COLORS.mutedText, fontSize: 15, marginTop: 6 },
-  progressBar: { flexDirection: 'row', marginTop: 8 },
-  progressSegment: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 2,
-    flex: 1,
-    height: 4,
-    marginHorizontal: 2,
+  stepIndicator: {
+    color: COLORS.mutedText,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
-  progressSegmentDone: { backgroundColor: COLORS.primary },
-  section: {
-    color: COLORS.primary,
-    fontSize: 16,
+  stepTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 14,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  introCard: {
+    backgroundColor: COLORS.card,
+    borderColor: COLORS.cardBorder,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 18,
+    padding: 16,
+  },
+  introTitle: {
+    color: COLORS.text,
+    fontSize: 20,
     fontWeight: '700',
-    marginBottom: 10,
-    marginTop: 8,
+    marginBottom: 6,
   },
-  summary: { marginBottom: 8 },
+  introText: { color: COLORS.mutedText, fontSize: 14, lineHeight: 20 },
+  required: { color: COLORS.error },
+  hint: { color: COLORS.placeholder, fontSize: 13, marginTop: 4 },
+  cardIntro: {
+    color: COLORS.mutedText,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  slot: {
+    backgroundColor: '#F7F9FC',
+    borderColor: COLORS.cardBorder,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 12,
+  },
+  slotHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  slotCaption: { color: COLORS.primary, fontSize: 12, fontWeight: '700' },
+  slotRequired: { color: COLORS.error, fontSize: 12 },
   summaryRow: {
     borderBottomColor: COLORS.secondary,
     borderBottomWidth: 1,
     marginBottom: 8,
     paddingBottom: 8,
   },
+  summarySlot: { marginBottom: 4 },
   summaryLabel: { color: COLORS.mutedText, fontSize: 14 },
   summaryValue: { color: COLORS.text, fontSize: 16, marginTop: 2 },
-  summaryNote: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
-  stepTitle: {
-    color: COLORS.text,
-    fontSize: 19,
-    fontWeight: '600',
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  slot: { marginBottom: 8 },
   progress: {
     alignItems: 'center',
     flexDirection: 'row',

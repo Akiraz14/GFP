@@ -331,7 +331,7 @@ function Install-FreshApp([string]$Apk, [switch]$AllowAppReset) {
 function Open-Registration {
   if (-not (Wait-Any @($script:LoginButton, 'Paso 1 de 3') 120)) { return $false }
   if (Find-Text (Get-Ui) 'Paso 1 de 3') { return $true }
-  $null = Tap-Text 'Registrar'
+  $null = Tap-Text 'Crear Cuenta'
   return (Wait-Text 'Paso 1 de 3' 30)
 }
 

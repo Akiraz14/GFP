@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react-native';
 import { TextInput } from 'react-native';
 import { readInteger } from '../../src/infrastructure/database/sqlDatabase';
 import { RegistrationWizard } from '../../src/presentation/registration/RegistrationWizard';
@@ -16,9 +22,9 @@ import {
   TEST_PARAMETERS,
 } from '../../testing/identityFixtures';
 
-const FIELD_ERROR = /^Error en los campos ingresados\. \S/;
-const fieldError = (detail: string) =>
-  `Error en los campos ingresados. ${detail}`;
+// A13 (E-COR-D1): the field shows only its concrete message, without the generic prefix.
+const FIELD_ERROR = /^(?!Error en los campos ingresados)\S/;
+const fieldError = (detail: string) => detail;
 
 jest.setTimeout(20_000);
 
@@ -116,7 +122,7 @@ async function countUsers(
 describe('registration wizard (HU1, E03-D1)', () => {
   test('shows the step, its title and the document types of the master table (E03-W01, HU1-CA02, HU1-CA03, E03-V11)', async () => {
     await setup();
-    expect(screen.getByText('Registrar usuario')).toBeTruthy();
+    expect(screen.getByText('Registro de Usuario')).toBeTruthy();
     expect(screen.getByText('Datos personales y de acceso')).toBeTruthy();
     await press('registration-documentTypeCode');
     for (const code of ['CC', 'CE', 'PA', 'PPT']) {
@@ -613,7 +619,7 @@ describe('validation messages, password help and flags (HU1, second round 2026-1
     await select('phoneCountryCode', 'US');
     expect(screen.queryByTestId('registration-phoneNumber-error')).toBeNull();
     expect(screen.getByTestId('registration-email-error')).toHaveTextContent(
-      'Verificar correo. Ingresa tu correo electrónico.',
+      'Ingresa tu correo electrónico.',
     );
     await type('registration-email', 'ana');
     expect(screen.getByTestId('registration-email-error')).toHaveTextContent(
@@ -670,9 +676,9 @@ describe('Bug 38: registration sequence of the HU1 prototype', () => {
   test('step 1 groups identification, personal information and access credentials', async () => {
     await setup();
     for (const [testID, title] of [
-      ['registration-section-identification', 'Identificación oficial'],
-      ['registration-section-personal', 'Información personal'],
-      ['registration-section-access', 'Credenciales de acceso'],
+      ['registration-section-identification', 'Identificación Oficial'],
+      ['registration-section-personal', 'Información Personal'],
+      ['registration-section-access', 'Credenciales de Acceso'],
     ]) {
       expect(screen.getByTestId(testID)).toHaveTextContent(title);
     }
@@ -713,7 +719,7 @@ describe('Bug 38: registration sequence of the HU1 prototype', () => {
     expect(screen.queryByTestId('registration-register')).toBeNull();
   });
 
-  test('step 3 shows a read-only review without secrets, and «Editar datos» returns to step 1', async () => {
+  test('step 3 shows a boxed read-only review with the answers and a masked password (A11, A12), and «Editar datos» returns to step 1', async () => {
     const { database } = await setup();
     await goToConfirmation();
     expect(screen.getByText('Confirmación de datos')).toBeTruthy();
@@ -739,8 +745,10 @@ describe('Bug 38: registration sequence of the HU1 prototype', () => {
       screen.getByTestId('registration-summary-question-0'),
     ).toHaveTextContent('¿Cuál es tu color favorito?');
     expect(screen.queryByText('Clave123!')).toBeNull();
-    for (const [, answer] of ANSWERS) {
-      expect(screen.queryByText(answer)).toBeNull();
+    for (const [index, [, answer]] of ANSWERS.entries()) {
+      expect(
+        screen.getByTestId(`registration-summary-answer-${index}`),
+      ).toHaveTextContent(answer);
     }
     expect(screen.queryByTestId('registration-answer-0')).toBeNull();
     expect(await countUsers(database)).toBe(0);
@@ -795,5 +803,101 @@ describe('Bug 39: focus of the security answers', () => {
     expect(
       screen.getByTestId('registration-answer-4').props.returnKeyType,
     ).toBe('done');
+  });
+});
+
+describe('E-COR: registration fidelity to the HU1 mockups (A1-A13)', () => {
+  test('A1, A2, A4, A5, A10: centred header with back and help, intro card and SQLCipher note', async () => {
+    const { onNavigate } = await setup();
+    expect(screen.getByTestId('registration-title')).toHaveTextContent(
+      'Registro de Usuario',
+    );
+    expect(screen.getByTestId('registration-title')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('registration-step-title')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('registration-intro')).toHaveTextContent(
+      'Únete a GFPIngresa tus datos personales y de seguridad para configurar una cuenta completamente protegida. Los campos marcados con (*) son obligatorios.',
+    );
+    expect(screen.getByTestId('security-note')).toHaveTextContent(
+      'Datos encriptados con SQLCipher',
+    );
+    await press('registration-help-button');
+    expect(screen.getByTestId('dialog-help')).toBeTruthy();
+    await press('dialog-accept');
+    await press('registration-back-button');
+    expect(onNavigate).toHaveBeenCalledWith('login');
+  });
+
+  test('A1: back goes to the previous step from step 2', async () => {
+    await setup();
+    await goToSecurityStep();
+    await press('registration-back-button');
+    expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
+  });
+
+  test('A6, A8, A9: grouped sections, required marks, placeholders and a red «Cancelar»', async () => {
+    await setup();
+    for (const section of ['identification', 'personal', 'access']) {
+      expect(
+        screen.getByTestId(`registration-section-${section}-card`),
+      ).toBeTruthy();
+    }
+    expect(screen.getAllByText(' *').length).toBeGreaterThanOrEqual(8);
+    expect(screen.getAllByText('(opcional)')).toHaveLength(2);
+    const placeholders: Array<[string, string]> = [
+      ['documentNumber', 'Ej. 10203040 o 900.123.456-7'],
+      ['middleName', 'Ingresa tu segundo nombre (si aplica)'],
+      ['secondLastName', 'Ingresa tu segundo apellido (si aplica)'],
+      ['email', 'carlos.mendoza@email.com'],
+      ['password', 'Crea una contraseña segura'],
+    ];
+    for (const [field, placeholder] of placeholders) {
+      expect(
+        screen.getByTestId(`registration-${field}`).props.placeholder,
+      ).toBe(placeholder);
+    }
+    expect(screen.getByTestId('registration-cancel')).toHaveStyle({
+      backgroundColor: '#FDECEA',
+    });
+    expect(screen.getByText('Cancelar')).toHaveStyle({ color: '#B3261E' });
+  });
+
+  test('the password can be shown and hidden', async () => {
+    await setup();
+    const password = () => screen.getByTestId('registration-password');
+    expect(password().props.secureTextEntry).toBe(true);
+    await press('registration-password-visibility');
+    expect(password().props.secureTextEntry).toBe(false);
+    await press('registration-password-visibility');
+    expect(password().props.secureTextEntry).toBe(true);
+  });
+
+  test('A7: each question and its answer are grouped with their texts', async () => {
+    await setup();
+    await goToSecurityStep();
+    const slot = within(screen.getByTestId('registration-slot-0'));
+    expect(slot.getByText('PREGUNTA DE SEGURIDAD 1')).toBeTruthy();
+    expect(slot.getByText('Obligatorio *')).toBeTruthy();
+    expect(slot.getAllByText('Selecciona una pregunta').length).toBeGreaterThan(
+      0,
+    );
+    expect(slot.getByText('Tu respuesta')).toBeTruthy();
+    expect(screen.getByTestId('registration-answer-0').props.placeholder).toBe(
+      'Escribe la respuesta secreta aquí',
+    );
+    expect(screen.getByLabelText('Respuesta 1')).toBeTruthy();
+    expect(screen.getByLabelText('Pregunta de seguridad 1')).toBeTruthy();
+  });
+
+  test('A13: messages show only the concrete cause', async () => {
+    await setup();
+    await press('registration-next');
+    expect(
+      screen.getByTestId('registration-documentNumber-error'),
+    ).toHaveTextContent('Ingresa el número de documento.');
+    expect(screen.queryByText(/Error en los campos ingresados/)).toBeNull();
   });
 });

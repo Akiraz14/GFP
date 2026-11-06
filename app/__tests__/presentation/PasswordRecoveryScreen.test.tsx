@@ -104,17 +104,18 @@ async function acceptDialog() {
 describe('HU3 password recovery screen', () => {
   test('HU3-CA01: asks only for the identifier first, with the literal names', async () => {
     await setup();
-    expect(screen.getByText('Recuperar contraseña')).toBeTruthy();
+    expect(screen.getByText('Recuperar Contraseña')).toBeTruthy();
     expect(screen.getByLabelText('Identificador')).toBeTruthy();
     expect(
-      screen.getByText(
-        'Correo electrónico, número de documento o número de celular',
-      ),
+      screen.getByText('Ingresa tu identificador para buscar tu cuenta.'),
     ).toBeTruthy();
-    expect(screen.getByText('Comenzar recuperación')).toBeTruthy();
+    expect(screen.getByTestId('recovery-identifier').props.placeholder).toBe(
+      'Correo, Documento o Celular',
+    );
+    expect(screen.getByText('Comenzar Recuperación')).toBeTruthy();
     expect(screen.queryByTestId('recovery-challenge')).toBeNull();
     expect(screen.queryByText('Actualizar contraseña')).toBeNull();
-    expect(screen.queryByLabelText('Nueva contraseña')).toBeNull();
+    expect(screen.queryByLabelText('Nueva Contraseña')).toBeNull();
   });
 
   test.each([
@@ -157,12 +158,10 @@ describe('HU3 password recovery screen', () => {
     ids.forEach(id =>
       expect(DEFAULT_ANSWERS.map(answer => answer.questionId)).toContain(id),
     );
-    expect(screen.getByLabelText('Nueva contraseña')).toBeTruthy();
-    expect(screen.getByLabelText('Confirmar nueva contraseña')).toBeTruthy();
+    expect(screen.getByLabelText('Nueva Contraseña')).toBeTruthy();
+    expect(screen.getByLabelText('Confirmar Nueva Contraseña')).toBeTruthy();
     expect(screen.getByText('Actualizar contraseña')).toBeTruthy();
-    expect(screen.getByTestId('recovery-identifier').props.editable).toBe(
-      false,
-    );
+    expect(screen.queryByTestId('recovery-identifier')).toBeNull();
   });
 
   test('HU3-CA05, CA08, CA09: a weak password shows «Datos ingresados incorrectos» and changes nothing', async () => {
@@ -439,13 +438,56 @@ describe('Task 29: steps and sections of the HU3 prototype', () => {
     expect(screen.getByTestId('recovery-step')).toHaveTextContent(
       'Paso 2 de 2',
     );
-    expect(screen.getByText('Preguntas de seguridad')).toBeTruthy();
-    expect(screen.getByText('Credenciales de acceso')).toBeTruthy();
+    expect(screen.getByText('Preguntas de Seguridad')).toBeTruthy();
+    expect(screen.getByText('Credenciales de Acceso')).toBeTruthy();
     expect(screen.getByTestId('recovery-question-caption-0')).toHaveTextContent(
       'PREGUNTA DE SEGURIDAD 1',
     );
     expect(screen.getByTestId('recovery-question-caption-1')).toHaveTextContent(
       'PREGUNTA DE SEGURIDAD 2',
     );
+  });
+});
+
+describe('E-COR: recovery fidelity to the HU3 mockups (C1-C8)', () => {
+  test('header with back and help, centred step, step bar, intro, required mark and note', async () => {
+    const { onNavigate } = await setup();
+    expect(screen.getByTestId('recovery-title')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('recovery-step')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(
+      screen.getByTestId('recovery-progress-bar-1-done', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    expect(screen.getByTestId('recovery-intro')).toHaveTextContent(
+      'Ingresa tu identificador para buscar tu cuenta.',
+    );
+    expect(screen.getByText(' *')).toBeTruthy();
+    expect(screen.getByText('Comenzar Recuperación')).toBeTruthy();
+    expect(screen.getByTestId('security-note')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('recovery-help-button'));
+    expect(screen.getByTestId('dialog-recovery')).toBeTruthy();
+    await acceptDialog();
+    await fireEvent.press(screen.getByTestId('recovery-back-button'));
+    expect(onNavigate).toHaveBeenCalledWith('login');
+  });
+
+  test('in step 2 the bar advances and back returns to the identifier', async () => {
+    await setup();
+    await startWith();
+    await screen.findByTestId('recovery-challenge');
+    expect(
+      screen.getByTestId('recovery-progress-bar-2-done', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    expect(screen.getByTestId('recovery-new-password-visibility')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('recovery-back-button'));
+    expect(screen.queryByTestId('recovery-challenge')).toBeNull();
+    expect(screen.getByTestId('recovery-identifier')).toBeTruthy();
   });
 });

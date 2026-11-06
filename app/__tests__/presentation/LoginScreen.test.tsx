@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react-native';
 import { LoginScreen } from '../../src/presentation/login/LoginScreen';
 import { testIdsInOrder } from '../../testing/renderOrder';
 import {
@@ -58,17 +64,18 @@ async function submit() {
 describe('HU2 login screen', () => {
   test('shows the HU2 fields, buttons and link with their literal names', async () => {
     await setup();
-    expect(screen.getByText('Iniciar sesión')).toBeTruthy();
-    expect(screen.getByLabelText('Identificador')).toBeTruthy();
+    expect(screen.getByText('Iniciar Sesión')).toBeTruthy();
     expect(
-      screen.getByText(
-        'Correo electrónico, número de documento o número de celular',
-      ),
+      screen.getByText('Ingresa a tu cuenta financiera personal'),
     ).toBeTruthy();
+    expect(screen.getByLabelText('Identificador')).toBeTruthy();
+    expect(screen.getByTestId('login-identifier').props.placeholder).toBe(
+      'Correo, Documento o Celular',
+    );
     expect(screen.getByLabelText('Contraseña')).toBeTruthy();
     expect(screen.getByText('Ingresar')).toBeTruthy();
-    expect(screen.getByText('Registrar')).toBeTruthy();
-    expect(screen.getByText('Olvidé mi contraseña')).toBeTruthy();
+    expect(screen.getByText('Crear Cuenta')).toBeTruthy();
+    expect(screen.getByText('¿Olvidaste tu contraseña?')).toBeTruthy();
   });
 
   test('HU2-CA03: the password field hides what is typed', async () => {
@@ -211,7 +218,7 @@ describe('HU2 login screen', () => {
     expect(onNavigate).toHaveBeenCalledWith('register');
   });
 
-  test('HU2-CA09: «Olvidé mi contraseña» goes to the password recovery route', async () => {
+  test('HU2-CA09: «¿Olvidaste tu contraseña?» goes to the password recovery route', async () => {
     const { onNavigate } = await setup();
     await fireEvent.press(screen.getByTestId('login-forgot-password'));
     expect(onNavigate).toHaveBeenCalledWith('passwordRecovery');
@@ -221,7 +228,7 @@ describe('HU2 login screen', () => {
 describe('Task 28: layout of the HU2 prototype', () => {
   test('credentials section, recovery link under the password, then the actions', async () => {
     await setup();
-    expect(screen.getByText('Credenciales de acceso')).toBeTruthy();
+    expect(screen.getByText('Credenciales de Acceso')).toBeTruthy();
     const order = testIdsInOrder(screen.toJSON()).filter(id =>
       [
         'login-identifier',
@@ -238,5 +245,45 @@ describe('Task 28: layout of the HU2 prototype', () => {
       'login-submit',
       'login-register',
     ]);
+  });
+});
+
+describe('E-COR: login fidelity to the HU2 mockup (B1-B9)', () => {
+  test('centred title and subtitle, no back or help, lock section and SQLCipher note', async () => {
+    await setup();
+    expect(screen.getByTestId('login-title')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('login-subtitle')).toHaveTextContent(
+      'Ingresa a tu cuenta financiera personal',
+    );
+    expect(screen.queryByTestId('login-back-button')).toBeNull();
+    expect(screen.queryByTestId('login-help-button')).toBeNull();
+    expect(screen.getByTestId('login-section-credentials-card')).toBeTruthy();
+    expect(
+      screen.getByTestId('icon-lock', { includeHiddenElements: true }),
+    ).toBeTruthy();
+    expect(screen.getAllByText(' *')).toHaveLength(2);
+    expect(screen.getByTestId('security-note')).toBeTruthy();
+  });
+
+  test('the eye shows and hides the password; the buttons carry their icons', async () => {
+    await setup();
+    const password = () => screen.getByTestId('login-password');
+    expect(password().props.secureTextEntry).toBe(true);
+    await fireEvent.press(screen.getByLabelText('Mostrar contraseña'));
+    expect(password().props.secureTextEntry).toBe(false);
+    await fireEvent.press(screen.getByLabelText('Ocultar contraseña'));
+    expect(password().props.secureTextEntry).toBe(true);
+    expect(
+      within(screen.getByTestId('login-submit')).getByTestId('icon-user', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByTestId('login-register')).getByTestId('icon-idCard', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
   });
 });

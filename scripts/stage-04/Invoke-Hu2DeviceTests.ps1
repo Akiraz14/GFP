@@ -63,7 +63,7 @@ $first = Wait-Any @($script:LoginButton, $script:DbError) 240
 Screenshot 'hu2-01-inicio-sesion' | Out-Null
 $ui = Get-Ui; Save-Ui 'hu2-01-inicio-sesion'
 Check 'HU2-START' ($first -eq $script:LoginButton -and [bool](Find-Input $ui $Identifier) -and [bool](Find-Input $ui $Password)) "la app abre en el inicio de sesion con los campos identificador y contrasena (visto: '$first')"
-Check 'HU2-LABELS' ([bool](Find-Text $ui 'Registrar') -and [bool](Locate { param($u) Find-Text $u (U 'Olvid\u00e9 mi contrase\u00f1a') })) 'botones Ingresar y Registrar y enlace Olvide mi contrasena'
+Check 'HU2-LABELS' ([bool](Find-Text $ui 'Crear Cuenta') -and [bool](Locate { param($u) Find-Text $u (U '\u00bfOlvidaste tu contrase\u00f1a?') })) 'botones Ingresar y Crear Cuenta y enlace Olvidaste tu contrasena (E-COR-D2)'
 
 # HU2-CA02
 $null = Tap-Text $script:LoginButton
@@ -77,7 +77,7 @@ Screenshot 'hu2-03-verificar-identificacion' | Out-Null
 Check 'HU2-CA04' (Find-Message (U 'Verificar identificaci\u00f3n')) 'correo sin dominio: Verificar identificacion'
 
 # HU2-CA09 (desde la Etapa 05 el enlace abre el formulario de HU3, no la pantalla provisional)
-$null = Tap-Text (U 'Olvid\u00e9 mi contrase\u00f1a')
+$null = Tap-Text (U '\u00bfOlvidaste tu contrase\u00f1a?')
 $recovery = Wait-Text (U 'Comenzar recuperaci\u00f3n') 20
 Screenshot 'hu2-03b-recuperacion' | Out-Null
 Assert-AppState 'HU2-CA09'
@@ -86,8 +86,8 @@ Restart-App
 $null = Wait-Login 120
 
 # HU2-CA08 y regresion HU1-CA18
-$null = Tap-Text 'Registrar'
-Check 'HU2-CA08' (Wait-Text 'Paso 1 de 3' 30) 'Registrar abre el formulario de registro'
+$null = Tap-Text 'Crear Cuenta'
+Check 'HU2-CA08' (Wait-Text 'Paso 1 de 3' 30) 'Crear Cuenta abre el formulario de registro'
 $null = Type-Into 'Primer nombre' 'Eva'
 $null = Tap-Text 'Cancelar'
 $back = Wait-Login 30
@@ -98,10 +98,10 @@ Assert-AppState 'HU1-CA18'
 Check 'HU1-CA18' ($back -and $idField -and ([string]$idField.text) -eq '' -and -not (Find-Text $ui 'Paso 1 de 3')) 'Cancelar en el registro vuelve al inicio de sesion real de HU2 con los campos vacios'
 
 # Cuenta sintetica por la interfaz (regresion del registro de HU1)
-$null = Tap-Text 'Registrar'
+$null = Tap-Text 'Crear Cuenta'
 $null = Wait-Text 'Paso 1 de 3' 30
 $null = Choose 'Tipo de documento' (U 'C\u00e9dula de ciudadan\u00eda')
-$null = Type-Into 'Documento' $doc
+$null = Type-Into (U 'N\u00famero de Documento (DNI/NIT)') $doc
 $null = Type-Into 'Primer nombre' 'Eva'
 $null = Type-Into 'Primer apellido' 'Mora'
 # Bug 38: celular, correo y contrasena estan en el paso 1; el paso 2 son las preguntas

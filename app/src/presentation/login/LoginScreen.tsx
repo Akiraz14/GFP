@@ -20,6 +20,9 @@ import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
 import { FormScrollView } from '../components/FormScrollView';
 import { MessageDialog } from '../components/MessageDialog';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { SectionCard } from '../components/SectionCard';
+import { SecurityNote } from '../components/SecurityNote';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { ROUTES, type RouteName } from '../navigation/routes';
@@ -118,70 +121,77 @@ export function LoginScreen({
   return (
     <View style={styles.screen} testID="login-screen">
       <FormScrollView contentStyle={styles.content} testID="login-scroll">
-        <Text accessibilityRole="header" style={styles.title}>
-          {TEXTS.screenTitle}
-        </Text>
-        <Text accessibilityRole="header" style={styles.section}>
-          {TEXTS.sectionTitle}
-        </Text>
-        <TextField
-          autoCapitalize="none"
-          autoComplete="username"
-          autoCorrect={false}
-          editable={!busy}
-          error={identifierError}
-          helper={<Text style={styles.helper}>{TEXTS.identifierHelp}</Text>}
-          label={TEXTS.labels.identifier}
-          maxLength={LOGIN_IDENTIFIER_MAX_LENGTH}
-          onChangeText={value => {
-            setIdentifier(value);
-            setPhoneHint(false);
-            setErrors(current => ({ ...current, identifier: undefined }));
-          }}
-          onSubmitEditing={() => passwordRef.current?.focus()}
-          returnKeyType="next"
-          submitBehavior="submit"
-          testID="login-identifier"
-          textContentType="username"
-          value={identifier}
+        <ScreenHeader
+          subtitle={TEXTS.subtitle}
+          testID="login"
+          title={TEXTS.screenTitle}
         />
-        <TextField
-          autoCapitalize="none"
-          autoComplete="password"
-          autoCorrect={false}
-          editable={!busy}
-          error={
-            errors.password === 'required'
-              ? TEXTS.messages.passwordRequired
-              : null
-          }
-          label={TEXTS.labels.password}
-          maxLength={PASSWORD_MAX_LENGTH}
-          onChangeText={value => {
-            setPassword(value);
-            setErrors(current => ({ ...current, password: undefined }));
-          }}
-          onSubmitEditing={() => {
-            handleLogin();
-          }}
-          ref={passwordRef}
-          returnKeyType="go"
-          secureTextEntry
-          submitBehavior="blurAndSubmit"
-          testID="login-password"
-          textContentType="password"
-          value={password}
-        />
-        <Pressable
-          accessibilityRole="link"
-          accessibilityState={{ disabled: busy }}
-          disabled={busy}
-          onPress={() => onNavigate(ROUTES.passwordRecovery)}
-          style={styles.link}
-          testID="login-forgot-password"
+        <SectionCard
+          icon="lock"
+          testID="login-section-credentials"
+          title={TEXTS.sectionTitle}
         >
-          <Text style={styles.linkText}>{TEXTS.links.forgotPassword}</Text>
-        </Pressable>
+          <TextField
+            autoCapitalize="none"
+            autoComplete="username"
+            autoCorrect={false}
+            editable={!busy}
+            error={identifierError}
+            label={TEXTS.labels.identifier}
+            maxLength={LOGIN_IDENTIFIER_MAX_LENGTH}
+            onChangeText={value => {
+              setIdentifier(value);
+              setPhoneHint(false);
+              setErrors(current => ({ ...current, identifier: undefined }));
+            }}
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            placeholder={TEXTS.identifierPlaceholder}
+            required
+            returnKeyType="next"
+            submitBehavior="submit"
+            testID="login-identifier"
+            textContentType="username"
+            value={identifier}
+          />
+          <TextField
+            autoCapitalize="none"
+            autoComplete="password"
+            autoCorrect={false}
+            editable={!busy}
+            error={
+              errors.password === 'required'
+                ? TEXTS.messages.passwordRequired
+                : null
+            }
+            label={TEXTS.labels.password}
+            maxLength={PASSWORD_MAX_LENGTH}
+            onChangeText={value => {
+              setPassword(value);
+              setErrors(current => ({ ...current, password: undefined }));
+            }}
+            onSubmitEditing={() => {
+              handleLogin();
+            }}
+            ref={passwordRef}
+            required
+            returnKeyType="go"
+            secureToggle
+            submitBehavior="blurAndSubmit"
+            testID="login-password"
+            textContentType="password"
+            value={password}
+          />
+          <Pressable
+            accessibilityRole="link"
+            accessibilityState={{ disabled: busy }}
+            disabled={busy}
+            onPress={() => onNavigate(ROUTES.passwordRecovery)}
+            style={styles.link}
+            testID="login-forgot-password"
+          >
+            <Text style={styles.linkText}>{TEXTS.links.forgotPassword}</Text>
+          </Pressable>
+        </SectionCard>
         {busy && (
           <View style={styles.progress} testID="login-progress">
             <ActivityIndicator color={COLORS.primary} />
@@ -195,6 +205,7 @@ export function LoginScreen({
             onPress={() => {
               handleLogin();
             }}
+            icon="user"
             testID="login-submit"
             variant="primary"
           />
@@ -203,10 +214,12 @@ export function LoginScreen({
           <ActionButton
             disabled={busy}
             label={TEXTS.buttons.register}
+            icon="idCard"
             onPress={() => onNavigate(ROUTES.register)}
             testID="login-register"
           />
         </View>
+        <SecurityNote />
       </FormScrollView>
       {dialog !== null && (
         <MessageDialog
@@ -229,33 +242,15 @@ export function LoginScreen({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 20, paddingBottom: 40 },
-  title: {
-    color: COLORS.text,
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  section: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  helper: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
   progress: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   progressText: { color: COLORS.text, fontSize: 16, marginLeft: 10 },
   buttonRow: { flexDirection: 'row', marginTop: 16, marginHorizontal: -4 },
-  // Task 28: the recovery link sits under the password, as in the HU2 prototype.
   link: {
     alignSelf: 'flex-end',
     justifyContent: 'center',
-    marginTop: -6,
-    minHeight: 48,
+    marginTop: -10,
+    minHeight: 40,
     paddingHorizontal: 4,
   },
-  linkText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
+  linkText: { color: COLORS.primary, fontSize: 15 },
 });

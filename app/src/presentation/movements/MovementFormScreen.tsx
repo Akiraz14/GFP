@@ -27,7 +27,9 @@ import {
   type MovementInput,
 } from '../../business/movements/movementRules';
 import {
+  amountInputForParsing,
   amountInputFromCents,
+  applyAmountEdit,
   formatMoney,
   maskAmountInput,
 } from '../../business/money/money';
@@ -40,6 +42,7 @@ import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
 import { DateField } from '../components/DateField';
 import { FormScrollView } from '../components/FormScrollView';
+import { Icon } from '../components/Icon';
 import { MessageDialog } from '../components/MessageDialog';
 import { SelectField } from '../components/SelectField';
 import { TextField } from '../components/TextField';
@@ -118,26 +121,6 @@ function fieldMessages(errors: MovementFieldErrors) {
 
 type Saved = { movement: Movement; categoryName: string };
 
-function TypeIndicator({ type }: { type: MovementType }) {
-  const income = type === 'income';
-  return (
-    <View
-      accessibilityLabel={TEXTS.accessibility.typeIndicator(type)}
-      style={[
-        styles.indicator,
-        income ? styles.indicatorIncome : styles.indicatorExpense,
-      ]}
-      testID={`movement-type-indicator-${type}`}
-    >
-      <Text
-        style={[styles.indicatorGlyph, income ? styles.income : styles.expense]}
-      >
-        {income ? '↑' : '↓'}
-      </Text>
-    </View>
-  );
-}
-
 // Pantalla de HU4: registro (y edición) de un movimiento.
 export function MovementFormScreen({
   movements,
@@ -172,6 +155,10 @@ export function MovementFormScreen({
   const [banner, setBanner] = useState<'error' | 'updated' | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Saved | null>(null);
+  const [amountSelection, setAmountSelection] = useState<
+    { start: number; end: number } | undefined
+  >(undefined);
+  const amountEdited = useRef(false);
   const [dialog, setDialog] = useState<{
     message: string;
     leave: boolean;
@@ -296,7 +283,8 @@ export function MovementFormScreen({
       return;
     }
     // HU4-CA01, CA04, CA05, CA06 y CA13: se valida antes de escribir.
-    const found = validateMovementInput(input, todayIso(now()));
+    const toSave = { ...input, amount: amountInputForParsing(input.amount) };
+    const found = validateMovementInput(toSave, todayIso(now()));
     if (Object.keys(found).length > 0) {
       setErrors(found);
       setBanner('error');
@@ -305,8 +293,8 @@ export function MovementFormScreen({
     setBusy(true);
     const result =
       params.mode === 'edit'
-        ? await movements.update(session, params.movementId, input)
-        : await movements.create(session, input);
+        ? await movements.update(session, params.movementId, toSave)
+        : await movements.create(session, toSave);
     if (!mounted.current) {
       return;
     }
@@ -379,6 +367,16 @@ export function MovementFormScreen({
     );
   }
 
+  function changeAmount(raw: string) {
+    const edit = applyAmountEdit(input.amount, raw);
+    amountEdited.current = true;
+    setTimeout(() => {
+      amountEdited.current = false;
+    }, 0);
+    setAmountSelection({ start: edit.caret, end: edit.caret });
+    change({ amount: edit.text });
+  }
+
   return (
     <View style={styles.screen} testID="movement-form">
       <FormScrollView contentStyle={styles.content}>
@@ -391,7 +389,6 @@ export function MovementFormScreen({
               {editing ? TEXTS.editSubtitle : TEXTS.createSubtitle}
             </Text>
           </View>
-          <TypeIndicator type={type} />
         </View>
         {prefillNote && (
           <Text
@@ -400,15 +397,6 @@ export function MovementFormScreen({
             testID="movement-prefill-note"
           >
             {TEXTS.prefill.partial}
-          </Text>
-        )}
-        {banner === 'error' && (
-          <Text
-            accessibilityRole="alert"
-            style={[styles.banner, styles.bannerError]}
-            testID="movement-form-error"
-          >
-            {TEXTS.errors.form}
           </Text>
         )}
         {banner === 'updated' && (
@@ -445,6 +433,15 @@ export function MovementFormScreen({
                     ]}
                     testID={`movement-type-${option}`}
                   >
+                    <View
+                      style={[
+                        styles.typeDot,
+                        option === 'income'
+                          ? styles.typeDotIncome
+                          : styles.typeDotExpense,
+                      ]}
+                      testID={`movement-type-dot-${option}`}
+                    />
                     <Text
                       style={[
                         styles.segmentText,
@@ -461,21 +458,18 @@ export function MovementFormScreen({
             <TextField
               editable={!busy}
               error={messages.amount}
-              helper={
-                <Text style={styles.counter} testID="movement-amount-help">
-                  {TEXTS.amountHelp}
-                </Text>
-              }
-              keyboardType="number-pad"
+              inputColor={type === 'income' ? COLORS.success : COLORS.error}
+              keyboardType="decimal-pad"
               label={TEXTS.labels.amount}
-              onChangeText={amount =>
-                change({ amount: maskAmountInput(amount) })
-              }
-              placeholder={TEXTS.placeholders.amount}
-              selection={{
-                start: input.amount.length,
-                end: input.amount.length,
+              onChangeText={changeAmount}
+              onSelectionChange={event => {
+                if (!amountEdited.current) {
+                  setAmountSelection(event.nativeEvent.selection);
+                }
               }}
+              placeholder={TEXTS.placeholders.amount}
+              prefix="$"
+              selection={amountSelection}
               testID="movement-amount"
               value={input.amount}
             />
@@ -528,6 +522,21 @@ export function MovementFormScreen({
               testID="movement-description"
               value={input.description}
             />
+            {banner === 'error' && (
+              <View
+                accessibilityRole="alert"
+                style={[styles.banner, styles.bannerError, styles.bannerRow]}
+                testID="movement-form-error-banner"
+              >
+                <Icon color={COLORS.error} name="info" size={18} />
+                <Text
+                  style={styles.bannerErrorText}
+                  testID="movement-form-error"
+                >
+                  {TEXTS.errors.form}
+                </Text>
+              </View>
+            )}
             <View style={styles.buttons}>
               <ActionButton
                 disabled={busy}
@@ -553,6 +562,7 @@ export function MovementFormScreen({
                 label={TEXTS.buttons.cancel}
                 onPress={onDone}
                 testID="movement-cancel"
+                variant="danger"
               />
             </View>
           </>
@@ -589,17 +599,6 @@ const styles = StyleSheet.create({
   headerText: { flex: 1 },
   title: { color: COLORS.text, fontSize: 26, fontWeight: '700' },
   subtitle: { color: COLORS.mutedText, fontSize: 15, marginTop: 2 },
-  indicator: {
-    alignItems: 'center',
-    borderRadius: 24,
-    height: 48,
-    justifyContent: 'center',
-    marginLeft: 12,
-    width: 48,
-  },
-  indicatorIncome: { backgroundColor: '#E3F4E8' },
-  indicatorExpense: { backgroundColor: '#FBE6E4' },
-  indicatorGlyph: { fontSize: 24, fontWeight: '700' },
   banner: {
     borderRadius: 8,
     fontSize: 15,
@@ -607,6 +606,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   bannerError: { backgroundColor: '#FBE6E4', color: COLORS.error },
+  bannerRow: { alignItems: 'center', flexDirection: 'row', marginTop: 4 },
+  bannerErrorText: {
+    color: COLORS.error,
+    flex: 1,
+    fontSize: 15,
+    marginLeft: 8,
+  },
   bannerNotice: { backgroundColor: '#FFF4CE', color: COLORS.text },
   bannerSuccess: { backgroundColor: '#E3F4E8', color: COLORS.success },
   loading: { marginTop: 24 },
@@ -622,9 +628,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     minHeight: 44,
   },
+  typeDot: { borderRadius: 4, height: 8, marginRight: 8, width: 8 },
+  typeDotIncome: { backgroundColor: COLORS.success },
+  typeDotExpense: { backgroundColor: COLORS.error },
   segmentSelected: {
     backgroundColor: COLORS.background,
     borderColor: COLORS.primary,

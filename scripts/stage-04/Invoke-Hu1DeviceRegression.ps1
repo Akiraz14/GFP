@@ -99,9 +99,9 @@ $null = Save-Logcat 'logcat-before-v13.txt'
 # ---------- E03-V06 y E03-V13: regla y teclado por tipo de documento ----------
 if (-not (Open-Registration)) { Stop-Blocked 'REGISTRATION' 'no se pudo abrir el registro desde el inicio de sesion' }
 $null = Choose 'Tipo de documento' 'Pasaporte'
-$null = Type-Into 'Documento' 'AB#1' -Clear
+$null = Type-Into (U 'N\u00famero de Documento (DNI/NIT)') 'AB#1' -Clear
 $null = Tap-Text 'Siguiente'
-$passportMsg = U 'Error en los campos ingresados. Usa solo letras y n\u00fameros. Puedes separarlos con espacios, puntos o guiones.'
+$passportMsg = U 'Usa solo letras y n\u00fameros. Puedes separarlos con espacios, puntos o guiones.'
 Check 'E03-V06-PA-SYMBOL' ([bool](Locate { param($ui) Find-Text $ui $passportMsg })) 'pasaporte con # rechazado con el mensaje de caracteres permitidos'
 $null = Type-Into 'Primer nombre' 'Ana'
 $null = Type-Into 'Primer apellido' 'Rojas'
@@ -115,7 +115,7 @@ foreach ($case in $cases) {
   $code = $case[0]
   $null = Choose 'Tipo de documento' $case[1]
   & $Adb logcat -c 2>&1 | Out-Null
-  Tap-Node (Locate { param($ui) Find-Input $ui 'Documento' })
+  Tap-Node (Locate { param($ui) Find-Input $ui (U 'N\u00famero de Documento (DNI/NIT)') })
   Start-Sleep -Milliseconds 1500
   $log = & $Adb logcat -d -v time 2>&1 | Out-String
   Set-Content -LiteralPath (Join-Path $script:Out "ime-$($code.ToLower()).log") -Value $log -Encoding UTF8
@@ -130,11 +130,11 @@ foreach ($case in $cases) {
     Hide-Keyboard
     $null = Tap-Text 'Siguiente'
     Start-Sleep -Milliseconds 800
-    $message = (U 'Error en los campos ingresados. Para ') + $case[3] + (U ', ingresa solo n\u00fameros.')
+    $message = (U 'Para ') + $case[3] + (U ', ingresa solo n\u00fameros.')
     $text = (Find-Id (Get-Ui) 'registration-documentNumber').text
     $specific = [bool](Locate { param($ui) Find-Text $ui $message })
     Check "E03-V06-$code-LETTERS" ($specific -or ($text -notmatch '[A-Za-z]')) "$code con letras: mensaje especifico=$specific"
-    $null = Type-Into 'Documento' '1234567' -Clear
+    $null = Type-Into (U 'N\u00famero de Documento (DNI/NIT)') '1234567' -Clear
     Check "E03-V06-$code-DIGITS" (-not (Find-Id (Get-Ui) 'registration-documentNumber-error')) "$code 1234567 aceptado"
   } else {
     Clear-Focused

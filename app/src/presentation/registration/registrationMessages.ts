@@ -133,20 +133,18 @@ export function fieldErrorMessage(
   error: FieldError,
   context: MessageContext,
 ): string {
-  const prefix =
-    field === 'email' ? TEXTS.messages.emailError : TEXTS.messages.fieldError;
-  return withPrefix(prefix, fieldDetail(field, error, context));
+  const detail = fieldDetail(field, error, context);
+  return field === 'email' && error === 'email_format'
+    ? withPrefix(TEXTS.messages.emailError, detail)
+    : detail;
 }
 
 export function questionErrorMessage(
   violation: SecurityQuestionSlotViolation,
 ): string {
-  return withPrefix(
-    TEXTS.messages.fieldError,
-    violation === 'required'
-      ? 'Selecciona una pregunta.'
-      : 'Elige una pregunta distinta y no similar a las demás.',
-  );
+  return violation === 'required'
+    ? 'Selecciona una pregunta.'
+    : 'Elige una pregunta distinta y no similar a las demás.';
 }
 
 export function answerErrorMessage(violation: SecurityAnswerViolation): string {
@@ -156,5 +154,5 @@ export function answerErrorMessage(violation: SecurityAnswerViolation): string {
     too_long: `La respuesta admite máximo ${SECURITY_ANSWER_MAX_LENGTH} caracteres.`,
     invalid_characters: 'La respuesta contiene caracteres no permitidos.',
   };
-  return withPrefix(TEXTS.messages.fieldError, details[violation]);
+  return details[violation];
 }

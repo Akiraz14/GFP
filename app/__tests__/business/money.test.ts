@@ -1,5 +1,7 @@
 import {
   MAX_AMOUNT_CENTS,
+  amountInputForParsing,
+  applyAmountEdit,
   amountInputFromCents,
   formatMoney,
   maskAmountInput,
@@ -65,7 +67,7 @@ describe('D-01: Colombian money format', () => {
 
   test('the edit field shows the masked amount and reads back the same', () => {
     expect(amountInputFromCents(125_000_050)).toBe('1.250.000,50');
-    expect(amountInputFromCents(4_550_000)).toBe('45.500,00');
+    expect(amountInputFromCents(4_550_000)).toBe('45.500');
     expect(amountInputFromCents(1)).toBe('0,01');
     for (const cents of [1, 4_550, 125_000_050, MAX_AMOUNT_CENTS]) {
       expect(parseAmountInput(amountInputFromCents(cents))).toBe(cents);
@@ -73,51 +75,79 @@ describe('D-01: Colombian money format', () => {
   });
 });
 
-describe('Bug 40 and Task 37: continuous decimal mask', () => {
-  test('digits fill the cents first, like an ATM', () => {
-    const typed = ['4', '45', '455', '4550', '45500', '455000', '4550000'];
-    expect(typed.map(maskAmountInput)).toEqual([
-      '0,04',
-      '0,45',
-      '4,55',
-      '45,50',
-      '455,00',
-      '4.550,00',
-      '45.500,00',
+describe('E-COR-D3: amount mask with explicit decimals', () => {
+  function typeKeys(keys: string): Array<[string, number]> {
+    let value = '';
+    return [...keys].map(key => {
+      const edit = applyAmountEdit(value, value + key);
+      value = edit.text;
+      return [edit.text, edit.caret];
+    });
+  }
+
+  test('digits are whole pesos: 45500 is $45.500', () => {
+    expect(typeKeys('45500').map(([text]) => text)).toEqual([
+      '4',
+      '45',
+      '455',
+      '4.550',
+      '45.500',
     ]);
+    expect(parseAmountInput('45.500')).toBe(4_550_000);
   });
 
-  test('typing one more digit on the masked text keeps the numeric value', () => {
-    // El TextInput entrega el texto anterior más la tecla pulsada.
-    expect(maskAmountInput('4.550,00' + '1')).toBe('45.500,01');
-    expect(parseAmountInput(maskAmountInput('45.500,0' + '7'))).toBe(4_550_007);
+  test('decimals start only with an explicit comma or dot', () => {
+    expect(typeKeys('45500,50').at(-1)).toEqual(['45.500,50', 9]);
+    expect(typeKeys('45500.50').at(-1)).toEqual(['45.500,50', 9]);
+    expect(typeKeys('45,').at(-1)).toEqual(['45,', 3]);
+    expect(typeKeys(',5').map(([text]) => text)).toEqual(['0,', '0,5']);
+    expect(parseAmountInput(amountInputForParsing('45.500,5'))).toBe(4_550_050);
   });
 
-  test('deleting removes the last digit', () => {
-    // Al borrar, el TextInput entrega el texto sin su último carácter.
-    expect(maskAmountInput('45.500,0')).toBe('4.550,00');
-    expect(maskAmountInput('0,0')).toBe('');
-    expect(maskAmountInput('0,4')).toBe('0,04');
+  test('a second separator and a third decimal are ignored', () => {
+    expect(typeKeys('45,5,').at(-1)?.[0]).toBe('45,5');
+    expect(typeKeys('45.5.').at(-1)?.[0]).toBe('45,5');
+    expect(typeKeys('45,505').at(-1)?.[0]).toBe('45,50');
   });
 
-  test('ignores everything but digits and leading zeros', () => {
-    expect(maskAmountInput('')).toBe('');
+  test('the caret stays after the digit that was typed or deleted', () => {
+    expect(typeKeys('4550000').at(-1)).toEqual(['4.550.000', 9]);
+    expect(applyAmountEdit('4.550.000', '4.50.000')).toEqual({
+      text: '450.000',
+      caret: 2,
+    });
+    expect(applyAmountEdit('45.500', '45.50')).toEqual({
+      text: '4.550',
+      caret: 5,
+    });
+    expect(applyAmountEdit('45.500,50', '45.500,5')).toEqual({
+      text: '45.500,5',
+      caret: 8,
+    });
+    expect(applyAmountEdit('45.500,5', '45.500,')).toEqual({
+      text: '45.500,',
+      caret: 7,
+    });
+    expect(applyAmountEdit('45.500,', '45.500')).toEqual({
+      text: '45.500',
+      caret: 6,
+    });
+  });
+
+  test('a pasted or prefilled text keeps a single convention', () => {
+    expect(maskAmountInput('45500.50')).toBe('45.500,50');
+    expect(maskAmountInput('45500,50')).toBe('45.500,50');
+    expect(maskAmountInput('1.250.000,50')).toBe('1.250.000,50');
+    expect(maskAmountInput('1,250,000.50')).toBe('1.250.000,50');
+    expect(maskAmountInput('45.500')).toBe('45.500');
+    expect(maskAmountInput('$ 45.500')).toBe('45.500');
     expect(maskAmountInput('abc')).toBe('');
-    expect(maskAmountInput('-10')).toBe('0,10');
-    expect(maskAmountInput('$ 0001.250')).toBe('12,50');
-    expect(maskAmountInput('0')).toBe('');
+    expect(maskAmountInput('007')).toBe('7');
   });
 
-  test('stops at the maximum amount', () => {
-    expect(maskAmountInput('9'.repeat(20))).toBe('999.999.999.999,99');
-    expect(parseAmountInput(maskAmountInput('9'.repeat(20)))).toBe(
-      MAX_AMOUNT_CENTS,
-    );
-  });
-
-  test('a masked text is always a valid amount except when empty', () => {
-    for (const raw of ['1', '99', '123456', '100000000']) {
-      expect(parseAmountInput(maskAmountInput(raw))).toBe(Number(raw));
-    }
+  test('stops at twelve integer digits and two decimals', () => {
+    expect(maskAmountInput('1234567890123')).toBe('123.456.789.012');
+    expect(maskAmountInput('999999999999,999')).toBe('999.999.999.999,99');
+    expect(parseAmountInput('999.999.999.999,99')).toBe(MAX_AMOUNT_CENTS);
   });
 });

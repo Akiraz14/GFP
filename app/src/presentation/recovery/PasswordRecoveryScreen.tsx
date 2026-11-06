@@ -24,6 +24,10 @@ import {
 import { ActionButton } from '../components/ActionButton';
 import { FormScrollView } from '../components/FormScrollView';
 import { MessageDialog } from '../components/MessageDialog';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { SectionCard, cardStyle } from '../components/SectionCard';
+import { SecurityNote } from '../components/SecurityNote';
+import { StepProgress } from '../components/StepProgress';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { lockMinutes } from '../login/loginTexts';
@@ -249,144 +253,187 @@ export function PasswordRecoveryScreen({
   return (
     <View style={styles.screen} testID="recovery-screen">
       <FormScrollView contentStyle={styles.content} testID="recovery-scroll">
-        <Text accessibilityRole="header" style={styles.title}>
-          {TEXTS.screenTitle}
-        </Text>
+        <ScreenHeader
+          disabled={busy}
+          onBack={() => {
+            if (challenge === null) {
+              onNavigate(ROUTES.login);
+            } else {
+              backToIdentifier();
+            }
+          }}
+          onHelp={() => showDialog(TEXTS.help)}
+          testID="recovery"
+          title={TEXTS.screenTitle}
+        />
         <Text style={styles.stepIndicator} testID="recovery-step">
           {TEXTS.stepIndicator(challenge === null ? 1 : 2)}
         </Text>
-        <TextField
-          autoCapitalize="none"
-          autoComplete="username"
-          autoCorrect={false}
-          editable={!busy && challenge === null}
-          error={identifierError}
-          helper={<Text style={styles.helper}>{TEXTS.identifierHelp}</Text>}
-          label={TEXTS.labels.identifier}
-          maxLength={LOGIN_IDENTIFIER_MAX_LENGTH}
-          onChangeText={value => {
-            setIdentifier(value);
-            setIdentifierError(null);
-          }}
-          onSubmitEditing={() => {
-            handleStart();
-          }}
-          returnKeyType="next"
-          submitBehavior="blurAndSubmit"
-          testID="recovery-identifier"
-          textContentType="username"
-          value={identifier}
+        <StepProgress
+          current={challenge === null ? 1 : 2}
+          steps={2}
+          testID="recovery-progress-bar"
         />
         {challenge === null ? (
-          <View style={styles.buttonRow}>
-            <ActionButton
-              disabled={busy}
-              label={TEXTS.buttons.start}
-              onPress={() => {
-                handleStart();
-              }}
-              testID="recovery-start"
-              variant="primary"
-            />
-          </View>
+          <>
+            <View style={styles.introCard}>
+              <Text style={styles.introText} testID="recovery-intro">
+                {TEXTS.identifierIntro}
+              </Text>
+            </View>
+            <View style={styles.card}>
+              <TextField
+                autoCapitalize="none"
+                autoComplete="username"
+                autoCorrect={false}
+                editable={!busy}
+                error={identifierError}
+                label={TEXTS.labels.identifier}
+                maxLength={LOGIN_IDENTIFIER_MAX_LENGTH}
+                onChangeText={value => {
+                  setIdentifier(value);
+                  setIdentifierError(null);
+                }}
+                onSubmitEditing={() => {
+                  handleStart();
+                }}
+                placeholder={TEXTS.placeholders.identifier}
+                required
+                returnKeyType="next"
+                submitBehavior="blurAndSubmit"
+                testID="recovery-identifier"
+                textContentType="username"
+                value={identifier}
+              />
+            </View>
+            <View style={styles.buttonRow}>
+              <ActionButton
+                disabled={busy}
+                label={TEXTS.buttons.start}
+                onPress={() => {
+                  handleStart();
+                }}
+                testID="recovery-start"
+                variant="primary"
+              />
+            </View>
+          </>
         ) : (
           <View testID="recovery-challenge">
-            <Text accessibilityRole="header" style={styles.section}>
-              {TEXTS.sections.questions}
-            </Text>
-            <Text style={styles.subtitle}>{TEXTS.questionsTitle}</Text>
-            {challenge.questions.map((question, index) => (
-              <View key={question.id}>
-                <Text
-                  style={styles.caption}
-                  testID={`recovery-question-caption-${index}`}
-                >
-                  {TEXTS.questionCaption(index + 1).toLocaleUpperCase('es')}
-                </Text>
-                <TextField
-                  autoCorrect={false}
-                  editable={!busy}
-                  error={
-                    answerErrors[index] ? TEXTS.messages.answerRequired : null
-                  }
-                  label={question.prompt}
-                  maxLength={SECURITY_ANSWER_MAX_LENGTH}
-                  onSubmitEditing={() =>
-                    index + 1 < challenge.questions.length
-                      ? answerRefs.current[index + 1]?.focus()
-                      : newPasswordRef.current?.focus()
-                  }
-                  ref={input => {
-                    answerRefs.current[index] = input;
-                  }}
-                  returnKeyType="next"
-                  submitBehavior="submit"
-                  onChangeText={value => {
-                    setAnswers(current =>
-                      index === 0 ? [value, current[1]] : [current[0], value],
-                    );
-                    setAnswerErrors(current =>
-                      index === 0 ? [false, current[1]] : [current[0], false],
-                    );
-                  }}
-                  testID={`recovery-answer-${index}`}
-                  value={answers[index]}
-                />
-              </View>
-            ))}
-            <Text accessibilityRole="header" style={styles.section}>
-              {TEXTS.sections.password}
-            </Text>
-            <TextField
-              autoCapitalize="none"
-              autoComplete="new-password"
-              autoCorrect={false}
-              editable={!busy}
-              error={passwordError ? TEXTS.messages.invalidData : null}
-              helper={
-                <PasswordRequirements
-                  password={newPassword}
-                  testID="recovery-password-requirements"
-                />
-              }
-              label={TEXTS.labels.newPassword}
-              maxLength={PASSWORD_MAX_LENGTH}
-              onChangeText={value => {
-                setNewPassword(value);
-                setPasswordError(false);
-                setConfirmationError(false);
-              }}
-              onSubmitEditing={() => confirmationRef.current?.focus()}
-              ref={newPasswordRef}
-              returnKeyType="next"
-              secureTextEntry
-              submitBehavior="submit"
-              testID="recovery-new-password"
-              textContentType="newPassword"
-              value={newPassword}
-            />
-            <TextField
-              autoCapitalize="none"
-              autoComplete="new-password"
-              autoCorrect={false}
-              editable={!busy}
-              error={
-                confirmationError ? TEXTS.messages.confirmationMismatch : null
-              }
-              label={TEXTS.labels.confirmation}
-              maxLength={PASSWORD_MAX_LENGTH}
-              onChangeText={value => {
-                setConfirmation(value);
-                setConfirmationError(false);
-              }}
-              ref={confirmationRef}
-              returnKeyType="done"
-              secureTextEntry
-              submitBehavior="blurAndSubmit"
-              testID="recovery-confirmation"
-              textContentType="newPassword"
-              value={confirmation}
-            />
+            <SectionCard
+              icon="shield"
+              testID="recovery-section-questions"
+              title={TEXTS.sections.questions}
+            >
+              <Text style={styles.cardIntro}>{TEXTS.questionsTitle}</Text>
+              {challenge.questions.map((question, index) => (
+                <View key={question.id} style={styles.slot}>
+                  <View style={styles.slotHeader}>
+                    <Text
+                      style={styles.caption}
+                      testID={`recovery-question-caption-${index}`}
+                    >
+                      {TEXTS.questionCaption(index + 1).toLocaleUpperCase('es')}
+                    </Text>
+                    <Text style={styles.slotRequired}>{TEXTS.requiredTag}</Text>
+                  </View>
+                  <TextField
+                    autoCorrect={false}
+                    editable={!busy}
+                    error={
+                      answerErrors[index] ? TEXTS.messages.answerRequired : null
+                    }
+                    label={question.prompt}
+                    maxLength={SECURITY_ANSWER_MAX_LENGTH}
+                    onSubmitEditing={() =>
+                      index + 1 < challenge.questions.length
+                        ? answerRefs.current[index + 1]?.focus()
+                        : newPasswordRef.current?.focus()
+                    }
+                    placeholder={TEXTS.placeholders.answer}
+                    ref={input => {
+                      answerRefs.current[index] = input;
+                    }}
+                    required
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                    onChangeText={value => {
+                      setAnswers(current =>
+                        index === 0 ? [value, current[1]] : [current[0], value],
+                      );
+                      setAnswerErrors(current =>
+                        index === 0 ? [false, current[1]] : [current[0], false],
+                      );
+                    }}
+                    testID={`recovery-answer-${index}`}
+                    value={answers[index]}
+                  />
+                </View>
+              ))}
+            </SectionCard>
+            <SectionCard
+              icon="lock"
+              testID="recovery-section-password"
+              title={TEXTS.sections.password}
+            >
+              <TextField
+                autoCapitalize="none"
+                autoComplete="new-password"
+                autoCorrect={false}
+                editable={!busy}
+                error={passwordError ? TEXTS.messages.invalidData : null}
+                helper={
+                  <PasswordRequirements
+                    password={newPassword}
+                    testID="recovery-password-requirements"
+                  />
+                }
+                label={TEXTS.labels.newPassword}
+                maxLength={PASSWORD_MAX_LENGTH}
+                onChangeText={value => {
+                  setNewPassword(value);
+                  setPasswordError(false);
+                  setConfirmationError(false);
+                }}
+                onSubmitEditing={() => confirmationRef.current?.focus()}
+                placeholder={TEXTS.placeholders.newPassword}
+                ref={newPasswordRef}
+                required
+                returnKeyType="next"
+                secureToggle
+                submitBehavior="submit"
+                testID="recovery-new-password"
+                textContentType="newPassword"
+                value={newPassword}
+              />
+              <TextField
+                autoCapitalize="none"
+                autoComplete="new-password"
+                autoCorrect={false}
+                editable={!busy}
+                error={
+                  confirmationError ? TEXTS.messages.confirmationMismatch : null
+                }
+                helper={
+                  <Text style={styles.hint}>{TEXTS.hints.confirmation}</Text>
+                }
+                label={TEXTS.labels.confirmation}
+                maxLength={PASSWORD_MAX_LENGTH}
+                onChangeText={value => {
+                  setConfirmation(value);
+                  setConfirmationError(false);
+                }}
+                placeholder={TEXTS.placeholders.confirmation}
+                ref={confirmationRef}
+                required
+                returnKeyType="done"
+                secureToggle
+                submitBehavior="blurAndSubmit"
+                testID="recovery-confirmation"
+                textContentType="newPassword"
+                value={confirmation}
+              />
+            </SectionCard>
             <View style={styles.buttonRow}>
               <ActionButton
                 disabled={busy}
@@ -406,6 +453,7 @@ export function PasswordRecoveryScreen({
             <Text style={styles.progressText}>{TEXTS.messages.verifying}</Text>
           </View>
         )}
+        <SecurityNote />
       </FormScrollView>
       {dialog !== null && (
         <MessageDialog
@@ -434,32 +482,36 @@ export function PasswordRecoveryScreen({
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: 20, paddingBottom: 40 },
-  title: {
-    color: COLORS.text,
-    fontSize: 24,
-    fontWeight: '700',
-  },
   stepIndicator: {
     color: COLORS.mutedText,
-    fontSize: 15,
-    marginBottom: 16,
-    marginTop: 6,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
-  section: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '700',
+  introCard: { ...cardStyle, marginBottom: 16, marginTop: 8 },
+  introText: { color: COLORS.mutedText, fontSize: 15, textAlign: 'center' },
+  card: { ...cardStyle, paddingBottom: 0 },
+  cardIntro: { color: COLORS.mutedText, fontSize: 14, marginBottom: 12 },
+  slot: {
+    backgroundColor: '#F7F9FC',
+    borderColor: COLORS.cardBorder,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+  },
+  slotHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 6,
-    marginTop: 8,
   },
-  subtitle: { color: COLORS.mutedText, fontSize: 15, marginBottom: 12 },
-  caption: {
-    color: COLORS.primary,
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  helper: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
+  caption: { color: COLORS.primary, fontSize: 12, fontWeight: '700' },
+  slotRequired: { color: COLORS.error, fontSize: 12 },
+  hint: { color: COLORS.placeholder, fontSize: 13, marginTop: 4 },
   progress: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
   progressText: { color: COLORS.text, fontSize: 16, marginLeft: 10 },
   buttonRow: { flexDirection: 'row', marginTop: 16, marginHorizontal: -4 },

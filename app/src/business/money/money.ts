@@ -89,27 +89,134 @@ export function formatMoney(cents: number): string {
   return `${sign}$${groupThousands(integer)},${fraction}`;
 }
 
-// Máscara continua del campo «Monto» (Bug 40 con Task 37): el usuario escribe solo dígitos y
-// los dos últimos son siempre los centavos, como en un cajero. «4», «45», «4550» y «455000» se
-// muestran «0,04», «0,45», «45,50» y «4.550,00». Borrar quita el último dígito. No hace falta
-// mover el cursor para escribir los decimales y el texto siempre se puede leer con
-// `parseAmountInput()`. Admite hasta 14 dígitos (MAX_AMOUNT_CENTS).
-export const MAX_AMOUNT_DIGITS = MAX_AMOUNT_CENTS.toString().length;
+// Máscara del campo «Monto» (E-COR-D3, reemplaza la de Bug 40): los dígitos son pesos
+// enteros («45500» → «45.500») y los decimales empiezan solo cuando el usuario escribe un
+// separador decimal, «,» o «.» («45500,50» → «45.500,50»). La pantalla siempre agrupa los
+// miles con «.» y separa los decimales con «,» (D-01), y el texto se lee con
+// `parseAmountInput()`. Admite 12 dígitos enteros y 2 decimales (MAX_AMOUNT_CENTS).
+export const MAX_AMOUNT_INTEGER_DIGITS = 12;
+const MAX_AMOUNT_DECIMALS = 2;
 
-export function maskAmountInput(raw: string): string {
-  const digits = raw
-    .replace(/\D/g, '')
-    .replace(/^0+/, '')
-    .slice(0, MAX_AMOUNT_DIGITS);
-  if (digits.length === 0) {
-    return '';
+type AmountParts = { integer: string; decimals: string | null };
+
+function formatAmountParts({ integer, decimals }: AmountParts): string {
+  const trimmed = integer.replace(/^0+(?=\d)/, '');
+  if (decimals === null) {
+    return trimmed === '' ? '' : groupThousands(trimmed);
   }
-  const padded = digits.padStart(3, '0');
-  return `${groupThousands(padded.slice(0, -2))},${padded.slice(-2)}`;
+  return `${groupThousands(trimmed === '' ? '0' : trimmed)},${decimals}`;
 }
 
-// Valor del campo «Monto» al editar un movimiento o al precargarlo desde HU7: el mismo texto
-// que produce la máscara, «1.250.000,50».
+function digitsOf(text: string): string {
+  return text.replace(/\D/g, '');
+}
+
+function partsAt(text: string, decimalAt: number | null): AmountParts {
+  const integer = digitsOf(
+    decimalAt === null ? text : text.slice(0, decimalAt),
+  ).slice(0, MAX_AMOUNT_INTEGER_DIGITS);
+  const decimals =
+    decimalAt === null
+      ? null
+      : digitsOf(text.slice(decimalAt + 1)).slice(0, MAX_AMOUNT_DECIMALS);
+  return { integer, decimals };
+}
+
+// Lectura de un texto completo (pegado, precarga o edición de varios caracteres). Con «,» y
+// «.» a la vez, el último es el decimal; con solo comas, la última; con solo puntos, el último
+// es decimal si lo siguen uno o dos dígitos o nada, y en otro caso los puntos agrupan miles
+// (la misma regla de E07-D5 en `parseAmountInput`).
+export function maskAmountInput(raw: string): string {
+  const text = raw.replace(/[^\d,.]/g, '');
+  const lastComma = text.lastIndexOf(',');
+  const lastDot = text.lastIndexOf('.');
+  let decimalAt: number | null = null;
+  if (lastComma >= 0 && lastDot >= 0) {
+    decimalAt = Math.max(lastComma, lastDot);
+  } else if (lastComma >= 0) {
+    decimalAt = lastComma;
+  } else if (lastDot >= 0 && text.length - lastDot - 1 <= MAX_AMOUNT_DECIMALS) {
+    decimalAt = lastDot;
+  }
+  return formatAmountParts(partsAt(text, decimalAt));
+}
+
+function significantCount(text: string, end: number): number {
+  return text.slice(0, end).replace(/[^\d,]/g, '').length;
+}
+
+function caretAfter(text: string, count: number): number {
+  if (count <= 0) {
+    return 0;
+  }
+  let seen = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    if (/[\d,]/.test(text[index])) {
+      seen += 1;
+      if (seen === count) {
+        return index + 1;
+      }
+    }
+  }
+  return text.length;
+}
+
+export type AmountEdit = { text: string; caret: number };
+
+// Aplica una edición del usuario sobre el valor que ya mostraba el campo. `previous` siempre
+// está formateado, así que en él los puntos agrupan miles y la coma es el decimal. Un «,» o
+// «.» que el usuario inserta abre los decimales en esa posición; si ya hay decimales, se
+// ignora. El cursor queda después del mismo dígito que tenía a su izquierda.
+export function applyAmountEdit(previous: string, raw: string): AmountEdit {
+  let prefix = 0;
+  while (
+    prefix < previous.length &&
+    prefix < raw.length &&
+    previous[prefix] === raw[prefix]
+  ) {
+    prefix += 1;
+  }
+  let suffix = 0;
+  while (
+    suffix < previous.length - prefix &&
+    suffix < raw.length - prefix &&
+    previous[previous.length - 1 - suffix] === raw[raw.length - 1 - suffix]
+  ) {
+    suffix += 1;
+  }
+  const inserted = raw.slice(prefix, raw.length - suffix);
+  const removed = previous.slice(prefix, previous.length - suffix);
+  const editEnd = raw.length - suffix;
+
+  let text: string;
+  if (removed.length === 0 && (inserted === ',' || inserted === '.')) {
+    if (previous.includes(',')) {
+      return { text: previous, caret: prefix };
+    }
+    const opened = formatAmountParts(partsAt(raw, prefix));
+    return { text: opened, caret: opened.indexOf(',') + 1 };
+  } else if (removed.length + inserted.length > 0 && inserted.length <= 1) {
+    const comma = raw.indexOf(',');
+    text = formatAmountParts(partsAt(raw, comma >= 0 ? comma : null));
+  } else {
+    text = maskAmountInput(raw);
+  }
+  return { text, caret: caretAfter(text, significantCount(raw, editEnd)) };
+}
+
+// Texto listo para `parseAmountInput()`: quita la coma final de «45.500,».
+export function amountInputForParsing(text: string): string {
+  return text.replace(/,$/, '');
+}
+
+// Valor del campo «Monto» al editar un movimiento o al precargarlo desde HU7: «1.250.000» o
+// «1.250.000,50».
 export function amountInputFromCents(cents: number): string {
-  return maskAmountInput(Math.trunc(cents).toString());
+  const absolute = Math.abs(Math.trunc(cents));
+  const integer = Math.floor(absolute / 100).toString();
+  const fraction = absolute % 100;
+  return formatAmountParts({
+    integer,
+    decimals: fraction === 0 ? null : fraction.toString().padStart(2, '0'),
+  });
 }

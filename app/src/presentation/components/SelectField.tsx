@@ -22,6 +22,9 @@ type SelectFieldProps = {
   error: string | null;
   disabled?: boolean;
   testID: string;
+  required?: boolean;
+  accessibilityLabel?: string;
+  valueNumberOfLines?: number;
 };
 
 export function SelectField({
@@ -33,14 +36,20 @@ export function SelectField({
   error,
   disabled = false,
   testID,
+  required = false,
+  accessibilityLabel,
+  valueNumberOfLines,
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const selected = options.find(option => option.value === value);
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required && <Text style={styles.required}> *</Text>}
+      </Text>
       <Pressable
-        accessibilityLabel={label}
+        accessibilityLabel={accessibilityLabel ?? label}
         accessibilityRole="button"
         accessibilityState={{ disabled, expanded: open }}
         disabled={disabled}
@@ -49,6 +58,8 @@ export function SelectField({
         testID={testID}
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={valueNumberOfLines}
           style={[styles.text, selected ? styles.value : styles.placeholder]}
         >
           {selected ? selected.label : placeholder}
@@ -109,6 +120,7 @@ export function SelectField({
 const styles = StyleSheet.create({
   container: { marginBottom: 14 },
   label: { color: COLORS.text, fontSize: 15, marginBottom: 6 },
+  required: { color: COLORS.error },
   field: {
     alignItems: 'center',
     borderWidth: 1,
@@ -138,7 +150,7 @@ const styles = StyleSheet.create({
   },
   chevronDisabled: { borderColor: COLORS.disabled },
   value: { color: COLORS.text, fontSize: 16 },
-  placeholder: { color: COLORS.mutedText, fontSize: 16 },
+  placeholder: { color: COLORS.placeholder, fontSize: 16 },
   overlay: {
     flex: 1,
     backgroundColor: COLORS.overlay,

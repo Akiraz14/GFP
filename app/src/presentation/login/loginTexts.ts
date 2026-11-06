@@ -1,22 +1,24 @@
-// Textos visibles de HU2. Los textos entre comillas en HU2 son literales («Ingresar»,
-// «Registrar», «Olvidé mi contraseña», «Verificar identificación» y «El campo
-// identificación o contraseña son incorrectos»); «Ingresa el número celular con el código
-// de país» es el texto aprobado de A-ID2. Los demás son propuestas de E04-D5.
+// Textos visibles de HU2. Literales de HU2: «Ingresar», «Verificar identificación» y «El
+// campo identificación o contraseña son incorrectos». «Crear Cuenta» y «¿Olvidaste tu
+// contraseña?» reemplazan a «Registrar» y «Olvidé mi contraseña» por decisión del
+// responsable (E-COR-D2, mockup de HU2). «Ingresa el número celular con el código de país»
+// es el texto aprobado de A-ID2. Los demás son propuestas de E04-D5.
 export const LOGIN_TEXTS = {
-  screenTitle: 'Iniciar sesión',
-  sectionTitle: 'Credenciales de acceso',
+  screenTitle: 'Iniciar Sesión',
+  subtitle: 'Ingresa a tu cuenta financiera personal',
+  sectionTitle: 'Credenciales de Acceso',
   labels: {
     identifier: 'Identificador',
     password: 'Contraseña',
   },
-  identifierHelp: 'Correo electrónico, número de documento o número de celular',
+  identifierPlaceholder: 'Correo, Documento o Celular',
   buttons: {
     login: 'Ingresar',
-    register: 'Registrar',
+    register: 'Crear Cuenta',
     accept: 'Aceptar',
   },
   links: {
-    forgotPassword: 'Olvidé mi contraseña',
+    forgotPassword: '¿Olvidaste tu contraseña?',
   },
   messages: {
     identifierRequired: 'Ingresa tu identificador.',

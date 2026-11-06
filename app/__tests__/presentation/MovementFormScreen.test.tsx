@@ -15,6 +15,7 @@ import {
 } from '../../src/presentation/movements/MovementFormScreen';
 import { SessionManager } from '../../src/services/session/sessionManager';
 import { nodeRandomBytes } from '../../testing/nodeSqliteDatabase';
+import { testIdsInOrder } from '../../testing/renderOrder';
 import {
   createAccount,
   createMigratedDatabase,
@@ -87,16 +88,30 @@ async function storedMovements(context: Context) {
 beforeEach(() => openPicker.mockReset());
 
 describe('HU4 form (create mode)', () => {
-  test('shows the literal header, the type indicator and the buttons', async () => {
+  test('shows the literal header, the type options and the buttons (D1, D2, D7)', async () => {
     await show(await setup());
     expect(screen.getByText('Registro de movimiento')).toBeTruthy();
     expect(screen.getByText('Añade una nueva transacción.')).toBeTruthy();
-    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    expect(screen.queryByTestId(/^movement-type-indicator/)).toBeNull();
+    expect(screen.getByTestId('movement-type-dot-expense')).toHaveStyle({
+      backgroundColor: '#B3261E',
+    });
+    expect(screen.getByTestId('movement-type-dot-income')).toHaveStyle({
+      backgroundColor: '#1B6E3A',
+    });
+    expect(
+      screen.getByTestId('movement-type-expense').props.accessibilityState,
+    ).toMatchObject({ selected: true });
     expect(screen.getByText('Guardar movimiento')).toBeTruthy();
     expect(screen.getByText('Limpiar')).toBeTruthy();
-    expect(screen.getByText('Cancelar')).toBeTruthy();
+    expect(screen.getByText('Cancelar')).toHaveStyle({ color: '#B3261E' });
+    expect(screen.getByTestId('movement-cancel')).toHaveStyle({
+      backgroundColor: '#FDECEA',
+    });
     await fireEvent.press(screen.getByTestId('movement-type-income'));
-    expect(screen.getByTestId('movement-type-indicator-income')).toBeTruthy();
+    expect(
+      screen.getByTestId('movement-type-income').props.accessibilityState,
+    ).toMatchObject({ selected: true });
   });
 
   test('HU4-CA03: the date starts with today', async () => {
@@ -227,11 +242,15 @@ describe('HU4 form (create mode)', () => {
     const context = await setup();
     await show(context);
     await chooseCategory('food');
-    // Con la máscara (Bug 40) no se pueden escribir signos ni letras: lo que queda es un
-    // monto vacío o cero.
-    for (const amount of ['0', '000', 'abc', '']) {
+    // La máscara no admite signos ni letras: lo que queda es un monto vacío o cero.
+    for (const [amount, shown] of [
+      ['0', '0'],
+      ['000', '0'],
+      ['abc', ''],
+      ['', ''],
+    ]) {
       await fireEvent.changeText(screen.getByTestId('movement-amount'), amount);
-      expect(screen.getByTestId('movement-amount').props.value).toBe('');
+      expect(screen.getByTestId('movement-amount').props.value).toBe(shown);
       await fireEvent.press(screen.getByTestId('movement-save'));
       expect(screen.getByTestId('movement-amount-error').props.children).toBe(
         'Ingrese un monto válido',
@@ -240,30 +259,66 @@ describe('HU4 form (create mode)', () => {
     expect(await storedMovements(context)).toEqual([]);
   });
 
-  test('Bug 40 and Task 37: the amount is typed continuously with its decimals', async () => {
+  test('D3: whole pesos by default and decimals only after an explicit separator', async () => {
     const context = await setup();
     await show(context);
     const field = () => screen.getByTestId('movement-amount');
-    expect(field().props.keyboardType).toBe('number-pad');
-    let typed = '';
-    for (const key of '4550075') {
-      typed = field().props.value + key;
-      await fireEvent.changeText(field(), typed);
+    expect(field().props.keyboardType).toBe('decimal-pad');
+    for (const key of '45500') {
+      await fireEvent.changeText(field(), field().props.value + key);
     }
-    expect(field().props.value).toBe('45.500,75');
-    // El cursor queda siempre al final: no hace falta moverlo para los decimales.
-    expect(field().props.selection).toEqual({ start: 9, end: 9 });
-    await fireEvent.changeText(field(), '45.500,7');
-    expect(field().props.value).toBe('4.550,07');
+    expect(field().props.value).toBe('45.500');
+    expect(field().props.selection).toEqual({ start: 6, end: 6 });
+    for (const key of ',50') {
+      await fireEvent.changeText(field(), field().props.value + key);
+    }
+    expect(field().props.value).toBe('45.500,50');
+    await fireEvent.changeText(field(), '45.500,5');
+    expect(field().props.value).toBe('45.500,5');
     await chooseCategory('food');
     await fireEvent.press(screen.getByTestId('movement-save'));
     expect(await screen.findByTestId('movement-success')).toBeTruthy();
     expect(
       within(screen.getByTestId('movement-success-summary')).getByText(
-        '$4.550,07',
+        '$45.500,50',
       ),
     ).toBeTruthy();
-    expect((await storedMovements(context))[0].amount_cents).toBe(455_007);
+    expect((await storedMovements(context))[0].amount_cents).toBe(4_550_050);
+  });
+
+  test('D3: a dot typed by the user opens the decimals and a trailing comma is saved', async () => {
+    const context = await setup();
+    await show(context);
+    const field = () => screen.getByTestId('movement-amount');
+    for (const key of '45500.') {
+      await fireEvent.changeText(field(), field().props.value + key);
+    }
+    expect(field().props.value).toBe('45.500,');
+    await chooseCategory('food');
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    expect(await screen.findByTestId('movement-success')).toBeTruthy();
+    expect((await storedMovements(context))[0].amount_cents).toBe(4_550_000);
+  });
+
+  test('D4, D5, D6: the amount shows $ and the type colour; the form error sits above «Guardar»', async () => {
+    await show(await setup());
+    expect(screen.getByTestId('movement-amount-prefix')).toHaveTextContent('$');
+    expect(screen.getByTestId('movement-amount')).toHaveStyle({
+      color: '#B3261E',
+    });
+    await fireEvent.press(screen.getByTestId('movement-type-income'));
+    expect(screen.getByTestId('movement-amount')).toHaveStyle({
+      color: '#1B6E3A',
+    });
+    await fireEvent.press(screen.getByTestId('movement-save'));
+    const order = testIdsInOrder(screen.toJSON()).filter(id =>
+      ['movement-amount', 'movement-form-error', 'movement-save'].includes(id),
+    );
+    expect(order).toEqual([
+      'movement-amount',
+      'movement-form-error',
+      'movement-save',
+    ]);
   });
 
   test('HU4-CA06: the description is optional and limited to 250 characters', async () => {
@@ -304,7 +359,9 @@ describe('HU4 form (create mode)', () => {
     expect(screen.getByTestId('movement-amount').props.value).toBe('');
     expect(screen.getByTestId('movement-date').props.value).toBe('24/10/2026');
     expect(screen.getByTestId('movement-description').props.value).toBe('');
-    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    expect(
+      screen.getByTestId('movement-type-expense').props.accessibilityState,
+    ).toMatchObject({ selected: true });
     expect(screen.queryByTestId('movement-form-error')).toBeNull();
     expect(screen.queryByTestId('movement-amount-error')).toBeNull();
     expect(
@@ -398,7 +455,7 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
     const { context, id } = await withMovement();
     await show(context, { mode: 'edit', movementId: id });
     expect(screen.getByText('Editar movimiento')).toBeTruthy();
-    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500,00');
+    expect(screen.getByTestId('movement-amount').props.value).toBe('45.500');
     expect(screen.getByTestId('movement-date').props.value).toBe('20/10/2026');
     expect(
       within(screen.getByTestId('movement-category')).getByText('Alimentación'),
@@ -413,10 +470,7 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
   test('HU4-CA07 and CA08: «Actualizar» saves and shows the update message', async () => {
     const { context, id } = await withMovement();
     await show(context, { mode: 'edit', movementId: id });
-    await fireEvent.changeText(
-      screen.getByTestId('movement-amount'),
-      '5000000',
-    );
+    await fireEvent.changeText(screen.getByTestId('movement-amount'), '50000');
     await fireEvent.press(screen.getByTestId('movement-save'));
     expect(
       await screen.findByText('El movimiento fue actualizado exitosamente'),
@@ -451,7 +505,9 @@ describe('HU4 form prefilled from HU7', () => {
     expect(screen.getByTestId('movement-description').props.value).toBe(
       'Tienda Sol',
     );
-    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    expect(
+      screen.getByTestId('movement-type-expense').props.accessibilityState,
+    ).toMatchObject({ selected: true });
     expect(screen.getByTestId('movement-prefill-note').props.children).toBe(
       'No fue posible identificar toda la información. Complete los datos manualmente',
     );
@@ -466,7 +522,9 @@ describe('HU4 form prefilled from HU7', () => {
     expect(screen.getByTestId('movement-amount').props.value).toBe('');
     expect(screen.getByTestId('movement-date').props.value).toBe('');
     expect(screen.getByTestId('movement-description').props.value).toBe('');
-    expect(screen.getByTestId('movement-type-indicator-expense')).toBeTruthy();
+    expect(
+      screen.getByTestId('movement-type-expense').props.accessibilityState,
+    ).toMatchObject({ selected: true });
   });
 
   test('a complete reading shows no warning', async () => {
@@ -479,14 +537,5 @@ describe('HU4 form prefilled from HU7', () => {
       },
     });
     expect(screen.queryByTestId('movement-prefill-note')).toBeNull();
-  });
-});
-
-describe('Task 31: amount guidance', () => {
-  test('the amount explains that the last two digits are the cents', async () => {
-    await show(await setup());
-    expect(screen.getByTestId('movement-amount-help')).toHaveTextContent(
-      'Escribe solo números: los dos últimos son los centavos.',
-    );
   });
 });

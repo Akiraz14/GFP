@@ -14,8 +14,6 @@ export const MOVEMENT_TEXTS = {
     expense: 'Gasto',
     income: 'Ingreso',
   } satisfies Record<MovementType, string>,
-  // Task 31 y Bug 40: la máscara llena los centavos primero.
-  amountHelp: 'Escribe solo números: los dos últimos son los centavos.',
   labels: {
     type: 'Tipo de movimiento',
     amount: 'Monto',
@@ -24,7 +22,7 @@ export const MOVEMENT_TEXTS = {
     description: 'Descripción (opcional)',
   },
   placeholders: {
-    amount: '0,00',
+    amount: '0',
     date: 'DD/MM/AAAA',
     category: 'Selecciona una categoría',
     description: 'Ej: Almuerzo con el equipo',
@@ -40,8 +38,6 @@ export const MOVEMENT_TEXTS = {
   },
   accessibility: {
     openCalendar: 'Abrir calendario',
-    typeIndicator: (type: MovementType) =>
-      type === 'income' ? 'Movimiento de ingreso' : 'Movimiento de gasto',
   },
   descriptionCounter: (length: number, max: number) => `${length}/${max}`,
   errors: {
