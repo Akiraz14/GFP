@@ -259,3 +259,43 @@ describe('HU10 screen', () => {
     await waitFor(() => expect(onSessionExpired).toHaveBeenCalled());
   });
 });
+
+describe('Tasks 34 and 35: legibility and accessibility', () => {
+  test('Task 34: the evolution legend shows its colour as a swatch and reads only the label', async () => {
+    const context = await setup(DATA);
+    await render(
+      <AnalysisScreen
+        gateway={context.service}
+        now={() => NOW}
+        onNewMovement={jest.fn()}
+        onOpenHistory={context.onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await screen.findByTestId('analysis-categories');
+    await fireEvent.press(screen.getByTestId('analysis-mode-evolution'));
+    await screen.findByTestId('analysis-evolution');
+    expect(screen.getByText('Ingresos')).toBeTruthy();
+    expect(screen.getByText('Gastos')).toBeTruthy();
+    expect(screen.queryByText(/■/)).toBeNull();
+  });
+
+  test('Task 35: the severity glyph is decorative and «Descartar» names its card', async () => {
+    const context = await setup([['expense', '100', '03/11/2026', 'food']]);
+    await render(
+      <RecommendationsScreen
+        gateway={context.recommendations}
+        onOpenHistory={context.onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    const dismiss = await screen.findByTestId(
+      'recommendation-dismiss-negative-balance',
+    );
+    expect(dismiss.props.accessibilityLabel).toMatch(
+      /^Descartar recomendación: \S/,
+    );
+  });
+});

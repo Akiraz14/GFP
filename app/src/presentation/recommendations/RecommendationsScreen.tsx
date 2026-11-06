@@ -139,10 +139,16 @@ export function RecommendationsScreen({
             testID={`recommendation-${item.id}`}
           >
             <View style={styles.cardHeader}>
-              <Text style={styles.glyph}>{SEVERITY_GLYPHS[item.severity]}</Text>
+              <Text
+                accessible={false}
+                importantForAccessibility="no"
+                style={styles.glyph}
+              >
+                {SEVERITY_GLYPHS[item.severity]}
+              </Text>
               <Text style={styles.cardTitle}>{item.title}</Text>
               <Pressable
-                accessibilityLabel={TEXTS.dismiss}
+                accessibilityLabel={`${TEXTS.dismiss}: ${item.title}`}
                 accessibilityRole="button"
                 onPress={() => {
                   dismiss(item);

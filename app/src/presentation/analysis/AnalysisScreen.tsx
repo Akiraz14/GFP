@@ -380,10 +380,20 @@ export function AnalysisScreen({
                   {TEXTS.evolutionTitle}
                 </Text>
                 <View style={styles.legend}>
-                  <Text style={styles.income}>{`■ ${TEXTS.legendIncome}`}</Text>
-                  <Text style={styles.expense}>
-                    {`■ ${TEXTS.legendExpense}`}
-                  </Text>
+                  {(
+                    [
+                      [TEXTS.legendIncome, styles.swatchIncome],
+                      [TEXTS.legendExpense, styles.swatchExpense],
+                    ] as const
+                  ).map(([label, swatch]) => (
+                    <View key={label} style={styles.legendItem}>
+                      <View
+                        importantForAccessibility="no-hide-descendants"
+                        style={[styles.swatch, swatch]}
+                      />
+                      <Text style={styles.legendText}>{label}</Text>
+                    </View>
+                  ))}
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <LineChart points={points} />
@@ -502,4 +512,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   legend: { flexDirection: 'row', justifyContent: 'space-around' },
+  // Task 34: the legend colour is a swatch, so TalkBack reads only «Ingresos» and «Gastos».
+  legendItem: { alignItems: 'center', flexDirection: 'row' },
+  legendText: { color: COLORS.text, fontSize: 14 },
+  swatch: { borderRadius: 2, height: 10, marginRight: 6, width: 10 },
+  swatchIncome: { backgroundColor: COLORS.success },
+  swatchExpense: { backgroundColor: COLORS.error },
 });
