@@ -13,19 +13,19 @@ completado sin la validación en dispositivo de la sección 6.
 
 | ID | Trabajo | Estado | Commit |
 |---|---|---|---|
-| Task 36 | Cierre de modales con un toque fuera | Implementada; Jest | `2e292ad` |
-| Bug 40 + Task 37 | Máscara decimal continua del monto | Corregida; Jest | `3f7d18a`, `723281f` (ayuda del campo) |
-| Bug 39 | Foco de las respuestas de seguridad (recuperación y registro) | Corregida; Jest | `2b787fc`, `a79f153` |
-| Bug 38 + Task 27 | Secuencia y distribución del registro | Corregida; Jest | `a79f153` |
+| Task 36 | Cierre de modales con un toque fuera | Implementada; Jest | `b272602` |
+| Bug 40 + Task 37 | Máscara decimal continua del monto | Corregida; Jest | `8ba1f21`, `f28903e` (ayuda del campo) |
+| Bug 39 | Foco de las respuestas de seguridad (recuperación y registro) | Corregida; Jest | `ebac982`, `cb39ea3` |
+| Bug 38 + Task 27 | Secuencia y distribución del registro | Corregida; Jest | `cb39ea3` |
 | Bug 41 | Formato y tamaño de imágenes | **No es un error**; sin cambios de código | — |
-| Task 28 | HU2 Inicio de sesión | Implementada; Jest | `39c5070` |
-| Task 29 | HU3 Recuperación | Implementada; Jest | `588289e` |
-| Task 30 | HU5 Historial | Implementada; Jest | `cf65258` |
-| Task 31 | HU4 Formulario de movimientos | Implementada; Jest | `723281f` (y Bug 40) |
-| Task 32 | HU7 Captura de facturas | Implementada; Jest | `be163d8` |
-| Task 33 | HU8 Categorías | Implementada; Jest (con Task 36) | `9ca5489`, `2e292ad` |
-| Task 34 | HU9 Análisis | Implementada; Jest | `2732e3d` |
-| Task 35 | HU10 Recomendaciones | Implementada; Jest | `2732e3d` |
+| Task 28 | HU2 Inicio de sesión | Implementada; Jest | `e56c78f` |
+| Task 29 | HU3 Recuperación | Implementada; Jest | `48b5f6d` |
+| Task 30 | HU5 Historial | Implementada; Jest | `2b63c7c` |
+| Task 31 | HU4 Formulario de movimientos | Implementada; Jest | `f28903e` (y Bug 40) |
+| Task 32 | HU7 Captura de facturas | Implementada; Jest | `e552110` |
+| Task 33 | HU8 Categorías | Implementada; Jest (con Task 36) | `608472c`, `b272602` |
+| Task 34 | HU9 Análisis | Implementada; Jest | `24dd3ad` |
+| Task 35 | HU10 Recomendaciones | Implementada; Jest | `24dd3ad` |
 
 «Jest» significa verificado con pruebas automatizadas; ninguna se ejecutó en un dispositivo.
 
