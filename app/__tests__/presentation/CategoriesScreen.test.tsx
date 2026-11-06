@@ -302,6 +302,33 @@ describe('HU8 categories screen', () => {
     expect(within(dialog).queryByText(/reasignados?\./)).toBeNull();
   });
 
+  test('Task 36: a tap outside the form closes it without saving; inside it does not', async () => {
+    const { database } = await setup();
+    await fireEvent.press(screen.getByTestId('categories-new'));
+    await fireEvent.changeText(screen.getByTestId('category-name'), 'Mascotas');
+    await fireEvent.press(screen.getAllByText('Nueva categoría').at(-1)!);
+    expect(screen.getByTestId('category-form')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('category-form-backdrop'));
+    expect(screen.queryByTestId('category-form')).toBeNull();
+    const stored = await database.execute(
+      "SELECT count(*) AS total FROM categories WHERE name = 'Mascotas'",
+    );
+    expect(stored.rows[0]).toEqual({ total: 0 });
+  });
+
+  test('Task 36: a tap outside the delete dialog cancels the deletion', async () => {
+    await setup();
+    await createFromScreen('Gimnasio', 'expense', 'dumbbell');
+    const id = ownRowId('Gimnasio');
+    await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
+    await screen.findByTestId('category-delete-dialog');
+    await fireEvent.press(
+      screen.getByTestId('category-delete-dialog-backdrop'),
+    );
+    expect(screen.queryByTestId('category-delete-dialog')).toBeNull();
+    expect(screen.getByTestId(`category-delete-${id}`)).toBeTruthy();
+  });
+
   test('E06-D4: the Android back button returns to the history', async () => {
     const listeners: Array<Parameters<typeof BackHandler.addEventListener>[1]> =
       [];

@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { DismissibleOverlay } from './DismissibleOverlay';
 import { FieldError } from './FieldError';
 import { COLORS } from './theme';
 
@@ -68,7 +69,11 @@ export function SelectField({
         transparent
         visible={open}
       >
-        <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
+        <DismissibleOverlay
+          onDismiss={() => setOpen(false)}
+          style={styles.overlay}
+          testID={`${testID}-backdrop`}
+        >
           <View style={styles.sheet} testID={`${testID}-options`}>
             <Text style={styles.sheetTitle}>{label}</Text>
             <ScrollView keyboardShouldPersistTaps="handled">
@@ -95,7 +100,7 @@ export function SelectField({
               ))}
             </ScrollView>
           </View>
-        </Pressable>
+        </DismissibleOverlay>
       </Modal>
     </View>
   );

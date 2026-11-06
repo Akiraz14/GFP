@@ -1,5 +1,6 @@
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { ActionButton } from './ActionButton';
+import { DismissibleOverlay } from './DismissibleOverlay';
 import { COLORS } from './theme';
 
 export type DialogAction = {
@@ -29,7 +30,11 @@ export function MessageDialog({
       transparent
       visible
     >
-      <View style={styles.overlay}>
+      <DismissibleOverlay
+        onDismiss={onRequestClose}
+        style={styles.overlay}
+        testID={`${testID ?? 'dialog'}-backdrop`}
+      >
         <View accessibilityRole="alert" style={styles.dialog} testID={testID}>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>
@@ -44,7 +49,7 @@ export function MessageDialog({
             ))}
           </View>
         </View>
-      </View>
+      </DismissibleOverlay>
     </Modal>
   );
 }

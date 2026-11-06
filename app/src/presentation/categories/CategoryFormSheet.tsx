@@ -26,6 +26,7 @@ import {
 import type { Category } from '../../infrastructure/database/repositories/categoryRepository';
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
+import { DismissibleOverlay } from '../components/DismissibleOverlay';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { CATEGORY_ICON_GLYPHS, CategoryIcon } from './CategoryIcon';
@@ -113,107 +114,118 @@ export function CategoryFormSheet({
 
   return (
     <Modal animationType="slide" onRequestClose={onCancel} transparent visible>
-      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
-        <View style={styles.sheet} testID="category-form">
-          <ScrollView keyboardShouldPersistTaps="handled">
-            <Text accessibilityRole="header" style={styles.title}>
-              {editing ? TEXTS.form.editTitle : TEXTS.form.createTitle}
-            </Text>
-            <Text style={styles.subtitle}>{TEXTS.form.subtitle}</Text>
-            <TextField
-              autoCapitalize="sentences"
-              editable={!busy}
-              error={duplicate ? TEXTS.messages.duplicate : null}
-              label={TEXTS.form.nameLabel}
-              maxLength={CATEGORY_NAME_MAX_LENGTH}
-              onChangeText={handleNameChange}
-              placeholder={TEXTS.form.namePlaceholder}
-              testID="category-name"
-              value={name}
-            />
-            <Text style={styles.label}>{TEXTS.form.typeLabel}</Text>
-            <View accessibilityRole="radiogroup" style={styles.segment}>
-              {CATEGORY_TYPES.map(option => {
-                const selected = option === type;
-                return (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected, disabled: busy }}
-                    disabled={busy}
-                    key={option}
-                    onPress={() => setType(option)}
-                    style={[
-                      styles.segmentOption,
-                      selected && styles.segmentSelected,
-                    ]}
-                    testID={`category-type-${option}`}
-                  >
-                    <Text
+      <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
+        <DismissibleOverlay
+          disabled={busy}
+          onDismiss={onCancel}
+          style={styles.overlay}
+          testID="category-form-backdrop"
+        >
+          <View style={styles.sheet} testID="category-form">
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text accessibilityRole="header" style={styles.title}>
+                {editing ? TEXTS.form.editTitle : TEXTS.form.createTitle}
+              </Text>
+              <Text style={styles.subtitle}>{TEXTS.form.subtitle}</Text>
+              <TextField
+                autoCapitalize="sentences"
+                editable={!busy}
+                error={duplicate ? TEXTS.messages.duplicate : null}
+                label={TEXTS.form.nameLabel}
+                maxLength={CATEGORY_NAME_MAX_LENGTH}
+                onChangeText={handleNameChange}
+                placeholder={TEXTS.form.namePlaceholder}
+                testID="category-name"
+                value={name}
+              />
+              <Text style={styles.label}>{TEXTS.form.typeLabel}</Text>
+              <View accessibilityRole="radiogroup" style={styles.segment}>
+                {CATEGORY_TYPES.map(option => {
+                  const selected = option === type;
+                  return (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected, disabled: busy }}
+                      disabled={busy}
+                      key={option}
+                      onPress={() => setType(option)}
                       style={[
-                        styles.segmentText,
-                        option === 'income' ? styles.income : styles.expense,
-                        selected && styles.segmentTextSelected,
+                        styles.segmentOption,
+                        selected && styles.segmentSelected,
                       ]}
+                      testID={`category-type-${option}`}
                     >
-                      {TEXTS.types[option]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text style={styles.label}>{TEXTS.form.iconLabel}</Text>
-            <View style={styles.icons}>
-              {SELECTABLE_CATEGORY_ICON_IDS.map(option => {
-                const selected = option === icon;
-                return (
-                  <Pressable
-                    accessibilityLabel={TEXTS.accessibility.icon(
-                      CATEGORY_ICON_GLYPHS[option].label,
-                    )}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected, disabled: busy }}
-                    disabled={busy}
-                    key={option}
-                    onPress={() => setIcon(option)}
-                    style={[styles.iconOption, selected && styles.iconSelected]}
-                    testID={`category-icon-${option}`}
-                  >
-                    <CategoryIcon icon={option} size={40} />
-                  </Pressable>
-                );
-              })}
-            </View>
-            <View style={styles.buttons}>
-              <ActionButton
-                disabled={busy}
-                label={TEXTS.buttons.cancel}
-                onPress={onCancel}
-                testID="category-cancel"
-              />
-              <ActionButton
-                disabled={
-                  busy ||
-                  duplicate ||
-                  Object.keys(
-                    validateCategoryInput({ name, type, icon: icon ?? '' }),
-                  ).length > 0
-                }
-                label={TEXTS.buttons.save}
-                onPress={() => {
-                  handleSave();
-                }}
-                testID="category-save"
-                variant="primary"
-              />
-            </View>
-          </ScrollView>
-        </View>
+                      <Text
+                        style={[
+                          styles.segmentText,
+                          option === 'income' ? styles.income : styles.expense,
+                          selected && styles.segmentTextSelected,
+                        ]}
+                      >
+                        {TEXTS.types[option]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Text style={styles.label}>{TEXTS.form.iconLabel}</Text>
+              <View style={styles.icons}>
+                {SELECTABLE_CATEGORY_ICON_IDS.map(option => {
+                  const selected = option === icon;
+                  return (
+                    <Pressable
+                      accessibilityLabel={TEXTS.accessibility.icon(
+                        CATEGORY_ICON_GLYPHS[option].label,
+                      )}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected, disabled: busy }}
+                      disabled={busy}
+                      key={option}
+                      onPress={() => setIcon(option)}
+                      style={[
+                        styles.iconOption,
+                        selected && styles.iconSelected,
+                      ]}
+                      testID={`category-icon-${option}`}
+                    >
+                      <CategoryIcon icon={option} size={40} />
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.buttons}>
+                <ActionButton
+                  disabled={busy}
+                  label={TEXTS.buttons.cancel}
+                  onPress={onCancel}
+                  testID="category-cancel"
+                />
+                <ActionButton
+                  disabled={
+                    busy ||
+                    duplicate ||
+                    Object.keys(
+                      validateCategoryInput({ name, type, icon: icon ?? '' }),
+                    ).length > 0
+                  }
+                  label={TEXTS.buttons.save}
+                  onPress={() => {
+                    handleSave();
+                  }}
+                  testID="category-save"
+                  variant="primary"
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </DismissibleOverlay>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboard: { flex: 1 },
   overlay: {
     flex: 1,
     backgroundColor: COLORS.overlay,
