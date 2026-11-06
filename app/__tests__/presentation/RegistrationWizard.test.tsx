@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { TextInput } from 'react-native';
 import { readInteger } from '../../src/infrastructure/database/sqlDatabase';
 import { RegistrationWizard } from '../../src/presentation/registration/RegistrationWizard';
 import {
@@ -91,10 +92,16 @@ async function fillSecurityQuestions() {
   }
 }
 
-async function goToStep3() {
+async function goToSecurityStep() {
   await fillIdentification();
-  await press('registration-next');
   await fillContact();
+  await press('registration-next');
+  await screen.findByText('Paso 2 de 3');
+}
+
+async function goToConfirmation() {
+  await goToSecurityStep();
+  await fillSecurityQuestions();
   await press('registration-next');
   await screen.findByText('Paso 3 de 3');
 }
@@ -110,7 +117,7 @@ describe('registration wizard (HU1, E03-D1)', () => {
   test('shows the step, its title and the document types of the master table (E03-W01, HU1-CA02, HU1-CA03, E03-V11)', async () => {
     await setup();
     expect(screen.getByText('Registrar usuario')).toBeTruthy();
-    expect(screen.getByText('Identificación y datos personales')).toBeTruthy();
+    expect(screen.getByText('Datos personales y de acceso')).toBeTruthy();
     await press('registration-documentTypeCode');
     for (const code of ['CC', 'CE', 'PA', 'PPT']) {
       expect(
@@ -169,10 +176,10 @@ describe('registration wizard (HU1, E03-D1)', () => {
 
   test('keeps the data when going back and forward (E03-W03, E03-W04)', async () => {
     await setup();
-    await fillIdentification();
-    await press('registration-next');
-    expect(screen.getByText('Contacto y acceso')).toBeTruthy();
-    await type('registration-email', 'ana@example.com');
+    await goToSecurityStep();
+    expect(screen.getByText('Preguntas de seguridad')).toBeTruthy();
+    await select('question-0', 'favorite-color');
+    await type('registration-answer-0', 'Azul');
     await press('registration-back');
     expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
     expect(
@@ -181,16 +188,22 @@ describe('registration wizard (HU1, E03-D1)', () => {
     expect(screen.getByTestId('registration-lastName')).toHaveDisplayValue(
       'Peña',
     );
-    await press('registration-next');
     expect(screen.getByTestId('registration-email')).toHaveDisplayValue(
       'ana@example.com',
     );
+    await press('registration-next');
+    await screen.findByText('Paso 2 de 3');
+    expect(screen.getByTestId('registration-answer-0')).toHaveDisplayValue(
+      'Azul',
+    );
+    expect(screen.getByTestId('registration-question-0')).toHaveTextContent(
+      '¿Cuál es tu color favorito?',
+    );
   });
 
-  test('validates email, phone, country code and password in step 2 (HU1-CA05, HU1-CA07, HU1-CA08, HU1-CA09)', async () => {
+  test('validates email, phone, country code and password in step 1 (HU1-CA05, HU1-CA07, HU1-CA08, HU1-CA09)', async () => {
     await setup();
     await fillIdentification();
-    await press('registration-next');
     expect(
       screen.getByTestId('registration-phoneCountryCode'),
     ).toHaveTextContent('🇨🇴 Colombia (+57)');
@@ -213,14 +226,14 @@ describe('registration wizard (HU1, E03-D1)', () => {
         'A la contraseña le falta: al menos un símbolo, por ejemplo ! # $ %.',
       ),
     );
-    expect(screen.getByText('Paso 2 de 3')).toBeTruthy();
+    expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
     await select('phoneCountryCode', 'MX');
     expect(
       screen.getByTestId('registration-phoneCountryCode'),
     ).toHaveTextContent('🇲🇽 México (+52)');
   });
 
-  test('warns that the user is already registered when step 2 ends (HU1-CA14, A-W3, E03-W09)', async () => {
+  test('warns that the user is already registered when step 1 ends (HU1-CA14, A-W3, E03-W09)', async () => {
     const { service } = await setup();
     await service.register({
       documentTypeCode: 'CE',
@@ -239,19 +252,18 @@ describe('registration wizard (HU1, E03-D1)', () => {
       })),
     });
     await fillIdentification();
-    await press('registration-next');
     await fillContact('ANA@example.com');
     await press('registration-next');
     expect(
       await screen.findByText('El usuario se encuentra registrado'),
     ).toBeTruthy();
     await press('dialog-accept');
-    expect(screen.getByText('Paso 2 de 3')).toBeTruthy();
+    expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
   });
 
   test('offers the questions of the database and hides similar ones (HU1-CA10, HU1-CA11)', async () => {
     await setup();
-    await goToStep3();
+    await goToSecurityStep();
     await press('registration-question-0');
     expect(screen.getByText('¿Cuál es tu fruta favorita?')).toBeTruthy();
     await press('registration-question-0-option-favorite-dish');
@@ -269,11 +281,12 @@ describe('registration wizard (HU1, E03-D1)', () => {
 
   test('requires valid written answers of 2 to 100 code points (E03-D5, E03-V10)', async () => {
     const { database } = await setup();
-    await goToStep3();
+    await goToSecurityStep();
     await fillSecurityQuestions();
     await type('registration-answer-2', ' T ');
     await type('registration-answer-3', '');
-    await press('registration-register');
+    await press('registration-next');
+    expect(screen.getByText('Paso 2 de 3')).toBeTruthy();
     expect(screen.getByTestId('registration-answer-2-error')).toHaveTextContent(
       fieldError('Ingresa una respuesta de al menos 2 caracteres.'),
     );
@@ -284,6 +297,8 @@ describe('registration wizard (HU1, E03-D1)', () => {
     await type('registration-answer-2', 'Te');
     expect(screen.queryByTestId('registration-answer-2-error')).toBeNull();
     await type('registration-answer-3', 'Té');
+    await press('registration-next');
+    await screen.findByText('Paso 3 de 3');
     await press('registration-register');
     expect(await screen.findByText('El registro fue exitoso')).toBeTruthy();
     expect(await countUsers(database)).toBe(1);
@@ -291,8 +306,7 @@ describe('registration wizard (HU1, E03-D1)', () => {
 
   test('registers, informs, clears and goes to login (HU1-CA15, HU1-CA16, HU1-CA17, A-W4, E03-W10)', async () => {
     const { database, onNavigate } = await setup();
-    await goToStep3();
-    await fillSecurityQuestions();
+    await goToConfirmation();
     await press('registration-register');
     expect(await screen.findByText('El registro fue exitoso')).toBeTruthy();
     expect(await countUsers(database)).toBe(1);
@@ -314,8 +328,7 @@ describe('registration wizard (HU1, E03-D1)', () => {
         }),
     );
     await setup(() => ({ register }));
-    await goToStep3();
-    await fillSecurityQuestions();
+    await goToConfirmation();
     await press('registration-register');
     expect(screen.getByText('Registrando…')).toBeTruthy();
     for (const button of [
@@ -336,8 +349,7 @@ describe('registration wizard (HU1, E03-D1)', () => {
     const { database } = await setup(() => ({
       register: async () => ({ status: 'failed' }),
     }));
-    await goToStep3();
-    await fillSecurityQuestions();
+    await goToConfirmation();
     await press('registration-register');
     expect(
       await screen.findByText(
@@ -345,15 +357,18 @@ describe('registration wizard (HU1, E03-D1)', () => {
       ),
     ).toBeTruthy();
     await press('dialog-accept');
-    expect(screen.getByTestId('registration-answer-0')).toHaveDisplayValue('');
-    expect(screen.getByTestId('registration-question-0')).toHaveTextContent(
-      '¿Cuál es tu color favorito?',
-    );
-    await press('registration-back');
+    expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
     expect(screen.getByTestId('registration-email')).toHaveDisplayValue(
       'ana@example.com',
     );
     expect(screen.getByTestId('registration-password')).toHaveDisplayValue('');
+    await type('registration-password', 'Clave123!');
+    await press('registration-next');
+    await screen.findByText('Paso 2 de 3');
+    expect(screen.getByTestId('registration-answer-0')).toHaveDisplayValue('');
+    expect(screen.getByTestId('registration-question-0')).toHaveTextContent(
+      '¿Cuál es tu color favorito?',
+    );
     expect(await countUsers(database)).toBe(0);
   });
 
@@ -371,8 +386,7 @@ describe('registration wizard (HU1, E03-D1)', () => {
         },
       }),
     }));
-    await goToStep3();
-    await fillSecurityQuestions();
+    await goToConfirmation();
     await press('registration-register');
     await screen.findByText('Paso 1 de 3');
     expect(
@@ -387,7 +401,6 @@ describe('registration wizard (HU1, E03-D1)', () => {
     await press('registration-clear');
     expect(screen.queryByTestId('dialog-clear')).toBeNull();
     await fillIdentification();
-    await press('registration-next');
     await type('registration-email', 'ana@example.com');
     await press('registration-clear');
     expect(
@@ -403,13 +416,6 @@ describe('registration wizard (HU1, E03-D1)', () => {
     expect(
       screen.getByTestId('registration-documentNumber'),
     ).toHaveDisplayValue('');
-    await press('registration-next');
-    await press('registration-documentTypeCode');
-    await press('registration-documentTypeCode-option-CC');
-    await type('registration-documentNumber', '1');
-    await type('registration-firstName', 'Ana');
-    await type('registration-lastName', 'Peña');
-    await press('registration-next');
     expect(screen.getByTestId('registration-email')).toHaveDisplayValue('');
   });
 
@@ -457,6 +463,7 @@ describe('registration form usability (HU1 corrections, 2026-10-26)', () => {
     ).toHaveTextContent(FIELD_ERROR);
 
     await type('registration-documentNumber', '0012345');
+    await fillContact();
     await press('registration-next');
     expect(await screen.findByText('Paso 2 de 3')).toBeTruthy();
   });
@@ -464,8 +471,6 @@ describe('registration form usability (HU1 corrections, 2026-10-26)', () => {
   test('text fields use the same frame, without the Android underline, and the phone keeps its keypad', async () => {
     await setup();
     await fillIdentification();
-    await press('registration-next');
-    await screen.findByText('Paso 2 de 3');
     const phone = screen.getByTestId('registration-phoneNumber');
     const email = screen.getByTestId('registration-email');
     expect(phone.props.keyboardType).toBe('phone-pad');
@@ -492,16 +497,11 @@ describe('registration form usability (HU1 corrections, 2026-10-26)', () => {
       'no-hide-descendants',
     );
     expect(indicator.props.pointerEvents).toBe('none');
-    await fillIdentification();
-    await press('registration-next');
-    await screen.findByText('Paso 2 de 3');
     expect(
       screen.getByTestId('registration-phoneCountryCode-indicator', HIDDEN),
     ).toBeTruthy();
     expect(screen.getByText('🇨🇴 Colombia (+57)')).toBeTruthy();
-    await fillContact();
-    await press('registration-next');
-    await screen.findByText('Paso 3 de 3');
+    await goToSecurityStep();
     for (let index = 0; index < 5; index++) {
       expect(
         screen.getByTestId(`registration-question-${index}-indicator`, HIDDEN),
@@ -517,6 +517,9 @@ describe('registration form usability (HU1 corrections, 2026-10-26)', () => {
       'middleName',
       'lastName',
       'secondLastName',
+      'phoneNumber',
+      'email',
+      'password',
     ];
     for (const [index, field] of order.entries()) {
       const input = screen.getByTestId(`registration-${field}`);
@@ -533,8 +536,6 @@ describe('validation messages, password help and flags (HU1, second round 2026-1
   test('shows every password requirement before any error and marks them as they are met', async () => {
     await setup();
     await fillIdentification();
-    await press('registration-next');
-    await screen.findByText('Paso 2 de 3');
     expect(screen.getByText('La contraseña debe tener:')).toBeTruthy();
     for (const text of [
       '• Entre 8 y 128 caracteres',
@@ -600,8 +601,6 @@ describe('validation messages, password help and flags (HU1, second round 2026-1
     expect(
       screen.queryByTestId('registration-documentNumber-error'),
     ).toBeNull();
-    await press('registration-next');
-    await screen.findByText('Paso 2 de 3');
     await type('registration-phoneNumber', '1'.repeat(14));
     await press('registration-next');
     expect(
@@ -655,8 +654,6 @@ describe('validation messages, password help and flags (HU1, second round 2026-1
   test('the country list shows flag, name and calling code chosen by country, not by prefix', async () => {
     await setup();
     await fillIdentification();
-    await press('registration-next');
-    await screen.findByText('Paso 2 de 3');
     await press('registration-phoneCountryCode');
     expect(screen.getByText('🇺🇸 Estados Unidos (+1)')).toBeTruthy();
     expect(screen.getByText('🇨🇦 Canadá (+1)')).toBeTruthy();
@@ -666,5 +663,137 @@ describe('validation messages, password help and flags (HU1, second round 2026-1
     expect(
       screen.getByTestId('registration-phoneCountryCode'),
     ).toHaveTextContent('🇨🇦 Canadá (+1)');
+  });
+});
+
+describe('Bug 38: registration sequence of the HU1 prototype', () => {
+  test('step 1 groups identification, personal information and access credentials', async () => {
+    await setup();
+    for (const [testID, title] of [
+      ['registration-section-identification', 'Identificación oficial'],
+      ['registration-section-personal', 'Información personal'],
+      ['registration-section-access', 'Credenciales de acceso'],
+    ]) {
+      expect(screen.getByTestId(testID)).toHaveTextContent(title);
+    }
+    for (const field of [
+      'documentNumber',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'email',
+      'password',
+    ]) {
+      expect(screen.getByTestId(`registration-${field}`)).toBeTruthy();
+    }
+    expect(screen.queryByTestId('registration-question-0')).toBeNull();
+    expect(screen.queryByTestId('registration-back')).toBeNull();
+    expect(
+      screen.getByTestId('registration-progress-1-done', HIDDEN),
+    ).toBeTruthy();
+    expect(screen.getByTestId('registration-progress-2', HIDDEN)).toBeTruthy();
+    expect(screen.getByTestId('registration-progress-3', HIDDEN)).toBeTruthy();
+  });
+
+  test('step 2 validates the questions before the confirmation', async () => {
+    await setup();
+    await goToSecurityStep();
+    expect(
+      screen.getByTestId('registration-progress-2-done', HIDDEN),
+    ).toBeTruthy();
+    expect(screen.queryByTestId('registration-email')).toBeNull();
+    await press('registration-next');
+    expect(screen.getByText('Paso 2 de 3')).toBeTruthy();
+    expect(
+      screen.getByTestId('registration-question-0-error'),
+    ).toHaveTextContent(FIELD_ERROR);
+    expect(screen.getByTestId('registration-answer-0-error')).toHaveTextContent(
+      fieldError('Ingresa la respuesta.'),
+    );
+    expect(screen.queryByTestId('registration-register')).toBeNull();
+  });
+
+  test('step 3 shows a read-only review without secrets, and «Editar datos» returns to step 1', async () => {
+    const { database } = await setup();
+    await goToConfirmation();
+    expect(screen.getByText('Confirmación de datos')).toBeTruthy();
+    expect(
+      screen.getByTestId('registration-progress-3-done', HIDDEN),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId('registration-summary-document'),
+    ).toHaveTextContent('Cédula de ciudadanía 1.020.304.050');
+    expect(screen.getByTestId('registration-summary-name')).toHaveTextContent(
+      'Ana Peña',
+    );
+    expect(screen.getByTestId('registration-summary-phone')).toHaveTextContent(
+      '+57 3001112233',
+    );
+    expect(screen.getByTestId('registration-summary-email')).toHaveTextContent(
+      'ana@example.com',
+    );
+    expect(
+      screen.getByTestId('registration-summary-password'),
+    ).toHaveTextContent('••••••••');
+    expect(
+      screen.getByTestId('registration-summary-question-0'),
+    ).toHaveTextContent('¿Cuál es tu color favorito?');
+    expect(screen.queryByText('Clave123!')).toBeNull();
+    for (const [, answer] of ANSWERS) {
+      expect(screen.queryByText(answer)).toBeNull();
+    }
+    expect(screen.queryByTestId('registration-answer-0')).toBeNull();
+    expect(await countUsers(database)).toBe(0);
+
+    await press('registration-back');
+    expect(screen.getByText('Paso 2 de 3')).toBeTruthy();
+    await press('registration-next');
+    await screen.findByText('Paso 3 de 3');
+    await press('registration-edit');
+    expect(screen.getByText('Paso 1 de 3')).toBeTruthy();
+    expect(screen.getByTestId('registration-email')).toHaveDisplayValue(
+      'ana@example.com',
+    );
+  });
+});
+
+describe('Bug 39: focus of the security answers', () => {
+  const focus = TextInput.prototype.focus as jest.Mock;
+  const focusedFields = () =>
+    focus.mock.contexts.map(
+      context => (context as { props: { testID: string } }).props.testID,
+    );
+
+  beforeEach(() => focus.mockClear());
+
+  test('choosing a question focuses its own answer once the list closes', async () => {
+    await setup();
+    await goToSecurityStep();
+    focus.mockClear();
+    jest.useFakeTimers();
+    try {
+      await select('question-2', 'favorite-sport');
+      expect(focusedFields()).toEqual([]);
+      await act(() => jest.advanceTimersByTime(250));
+      expect(focusedFields()).toEqual(['registration-answer-2']);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('«next» on an answer only moves to an answer whose question is chosen', async () => {
+    await setup();
+    await goToSecurityStep();
+    const answer0 = () => screen.getByTestId('registration-answer-0');
+    expect(answer0().props.returnKeyType).toBe('done');
+    expect(answer0().props.submitBehavior).toBe('blurAndSubmit');
+    await select('question-1', 'first-pet');
+    expect(answer0().props.returnKeyType).toBe('next');
+    focus.mockClear();
+    await fireEvent(answer0(), 'submitEditing');
+    expect(focusedFields()).toEqual(['registration-answer-1']);
+    expect(
+      screen.getByTestId('registration-answer-4').props.returnKeyType,
+    ).toBe('done');
   });
 });

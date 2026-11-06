@@ -3,11 +3,22 @@
 export const REGISTRATION_TEXTS = {
   screenTitle: 'Registrar usuario',
   stepIndicator: (step: number) => `Paso ${step} de 3`,
+  // Bug 38: secuencia del prototipo de HU1 (datos, preguntas, confirmación).
   stepTitles: [
-    'Identificación y datos personales',
-    'Contacto y acceso',
+    'Datos personales y de acceso',
     'Preguntas de seguridad',
+    'Confirmación de datos',
   ],
+  sections: {
+    identification: 'Identificación oficial',
+    personal: 'Información personal',
+    access: 'Credenciales de acceso',
+  },
+  summary: {
+    document: 'Documento',
+    fullName: 'Nombre completo',
+    note: 'Revisa tus datos antes de registrarte. Si algo no es correcto, pulsa «Editar datos».',
+  },
   labels: {
     documentTypeCode: 'Tipo de documento',
     documentNumber: 'Documento',
@@ -26,6 +37,7 @@ export const REGISTRATION_TEXTS = {
   buttons: {
     back: 'Atrás',
     next: 'Siguiente',
+    edit: 'Editar datos',
     register: 'Registrar',
     clear: 'Limpiar',
     cancel: 'Cancelar',

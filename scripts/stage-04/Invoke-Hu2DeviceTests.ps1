@@ -104,13 +104,12 @@ $null = Choose 'Tipo de documento' (U 'C\u00e9dula de ciudadan\u00eda')
 $null = Type-Into 'Documento' $doc
 $null = Type-Into 'Primer nombre' 'Eva'
 $null = Type-Into 'Primer apellido' 'Mora'
-$null = Tap-Text 'Siguiente'
-$null = Wait-Text 'Paso 2 de 3' 30
+# Bug 38: celular, correo y contrasena estan en el paso 1; el paso 2 son las preguntas
 $null = Type-Into (U 'N\u00famero celular') $phone
 $null = Type-Into (U 'Correo electr\u00f3nico') $email
 $null = Type-Into $Password $secret
 $null = Tap-Text 'Siguiente'
-if (-not (Wait-Text 'Paso 3 de 3' 40)) { Screenshot 'registro-paso2' | Out-Null; Stop-Blocked 'REGISTER' 'no se pudo llegar al paso 3 del registro' }
+if (-not (Wait-Text 'Paso 2 de 3' 40)) { Screenshot 'registro-paso1' | Out-Null; Stop-Blocked 'REGISTER' 'no se pudo llegar al paso 2 del registro' }
 $questions = @(
   ([string][char]0x00BF + 'Cu' + [char]0x00E1 + 'l es tu color favorito?'),
   ([string][char]0x00BF + 'Qu' + [char]0x00E9 + ' tipo de animal fue tu primera mascota?'),
@@ -118,9 +117,15 @@ $questions = @(
   ([string][char]0x00BF + 'Cu' + [char]0x00E1 + 'l es tu plato favorito?'),
   ([string][char]0x00BF + 'C' + [char]0x00F3 + 'mo ibas normalmente a la escuela primaria?')
 )
-for ($i = 0; $i -lt 5; $i++) { $null = Choose "Pregunta de seguridad $($i + 1)" $questions[$i] }
 $answers = @('Verde', 'Gato', 'Tenis', 'Arroz', 'En bus')
-for ($i = 0; $i -lt 5; $i++) { $null = Type-Into "Respuesta $($i + 1)" $answers[$i] }
+# Bug 39: al elegir la pregunta el foco pasa a su respuesta, por eso se responden en orden
+for ($i = 0; $i -lt 5; $i++) {
+  $null = Choose "Pregunta de seguridad $($i + 1)" $questions[$i]
+  $null = Type-Into "Respuesta $($i + 1)" $answers[$i]
+}
+Hide-Keyboard
+$null = Tap-Text 'Siguiente'
+if (-not (Wait-Text 'Paso 3 de 3' 40)) { Screenshot 'registro-paso2' | Out-Null; Stop-Blocked 'REGISTER' 'no se pudo llegar a la confirmacion del registro' }
 $null = Tap-Text 'Registrar'
 $registered = Wait-Text 'El registro fue exitoso' 240
 Screenshot 'hu2-04-registro' | Out-Null

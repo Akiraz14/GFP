@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   StyleSheet,
   Text,
   View,
@@ -34,6 +35,7 @@ import {
 import {
   REGISTRATION_QUESTION_COUNT,
   securityAnswerViolation,
+  validateSecurityAnswerSlots,
   type SecurityAnswerSlotError,
   type SecurityQuestion,
 } from '../../services/authentication/securityQuestionPolicy';
@@ -75,19 +77,22 @@ type TextFieldName = Exclude<
   'documentTypeCode' | 'phoneCountryCode'
 >;
 
-const IDENTIFICATION_TEXT_FIELDS = [
+// Bug 38: the first step holds every personal and access field, in the order of the HU1
+// prototype, so the keyboard «next» key walks through all of them.
+const ACCOUNT_TEXT_FIELDS = [
   'documentNumber',
   'firstName',
   'middleName',
   'lastName',
   'secondLastName',
-] as const satisfies readonly TextFieldName[];
-
-const CONTACT_TEXT_FIELDS = [
   'phoneNumber',
   'email',
   'password',
 ] as const satisfies readonly TextFieldName[];
+
+// Bug 39: delay before focusing an answer after its question list closes, so the
+// keyboard opens once the selector modal has finished its fade animation.
+export const ANSWER_FOCUS_DELAY_MS = 250;
 
 const NAME_FIELDS = [
   'firstName',
@@ -178,13 +183,18 @@ function hasEnteredData(data: WizardData): boolean {
   );
 }
 
+function hasSlotErrors(slots: readonly SecurityAnswerSlotError[]): boolean {
+  return slots.some(slot => slot.question !== null || slot.answer !== null);
+}
+
 function firstStepWithErrors(errors: RegistrationErrors): Step {
-  const fields = Object.keys(errors.fields) as RegistrationField[];
-  if (fields.some(field => IDENTIFICATION_FIELDS.includes(field))) {
+  if (Object.keys(errors.fields).length > 0) {
     return 1;
   }
-  return fields.length > 0 ? 2 : 3;
+  return hasSlotErrors(errors.securityAnswers) ? 2 : 3;
 }
+
+const MASKED_SECRET = '••••••••';
 
 const COUNTRY_OPTIONS = COUNTRY_CALLING_CODES.map(country => ({
   value: country.regionCode,
@@ -224,6 +234,25 @@ export function RegistrationWizard({
     if (next !== undefined) {
       inputRefs.current.get(next)?.focus();
     }
+  }
+
+  const [pendingFocus, setPendingFocus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pendingFocus === null) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      inputRefs.current.get(pendingFocus)?.focus();
+      setPendingFocus(null);
+    }, ANSWER_FOCUS_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [pendingFocus]);
+
+  function goToStep(next: Step) {
+    Keyboard.dismiss();
+    setPendingFocus(null);
+    setStep(next);
   }
 
   function navigationProps(order: readonly string[], name: string) {
@@ -271,7 +300,7 @@ export function RegistrationWizard({
     setData(emptyData());
     setFieldErrors({});
     setSlotErrors(EMPTY_SLOTS);
-    setStep(1);
+    goToStep(1);
   }
 
   function fieldMessage(field: RegistrationField): string | null {
@@ -366,16 +395,22 @@ export function RegistrationWizard({
   }
 
   async function handleNext() {
-    if (step === 1) {
-      const errors = validateIdentification(data, activeDocumentTypeCodes);
-      setFieldErrors(errors);
-      if (Object.keys(errors).length === 0) {
-        setStep(2);
+    if (step === 2) {
+      const errors = validateSecurityAnswerSlots(
+        data.securityAnswers,
+        catalog.questions,
+      );
+      setSlotErrors(errors);
+      if (!hasSlotErrors(errors)) {
+        goToStep(3);
       }
       return;
     }
     const input = toInput(data);
-    const errors = validateContact(input, CALLING_CODES);
+    const errors = {
+      ...validateIdentification(input, activeDocumentTypeCodes),
+      ...validateContact(input, CALLING_CODES),
+    };
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -386,7 +421,7 @@ export function RegistrationWizard({
       .catch((): AvailabilityResult => 'failed');
     setBusy('idle');
     if (availability === 'available') {
-      setStep(3);
+      goToStep(2);
     } else {
       setDialog(
         availability === 'already_registered' ? 'already_registered' : 'failed',
@@ -404,7 +439,7 @@ export function RegistrationWizard({
     if (hasRegistrationErrors(errors)) {
       setFieldErrors(errors.fields);
       setSlotErrors(errors.securityAnswers);
-      setStep(firstStepWithErrors(errors));
+      goToStep(firstStepWithErrors(errors));
       return;
     }
     setBusy('registering');
@@ -418,7 +453,7 @@ export function RegistrationWizard({
     } else if (result.status === 'invalid') {
       setFieldErrors(result.errors.fields);
       setSlotErrors(result.errors.securityAnswers);
-      setStep(firstStepWithErrors(result.errors));
+      goToStep(firstStepWithErrors(result.errors));
     } else if (result.status === 'already_registered') {
       setDialog('already_registered');
     } else {
@@ -430,6 +465,7 @@ export function RegistrationWizard({
           answer: '',
         })),
       }));
+      goToStep(1);
       setDialog('failed');
     }
   }
@@ -474,9 +510,21 @@ export function RegistrationWizard({
       .map(question => ({ value: question.id, label: question.prompt }));
   }
 
-  function renderIdentification() {
+  function sectionHeader(title: string, testID: string) {
+    return (
+      <Text accessibilityRole="header" style={styles.section} testID={testID}>
+        {title}
+      </Text>
+    );
+  }
+
+  function renderAccount() {
     return (
       <>
+        {sectionHeader(
+          TEXTS.sections.identification,
+          'registration-section-identification',
+        )}
         <SelectField
           disabled={disabled}
           error={fieldMessage('documentTypeCode')}
@@ -492,7 +540,7 @@ export function RegistrationWizard({
           value={data.documentTypeCode}
         />
         <TextField
-          {...navigationProps(IDENTIFICATION_TEXT_FIELDS, 'documentNumber')}
+          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'documentNumber')}
           autoCapitalize={digitsOnlyDocument ? 'none' : 'characters'}
           autoCorrect={false}
           editable={!disabled}
@@ -503,9 +551,13 @@ export function RegistrationWizard({
           testID="registration-documentNumber"
           value={data.documentNumber}
         />
+        {sectionHeader(
+          TEXTS.sections.personal,
+          'registration-section-personal',
+        )}
         {NAME_FIELDS.map(field => (
           <TextField
-            {...navigationProps(IDENTIFICATION_TEXT_FIELDS, field)}
+            {...navigationProps(ACCOUNT_TEXT_FIELDS, field)}
             autoCapitalize="words"
             autoCorrect={false}
             editable={!disabled}
@@ -517,13 +569,7 @@ export function RegistrationWizard({
             value={data[field]}
           />
         ))}
-      </>
-    );
-  }
-
-  function renderContact() {
-    return (
-      <>
+        {sectionHeader(TEXTS.sections.access, 'registration-section-access')}
         <SelectField
           disabled={disabled}
           error={fieldMessage('phoneCountryCode')}
@@ -539,7 +585,7 @@ export function RegistrationWizard({
           value={data.phoneRegion}
         />
         <TextField
-          {...navigationProps(CONTACT_TEXT_FIELDS, 'phoneNumber')}
+          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'phoneNumber')}
           editable={!disabled}
           error={fieldMessage('phoneNumber')}
           keyboardType="phone-pad"
@@ -549,7 +595,7 @@ export function RegistrationWizard({
           value={data.phoneNumber}
         />
         <TextField
-          {...navigationProps(CONTACT_TEXT_FIELDS, 'email')}
+          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'email')}
           autoCapitalize="none"
           autoComplete="email"
           autoCorrect={false}
@@ -562,7 +608,7 @@ export function RegistrationWizard({
           value={data.email}
         />
         <TextField
-          {...navigationProps(CONTACT_TEXT_FIELDS, 'password')}
+          {...navigationProps(ACCOUNT_TEXT_FIELDS, 'password')}
           autoCapitalize="none"
           autoComplete="new-password"
           autoCorrect={false}
@@ -584,24 +630,46 @@ export function RegistrationWizard({
     );
   }
 
+  // Bug 39: choosing a question moves the focus to its own answer; «next» on an answer
+  // only jumps to the following answer when that slot already has its question, so the
+  // keyboard never lands in a field whose question the user has not seen yet.
+  function answerNavigationProps(index: number) {
+    const name = `answer-${index}`;
+    const nextReady =
+      index + 1 < data.securityAnswers.length &&
+      data.securityAnswers[index + 1].questionId !== '';
+    return {
+      ref: inputRef(name),
+      returnKeyType: nextReady ? ('next' as const) : ('done' as const),
+      submitBehavior: nextReady
+        ? ('submit' as const)
+        : ('blurAndSubmit' as const),
+      onSubmitEditing: () => {
+        if (nextReady) {
+          inputRefs.current.get(`answer-${index + 1}`)?.focus();
+        }
+      },
+    };
+  }
+
   function renderSecurityQuestions() {
-    const answerOrder = data.securityAnswers.map(
-      (_slot, index) => `answer-${index}`,
-    );
     return data.securityAnswers.map((slot, index) => (
       <View key={index} style={styles.slot}>
         <SelectField
           disabled={disabled}
           error={questionMessage(slotErrors[index]?.question ?? null)}
           label={TEXTS.labels.securityQuestion(index + 1)}
-          onChange={value => updateSlot(index, { questionId: value })}
+          onChange={value => {
+            updateSlot(index, { questionId: value });
+            setPendingFocus(`answer-${index}`);
+          }}
           options={questionOptions(index)}
           placeholder={TEXTS.selectPlaceholder}
           testID={`registration-question-${index}`}
           value={slot.questionId}
         />
         <TextField
-          {...navigationProps(answerOrder, `answer-${index}`)}
+          {...answerNavigationProps(index)}
           autoCorrect={false}
           editable={!disabled}
           error={answerMessage(slotErrors[index]?.answer ?? null)}
@@ -614,10 +682,105 @@ export function RegistrationWizard({
     ));
   }
 
+  function summaryRow(label: string, value: string, testID: string) {
+    return (
+      <View key={testID} style={styles.summaryRow}>
+        <Text style={styles.summaryLabel}>{label}</Text>
+        <Text style={styles.summaryValue} testID={testID}>
+          {value}
+        </Text>
+      </View>
+    );
+  }
+
+  // Bug 38: read-only review before «Registrar», as in the third screen of the prototype.
+  // Secrets are never shown: the password and the answers appear masked.
+  function renderConfirmation() {
+    const documentType =
+      catalog.documentTypes.find(type => type.code === data.documentTypeCode)
+        ?.name ?? data.documentTypeCode;
+    const fullName = [
+      data.firstName,
+      data.middleName,
+      data.lastName,
+      data.secondLastName,
+    ]
+      .map(name => name.trim())
+      .filter(name => name.length > 0)
+      .join(' ');
+    return (
+      <View style={styles.summary} testID="registration-summary">
+        {sectionHeader(
+          TEXTS.sections.identification,
+          'registration-summary-identification',
+        )}
+        {summaryRow(
+          TEXTS.summary.document,
+          `${documentType} ${data.documentNumber.trim()}`,
+          'registration-summary-document',
+        )}
+        {summaryRow(
+          TEXTS.summary.fullName,
+          fullName,
+          'registration-summary-name',
+        )}
+        {sectionHeader(TEXTS.sections.access, 'registration-summary-access')}
+        {summaryRow(
+          TEXTS.labels.phoneNumber,
+          `${callingCodeOf(data.phoneRegion)} ${data.phoneNumber.trim()}`,
+          'registration-summary-phone',
+        )}
+        {summaryRow(
+          TEXTS.labels.email,
+          data.email.trim(),
+          'registration-summary-email',
+        )}
+        {summaryRow(
+          TEXTS.labels.password,
+          MASKED_SECRET,
+          'registration-summary-password',
+        )}
+        {sectionHeader(TEXTS.stepTitles[1], 'registration-summary-security')}
+        {data.securityAnswers.map((slot, index) =>
+          summaryRow(
+            TEXTS.labels.securityQuestion(index + 1),
+            catalog.questions.find(question => question.id === slot.questionId)
+              ?.prompt ?? '',
+            `registration-summary-question-${index}`,
+          ),
+        )}
+        <Text style={styles.summaryNote}>{TEXTS.summary.note}</Text>
+      </View>
+    );
+  }
+
+  function renderProgress() {
+    return (
+      <View
+        importantForAccessibility="no-hide-descendants"
+        style={styles.progressBar}
+      >
+        {([1, 2, 3] as const).map(index => (
+          <View
+            key={index}
+            style={[
+              styles.progressSegment,
+              index <= step && styles.progressSegmentDone,
+            ]}
+            testID={`registration-progress-${index}${
+              index <= step ? '-done' : ''
+            }`}
+          />
+        ))}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.screen} testID="registration-wizard">
       <FormScrollView
         contentStyle={styles.content}
+        key={step}
         testID="registration-scroll"
       >
         <Text accessibilityRole="header" style={styles.title}>
@@ -626,10 +789,11 @@ export function RegistrationWizard({
         <Text style={styles.stepIndicator} testID="registration-step">
           {TEXTS.stepIndicator(step)}
         </Text>
+        {renderProgress()}
         <Text style={styles.stepTitle}>{TEXTS.stepTitles[step - 1]}</Text>
-        {step === 1 && renderIdentification()}
-        {step === 2 && renderContact()}
-        {step === 3 && renderSecurityQuestions()}
+        {step === 1 && renderAccount()}
+        {step === 2 && renderSecurityQuestions()}
+        {step === 3 && renderConfirmation()}
         {busy === 'registering' && (
           <View style={styles.progress} testID="registration-progress">
             <ActivityIndicator color={COLORS.primary} />
@@ -643,7 +807,7 @@ export function RegistrationWizard({
             <ActionButton
               disabled={disabled}
               label={TEXTS.buttons.back}
-              onPress={() => setStep((step - 1) as Step)}
+              onPress={() => goToStep((step - 1) as Step)}
               testID="registration-back"
             />
           )}
@@ -669,6 +833,16 @@ export function RegistrationWizard({
             />
           )}
         </View>
+        {step === 3 && (
+          <View style={styles.buttonRow}>
+            <ActionButton
+              disabled={disabled}
+              label={TEXTS.buttons.edit}
+              onPress={() => goToStep(1)}
+              testID="registration-edit"
+            />
+          </View>
+        )}
         <View style={styles.buttonRow}>
           <ActionButton
             disabled={disabled}
@@ -754,6 +928,32 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   title: { color: COLORS.text, fontSize: 24, fontWeight: '700' },
   stepIndicator: { color: COLORS.mutedText, fontSize: 15, marginTop: 6 },
+  progressBar: { flexDirection: 'row', marginTop: 8 },
+  progressSegment: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 2,
+    flex: 1,
+    height: 4,
+    marginHorizontal: 2,
+  },
+  progressSegmentDone: { backgroundColor: COLORS.primary },
+  section: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 10,
+    marginTop: 8,
+  },
+  summary: { marginBottom: 8 },
+  summaryRow: {
+    borderBottomColor: COLORS.secondary,
+    borderBottomWidth: 1,
+    marginBottom: 8,
+    paddingBottom: 8,
+  },
+  summaryLabel: { color: COLORS.mutedText, fontSize: 14 },
+  summaryValue: { color: COLORS.text, fontSize: 16, marginTop: 2 },
+  summaryNote: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
   stepTitle: {
     color: COLORS.text,
     fontSize: 19,

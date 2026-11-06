@@ -141,7 +141,9 @@ foreach ($case in $cases) {
     Send-Text ('AB' + (Get-Date -Format 'HHmmss'))
     Hide-Keyboard
     $null = Tap-Text 'Siguiente'
-    Check "E03-V06-$code-ALNUM" (Wait-Text 'Paso 2 de 3' 30) 'PA con letras y numeros aceptado (avanza al paso 2)'
+    Start-Sleep -Milliseconds 800
+    # Bug 38: el paso 1 incluye tambien los datos de acceso, por eso se verifica el campo
+    Check "E03-V06-$code-ALNUM" (-not (Find-Id (Get-Ui) 'registration-documentNumber-error')) 'PA con letras y numeros aceptado (sin error en el documento)'
   }
 }
 $null = Tap-Text 'Cancelar'
