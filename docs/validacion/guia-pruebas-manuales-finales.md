@@ -69,8 +69,8 @@ Detalle en `etapa-07-verificacion.md`, M01–M14.
 | G4-01 | HU4-CA01, CA13 | «+ Nuevo movimiento»; guardar sin monto ni categoría y con la fecha vacía | «Error en los campos ingresados» y mensajes por campo |
 | G4-02 | HU4-CA02, CA03 | Abrir «Categoría» con Gasto y con Ingreso | Categorías del tipo más «Otros»; la fecha es la de hoy |
 | G4-03 | HU4-CA04 ★ | Fecha de mañana escrita; abrir 📅 | «La fecha no puede ser futura»; el calendario no deja elegir días futuros. ★ Captura del calendario |
-| G4-04 | HU4-CA05, CA06 | Montos `0`, `-5`, `abc`; descripción de más de 250 caracteres | «Ingrese un monto válido»; contador en rojo |
-| G4-05 | HU4-CA07–CA09 | Registrar un ingreso `1.250.000,50` (Salario) y dos gastos (Alimentación y Transporte) | «¡Operación exitosa!» y el resumen; al volver, el formulario está vacío |
+| G4-04 | HU4-CA05, CA06 | Monto `0`; intentar escribir `-5` y `abc`; descripción de más de 250 caracteres | `0` muestra «Ingrese un monto válido»; el teclado numérico y la máscara de Bug 40 no admiten `-` ni letras; contador en rojo |
+| G4-05 | HU4-CA07–CA09 | Registrar un ingreso `1.250.000,50` (Salario; se teclea `125000050`, Bug 40) y dos gastos (Alimentación y Transporte) | «¡Operación exitosa!» y el resumen; al volver, el formulario está vacío |
 | G4-06 | HU4-CA10, CA07, CA08 | «Editar» en un gasto, cambiar el monto, «Actualizar» | Datos cargados; «El movimiento fue actualizado exitosamente» |
 | G4-07 | HU4-CA11, CA12 | Llenar y pulsar «Limpiar»; llenar y pulsar «Cancelar», Atrás y la pestaña «Movimientos» | Campos restablecidos; vuelve al historial sin guardar |
 
@@ -137,6 +137,20 @@ Detalle en `etapa-08-verificacion.md`, H01–H12.
 | G10-04 | HU10-CA04, CA06 | Con la cuenta B (sin movimientos) | «¡Todo en orden! …» y el descargo literal |
 | G10-05 | HU10-CA05 | «Ver movimientos asociados» en R1 y en R2 | Historial con el mes y, en R2, la categoría y Gasto |
 | G10-06 | I-27 ★ | Descartar una tarjeta, cambiar de pestaña, cerrar y abrir la app | Sigue oculta durante el mes. ★ Si es posible, adelante el reloj al mes siguiente y anote si reaparece |
+
+## G-INC — Incidencias y mejoras (Bugs 38–41, Tasks 27–37)
+
+Detalle en `../incidencias-y-mejoras.md`. Ejecutar en Android 10 y 14.
+
+| Paso | ID | Acción | Resultado esperado |
+|---|---|---|---|
+| GI-01 | Bug 38, Task 27 ★ | Registrar una cuenta: paso 1 con todos los datos, «Siguiente»; paso 2 con las preguntas, «Siguiente»; revisar el paso 3; «Editar datos»; volver y «Registrar» | Secciones del paso 1; barra de progreso igual a «Paso n de 3»; el paso 2 no avanza con preguntas incompletas; confirmación sin contraseña ni respuestas visibles; cada paso abre arriba. ★ Capturas de los tres pasos |
+| GI-02 | Bug 39 | En el paso 2 elegir la pregunta 1; tocar «siguiente» del teclado en una respuesta | El teclado se abre en la respuesta 1; «siguiente» solo pasa a una respuesta con pregunta elegida |
+| GI-03 | Bug 39, Task 29 | Recuperación: identificador válido y «Comenzar recuperación»; recorrer con «siguiente» | «Paso 2 de 2»; el foco y el teclado quedan en la respuesta 1; luego respuesta 2, nueva contraseña y confirmación |
+| GI-04 | Bug 40, Task 37, Task 31 ★ | En «+ Nuevo movimiento» teclear `4550075`, borrar un dígito y guardar | Muestra `45.500,75` y luego `4.550,07` sin mover el cursor; el historial y el balance muestran `$4.550,07`. ★ Captura |
+| GI-05 | Bug 41 | Elegir de la galería una imagen GIF o WebP y otra JPG de más de 5 MB | El mensaje literal de HU7-CA02 y no se procesa |
+| GI-06 | Task 36 | Abrir una lista desplegable, un diálogo de eliminar y el formulario de categoría; tocar dentro y fuera de cada uno | Dentro no se cierra; fuera se cierra sin guardar ni eliminar; Atrás de Android también lo cierra |
+| GI-07 | Tasks 28, 30, 32–35 | Revisar inicio de sesión, historial con una descripción larga y un monto de 12 cifras, revisión de HU7, «Mis categorías» vacía, leyenda de «Evolución» y una recomendación con TalkBack | Coinciden con la sección 3 de `incidencias-y-mejoras.md`; TalkBack no lee «■» ni el emoji de severidad |
 
 ## Regresión y seguridad
 

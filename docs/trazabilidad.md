@@ -365,7 +365,7 @@ integral posterior a la Etapa 13.
 | HU4-CA02 | El selector "Categoría" debe poblarse con los registros activos del maestro 'categories'. | `listActiveCategories()` sin caché al abrir el formulario, filtrado por tipo con «Otros» para ambos (E07-D1, D-02) | U: `movementRules.test.ts`; C: `MovementFormScreen.test.tsx` (incluye una categoría personalizada recién creada, HU8-CA08) | M02 | Verificado (Jest) |
 | HU4-CA03 | El selector “Fecha” debe inicializarse con la fecha actual del sistema por defecto. | `todayIso()` con la fecha local; campo `DD/MM/AAAA` y calendario nativo (E07-D6) | U: `localDate.test.ts`; C: `MovementFormScreen.test.tsx` | M04 | Verificado (Jest) |
 | HU4-CA04 | La fecha no puede ser posterior a la fecha actual del sistema. De lo contrario, se muestra un mensaje: "La fecha no puede ser futura". | Validación de la fecha frente a hoy; `maximumDate` del calendario (D-03) | U: `movementRules.test.ts`, `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx` | M05, M06 | Verificado (Jest) |
-| HU4-CA05 | El campo monto debe recibir solo valores numéricos positivos mayores a cero. De lo contrario, se muestra un mensaje cerca del campo: “Ingrese un monto válido”. | `parseAmountInput()` (`money.ts`, E07-D5); mensaje bajo el campo; `CHECK` de `amount_cents` | U: `money.test.ts`, `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M07 | Verificado (Jest) |
+| HU4-CA05 | El campo monto debe recibir solo valores numéricos positivos mayores a cero. De lo contrario, se muestra un mensaje cerca del campo: “Ingrese un monto válido”. | `parseAmountInput()` (`money.ts`, E07-D5); máscara `maskAmountInput()` con teclado numérico (Bug 40, E-INC-D2); mensaje bajo el campo; `CHECK` de `amount_cents` | U: `money.test.ts`, `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M07 | Verificado (Jest) |
 | HU4-CA06 | El campo "Descripción" es opcional y permite una longitud máxima de 250 caracteres. | `normalizeDescription()` y contador `n/250` (E07-D8); `CHECK` de `description` | U: `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M08 | Verificado (Jest) |
 | HU4-CA07 | Al presionar el botón "Registrar" (o “Actualizar”), si la información es válida, la transacción se almacena en la base de datos local vinculada al userId del usuario autenticado. | `MovementManagementService.create()` y `update()`; `MovementRepository` toma el usuario de la sesión (E02-D4) | U, I: `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
 | HU4-CA08 | Al guardar correctamente, el sistema muestra el mensaje de confirmación: "El movimiento fue registrado exitosamente" (o "El movimiento fue actualizado exitosamente" para ediciones). | Pantalla «¡Operación exitosa!» (E07-D4); mensaje de actualización en el formulario | C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
@@ -486,6 +486,20 @@ Decisión E-CONS-D6.
 Decisión verificada además en Jest: descarte guardado por usuario y mes, oculto al reabrir la
 pantalla y evaluado de nuevo el mes siguiente (I-27; `recommendationService.test.ts`,
 `AnalysisAndRecommendations.test.tsx`, `movementMigration.test.ts`).
+
+## Incidencias y mejoras (2026-11-05)
+
+Correcciones sobre `main` (`dec86ff`) que no cambian el texto de ningún criterio. Su detalle,
+causas, archivos y pruebas están en `incidencias-y-mejoras.md`.
+
+| ID | Criterios relacionados | Estado |
+|---|---|---|
+| Bug 38 + Task 27 | HU1-CA01–CA19 (secuencia del asistente, E-INC-D1) | Corregido; verificado en Jest; validación en dispositivo pendiente (GI-01) |
+| Bug 39 | HU1-CA10, HU3-CA04 (foco de las respuestas) | Corregido; verificado en Jest; pendiente GI-02 y GI-03 |
+| Bug 40 + Task 37 | HU4-CA05, CA07, CA10; HU6; HU7-CA07 (máscara del monto, E-INC-D2) | Corregido; verificado en Jest; pendiente GI-04 |
+| Bug 41 | HU7-CA02 | No es un error; comportamiento verificado en Jest; pendiente GI-05 |
+| Tasks 28–35 | HU2, HU3, HU5, HU4, HU7, HU8, HU9, HU10 (presentación) | Implementadas; verificadas en Jest; pendiente GI-07 |
+| Task 36 | HU8 y todos los diálogos y listas | Implementada; verificada en Jest; pendiente GI-06 |
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
