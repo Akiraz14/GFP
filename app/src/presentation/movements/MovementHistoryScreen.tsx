@@ -99,13 +99,22 @@ function MovementCard({
           {movement.categoryName.toLocaleUpperCase('es')}
         </Text>
         <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+          numberOfLines={1}
           style={[styles.amount, income ? styles.income : styles.expense]}
           testID={`movement-amount-${movement.id}`}
         >
           {signedAmount(movement)}
         </Text>
       </View>
-      <Text style={styles.cardTitle}>{title}</Text>
+      <Text
+        numberOfLines={2}
+        style={styles.cardTitle}
+        testID={`movement-title-${movement.id}`}
+      >
+        {title}
+      </Text>
       <Text style={styles.cardMeta}>
         {formatDisplayDate(movement.occurredOn)} •{' '}
         {income ? TEXTS.types.income : TEXTS.types.expense}
@@ -551,7 +560,13 @@ const styles = StyleSheet.create({
   },
   income: { color: COLORS.success },
   expense: { color: COLORS.error },
-  cardTitle: { color: COLORS.text, fontSize: 16, marginTop: 10 },
+  // Task 30: the description reads as the card title (prototype) and long ones are cut.
+  cardTitle: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 10,
+  },
   cardMeta: { color: COLORS.mutedText, fontSize: 14, marginTop: 2 },
   cardActions: {
     borderTopColor: COLORS.border,

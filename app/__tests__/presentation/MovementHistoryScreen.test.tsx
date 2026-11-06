@@ -381,3 +381,21 @@ describe('HU5 history screen', () => {
     expect(stored.rows[0]).toEqual({ total: 1 });
   });
 });
+
+describe('Task 30: card hierarchy of the HU5 prototype', () => {
+  test('the description is the bold card title, cut at two lines; the amount stays on one line', async () => {
+    const context = await setup();
+    const id = await context.add({
+      amount: '99.999.999.999,99',
+      description: 'Compra '.repeat(30).trim(),
+    });
+    await show(context);
+    const title = screen.getByTestId(`movement-title-${id}`);
+    expect(title.props.numberOfLines).toBe(2);
+    expect(title).toHaveStyle({ fontWeight: '600' });
+    const amount = screen.getByTestId(`movement-amount-${id}`);
+    expect(amount).toHaveTextContent('-$99.999.999.999,99');
+    expect(amount.props.numberOfLines).toBe(1);
+    expect(amount.props.adjustsFontSizeToFit).toBe(true);
+  });
+});
