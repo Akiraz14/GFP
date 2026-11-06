@@ -122,6 +122,11 @@ export function CategoryFormSheet({
           testID="category-form-backdrop"
         >
           <View style={styles.sheet} testID="category-form">
+            <View
+              importantForAccessibility="no-hide-descendants"
+              style={styles.handle}
+              testID="category-form-handle"
+            />
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text accessibilityRole="header" style={styles.title}>
                 {editing ? TEXTS.form.editTitle : TEXTS.form.createTitle}
@@ -237,6 +242,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     maxHeight: '90%',
     padding: 20,
+  },
+  // Task 33: grip of the bottom sheet of the HU8 prototype (decorative).
+  handle: {
+    alignSelf: 'center',
+    backgroundColor: COLORS.border,
+    borderRadius: 2,
+    height: 4,
+    marginBottom: 12,
+    width: 40,
   },
   title: { color: COLORS.text, fontSize: 24, fontWeight: '700' },
   subtitle: { color: COLORS.mutedText, fontSize: 15, marginBottom: 16 },

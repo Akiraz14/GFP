@@ -357,3 +357,18 @@ describe('HU8 categories screen', () => {
     expect(onSessionExpired).toHaveBeenCalled();
   });
 });
+
+describe('Task 33: HU8 sheet and empty section', () => {
+  test('«Mis categorías» explains how to create one while it is empty', async () => {
+    await setup();
+    expect(screen.getByTestId('categories-own-empty')).toHaveTextContent(
+      'Aún no tienes categorías propias. Usa «+ Nueva categoría» para crear una.',
+    );
+    await fireEvent.press(screen.getByTestId('categories-new'));
+    expect(
+      screen.getByTestId('category-form-handle', {
+        includeHiddenElements: true,
+      }).props.importantForAccessibility,
+    ).toBe('no-hide-descendants');
+  });
+});

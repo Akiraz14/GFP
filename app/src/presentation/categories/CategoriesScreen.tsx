@@ -200,6 +200,11 @@ export function CategoriesScreen({
             <Text accessibilityRole="header" style={styles.section}>
               {TEXTS.sections.own}
             </Text>
+            {own.length === 0 && (
+              <Text style={styles.ownEmpty} testID="categories-own-empty">
+                {TEXTS.ownEmpty}
+              </Text>
+            )}
             {own.map(category => (
               <View
                 key={category.id}
@@ -309,6 +314,7 @@ const styles = StyleSheet.create({
   subtitle: { color: COLORS.mutedText, fontSize: 15, marginTop: 2 },
   newButton: { flexDirection: 'row', marginHorizontal: -4, marginVertical: 16 },
   loading: { marginTop: 24 },
+  ownEmpty: { color: COLORS.mutedText, fontSize: 15, marginBottom: 8 },
   section: {
     color: COLORS.text,
     fontSize: 16,

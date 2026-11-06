@@ -12,6 +12,9 @@ export const CATEGORY_TEXTS = {
     system: 'Categorías del sistema',
     own: 'Mis categorías',
   },
+  // Task 33: estado vacío de «Mis categorías» (propuesta).
+  ownEmpty:
+    'Aún no tienes categorías propias. Usa «+ Nueva categoría» para crear una.',
   types: {
     income: 'Ingreso',
     expense: 'Gasto',
