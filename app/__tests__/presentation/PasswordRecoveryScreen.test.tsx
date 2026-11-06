@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { BackHandler } from 'react-native';
+import { BackHandler, TextInput } from 'react-native';
 import { IdentityRepository } from '../../src/infrastructure/database/repositories/identityRepository';
 import { PasswordRecoveryScreen } from '../../src/presentation/recovery/PasswordRecoveryScreen';
 import {
@@ -371,5 +371,59 @@ describe('HU3 password recovery screen', () => {
     );
     expect(onNavigate).toHaveBeenCalledWith('login');
     spy.mockRestore();
+  });
+});
+
+describe('Bug 39: focus of the recovery answers', () => {
+  const focus = TextInput.prototype.focus as jest.Mock;
+  const focusedFields = () =>
+    focus.mock.contexts.map(
+      context => (context as { props: { testID: string } }).props.testID,
+    );
+
+  test('the first answer takes the focus when the questions appear', async () => {
+    await setup();
+    focus.mockClear();
+    await startWith();
+    await screen.findByTestId('recovery-challenge');
+    expect(focusedFields()).toEqual(['recovery-answer-0']);
+  });
+
+  test('«next» walks the answers, the new password and its confirmation', async () => {
+    await setup();
+    await startWith();
+    await screen.findByTestId('recovery-challenge');
+    const order = [
+      'recovery-answer-0',
+      'recovery-answer-1',
+      'recovery-new-password',
+    ];
+    const expected = [
+      'recovery-answer-1',
+      'recovery-new-password',
+      'recovery-confirmation',
+    ];
+    for (const [index, testID] of order.entries()) {
+      const input = screen.getByTestId(testID);
+      expect(input.props.returnKeyType).toBe('next');
+      expect(input.props.submitBehavior).toBe('submit');
+      focus.mockClear();
+      await fireEvent(input, 'submitEditing');
+      expect(focusedFields()).toEqual([expected[index]]);
+    }
+    const confirmation = screen.getByTestId('recovery-confirmation');
+    expect(confirmation.props.returnKeyType).toBe('done');
+    expect(confirmation.props.submitBehavior).toBe('blurAndSubmit');
+  });
+
+  test('the answers stay visible and editable while typing', async () => {
+    await setup();
+    await startWith();
+    await screen.findByTestId('recovery-challenge');
+    const answer = screen.getByTestId('recovery-answer-0');
+    expect(answer.props.secureTextEntry).toBeUndefined();
+    expect(answer.props.editable).toBe(true);
+    await type('recovery-answer-0', 'Azul');
+    expect(screen.getByTestId('recovery-answer-0')).toHaveDisplayValue('Azul');
   });
 });

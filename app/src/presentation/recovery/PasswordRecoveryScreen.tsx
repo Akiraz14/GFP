@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type TextInputInstance,
 } from 'react-native';
 import { LOGIN_IDENTIFIER_MAX_LENGTH } from '../../services/authentication/accountLogin';
 import {
@@ -76,6 +77,17 @@ export function PasswordRecoveryScreen({
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const mounted = useRef(true);
   const submitting = useRef(false);
+  // Bug 39: the challenge fields form one keyboard sequence, and the first answer takes
+  // the focus as soon as the questions appear.
+  const answerRefs = useRef<Array<TextInputInstance | null>>([null, null]);
+  const newPasswordRef = useRef<TextInputInstance>(null);
+  const confirmationRef = useRef<TextInputInstance>(null);
+
+  useEffect(() => {
+    if (challenge !== null) {
+      answerRefs.current[0]?.focus();
+    }
+  }, [challenge]);
 
   useEffect(() => {
     mounted.current = true;
@@ -287,6 +299,16 @@ export function PasswordRecoveryScreen({
                 key={question.id}
                 label={question.prompt}
                 maxLength={SECURITY_ANSWER_MAX_LENGTH}
+                onSubmitEditing={() =>
+                  index + 1 < challenge.questions.length
+                    ? answerRefs.current[index + 1]?.focus()
+                    : newPasswordRef.current?.focus()
+                }
+                ref={input => {
+                  answerRefs.current[index] = input;
+                }}
+                returnKeyType="next"
+                submitBehavior="submit"
                 onChangeText={value => {
                   setAnswers(current =>
                     index === 0 ? [value, current[1]] : [current[0], value],
@@ -318,7 +340,11 @@ export function PasswordRecoveryScreen({
                 setPasswordError(false);
                 setConfirmationError(false);
               }}
+              onSubmitEditing={() => confirmationRef.current?.focus()}
+              ref={newPasswordRef}
+              returnKeyType="next"
               secureTextEntry
+              submitBehavior="submit"
               testID="recovery-new-password"
               textContentType="newPassword"
               value={newPassword}
@@ -337,7 +363,10 @@ export function PasswordRecoveryScreen({
                 setConfirmation(value);
                 setConfirmationError(false);
               }}
+              ref={confirmationRef}
+              returnKeyType="done"
               secureTextEntry
+              submitBehavior="blurAndSubmit"
               testID="recovery-confirmation"
               textContentType="newPassword"
               value={confirmation}
