@@ -237,8 +237,11 @@ describe('HU8 categories screen', () => {
     await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
     const dialog = await screen.findByTestId('category-delete-dialog');
     expect(
+      within(dialog).getByText('¿Está seguro de eliminar esta categoría?'),
+    ).toBeTruthy();
+    expect(
       within(dialog).getByText(
-        /¿Está seguro de eliminar esta categoría\?[\s\S]*Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'\./,
+        "Los movimientos asociados a esta categoría serán reasignados automáticamente a la categoría 'Otros'.",
       ),
     ).toBeTruthy();
     await fireEvent.press(screen.getByTestId('category-delete-cancel'));
@@ -358,17 +361,65 @@ describe('HU8 categories screen', () => {
   });
 });
 
-describe('Task 33: HU8 sheet and empty section', () => {
+describe('Task 33: HU8 empty section', () => {
   test('«Mis categorías» explains how to create one while it is empty', async () => {
     await setup();
     expect(screen.getByTestId('categories-own-empty')).toHaveTextContent(
       'Aún no tienes categorías propias. Usa «+ Nueva categoría» para crear una.',
     );
+  });
+});
+
+describe('E-COR: HU8 modals (F1-F6)', () => {
+  test('F1, F2: the form is centred and the type options carry coloured arrows', async () => {
+    await setup();
     await fireEvent.press(screen.getByTestId('categories-new'));
+    expect(screen.queryByTestId('category-form-handle')).toBeNull();
     expect(
-      screen.getByTestId('category-form-handle', {
+      screen.getByTestId('category-type-icon-income', {
         includeHiddenElements: true,
-      }).props.importantForAccessibility,
-    ).toBe('no-hide-descendants');
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId('category-type-icon-expense', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+  });
+
+  test('F3-F6: alert icon, centred title, yellow warning, centred count and a red «Confirmar»', async () => {
+    const { database, sessions, session } = await setup();
+    await createFromScreen('Gimnasio', 'expense', 'dumbbell');
+    const id = ownRowId('Gimnasio');
+    const movements = new MovementManagementService({
+      database,
+      sessions,
+      random: nodeRandomBytes,
+    });
+    await movements.create(session, {
+      type: 'expense',
+      amount: '80000',
+      date: '03/10/2026',
+      categoryId: id,
+      description: '',
+    });
+    await fireEvent.press(screen.getByTestId(`category-delete-${id}`));
+    await screen.findByTestId('category-delete-dialog');
+    expect(screen.getByTestId('category-delete-alert')).toBeTruthy();
+    expect(screen.getByTestId('category-delete-title')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('category-delete-warning')).toHaveStyle({
+      backgroundColor: '#FFF6DB',
+    });
+    expect(screen.getByTestId('category-delete-count')).toHaveTextContent(
+      '1 movimiento será reasignado.',
+    );
+    expect(screen.getByTestId('category-delete-count')).toHaveStyle({
+      textAlign: 'center',
+    });
+    expect(screen.getByTestId('category-delete-confirm')).toHaveStyle({
+      backgroundColor: '#B3261E',
+    });
   });
 });

@@ -17,6 +17,7 @@ import type { Category } from '../../infrastructure/database/repositories/catego
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
 import { MessageDialog } from '../components/MessageDialog';
+import { CategoryDeleteDialog } from './CategoryDeleteDialog';
 import { COLORS } from '../components/theme';
 import { CategoryFormSheet } from './CategoryFormSheet';
 import { CategoryIcon } from './CategoryIcon';
@@ -261,32 +262,14 @@ export function CategoriesScreen({
         />
       )}
       {toDelete !== null && (
-        <MessageDialog
-          actions={[
-            {
-              label: TEXTS.buttons.cancel,
-              onPress: () => setToDelete(null),
-              testID: 'category-delete-cancel',
-              variant: 'secondary',
-            },
-            {
-              label: TEXTS.buttons.confirm,
-              onPress: () => {
-                confirmDelete();
-              },
-              testID: 'category-delete-confirm',
-            },
-          ]}
-          message={[
-            TEXTS.messages.deleteQuestion,
-            `«${toDelete.name}» · ${TEXTS.types[toDelete.type]}`,
-            TEXTS.messages.deleteWarning,
-            ...(reassignCount > 0
-              ? [TEXTS.messages.reassignCount(reassignCount)]
-              : []),
-          ].join('\n\n')}
-          onRequestClose={() => setToDelete(null)}
-          testID="category-delete-dialog"
+        <CategoryDeleteDialog
+          busy={deleting}
+          category={toDelete}
+          onCancel={() => setToDelete(null)}
+          onConfirm={() => {
+            confirmDelete();
+          }}
+          reassignCount={reassignCount}
         />
       )}
       {dialog !== null && (

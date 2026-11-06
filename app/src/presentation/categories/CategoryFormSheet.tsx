@@ -27,6 +27,7 @@ import type { Category } from '../../infrastructure/database/repositories/catego
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
 import { DismissibleOverlay } from '../components/DismissibleOverlay';
+import { Icon } from '../components/Icon';
 import { TextField } from '../components/TextField';
 import { COLORS } from '../components/theme';
 import { CATEGORY_ICON_GLYPHS, CategoryIcon } from './CategoryIcon';
@@ -113,7 +114,7 @@ export function CategoryFormSheet({
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={onCancel} transparent visible>
+    <Modal animationType="fade" onRequestClose={onCancel} transparent visible>
       <KeyboardAvoidingView behavior="padding" style={styles.keyboard}>
         <DismissibleOverlay
           disabled={busy}
@@ -122,11 +123,6 @@ export function CategoryFormSheet({
           testID="category-form-backdrop"
         >
           <View style={styles.sheet} testID="category-form">
-            <View
-              importantForAccessibility="no-hide-descendants"
-              style={styles.handle}
-              testID="category-form-handle"
-            />
             <ScrollView keyboardShouldPersistTaps="handled">
               <Text accessibilityRole="header" style={styles.title}>
                 {editing ? TEXTS.form.editTitle : TEXTS.form.createTitle}
@@ -160,6 +156,16 @@ export function CategoryFormSheet({
                       ]}
                       testID={`category-type-${option}`}
                     >
+                      <Icon
+                        color={
+                          option === 'income' ? COLORS.success : COLORS.error
+                        }
+                        name={
+                          option === 'income' ? 'arrowDownLeft' : 'arrowUpRight'
+                        }
+                        size={18}
+                        testID={`category-type-icon-${option}`}
+                      />
                       <Text
                         style={[
                           styles.segmentText,
@@ -234,23 +240,14 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: COLORS.overlay,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    padding: 16,
   },
   sheet: {
     backgroundColor: COLORS.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderRadius: 16,
     maxHeight: '90%',
     padding: 20,
-  },
-  // Task 33: grip of the bottom sheet of the HU8 prototype (decorative).
-  handle: {
-    alignSelf: 'center',
-    backgroundColor: COLORS.border,
-    borderRadius: 2,
-    height: 4,
-    marginBottom: 12,
-    width: 40,
   },
   title: { color: COLORS.text, fontSize: 24, fontWeight: '700' },
   subtitle: { color: COLORS.mutedText, fontSize: 15, marginBottom: 16 },
@@ -266,6 +263,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     flex: 1,
+    flexDirection: 'row',
     minHeight: 44,
     justifyContent: 'center',
   },
@@ -274,7 +272,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderWidth: 1.5,
   },
-  segmentText: { fontSize: 16 },
+  segmentText: { fontSize: 16, marginLeft: 6 },
   segmentTextSelected: { fontWeight: '700' },
   income: { color: COLORS.success },
   expense: { color: COLORS.error },
