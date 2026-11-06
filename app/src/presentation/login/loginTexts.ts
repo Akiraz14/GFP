@@ -4,6 +4,7 @@
 // de país» es el texto aprobado de A-ID2. Los demás son propuestas de E04-D5.
 export const LOGIN_TEXTS = {
   screenTitle: 'Iniciar sesión',
+  sectionTitle: 'Credenciales de acceso',
   labels: {
     identifier: 'Identificador',
     password: 'Contraseña',

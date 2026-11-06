@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { LoginScreen } from '../../src/presentation/login/LoginScreen';
+import { testIdsInOrder } from '../../testing/renderOrder';
 import {
   AccountLoginService,
   type LoginGateway,
@@ -214,5 +215,28 @@ describe('HU2 login screen', () => {
     const { onNavigate } = await setup();
     await fireEvent.press(screen.getByTestId('login-forgot-password'));
     expect(onNavigate).toHaveBeenCalledWith('passwordRecovery');
+  });
+});
+
+describe('Task 28: layout of the HU2 prototype', () => {
+  test('credentials section, recovery link under the password, then the actions', async () => {
+    await setup();
+    expect(screen.getByText('Credenciales de acceso')).toBeTruthy();
+    const order = testIdsInOrder(screen.toJSON()).filter(id =>
+      [
+        'login-identifier',
+        'login-password',
+        'login-forgot-password',
+        'login-submit',
+        'login-register',
+      ].includes(id),
+    );
+    expect(order).toEqual([
+      'login-identifier',
+      'login-password',
+      'login-forgot-password',
+      'login-submit',
+      'login-register',
+    ]);
   });
 });

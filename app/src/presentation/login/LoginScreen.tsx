@@ -121,6 +121,9 @@ export function LoginScreen({
         <Text accessibilityRole="header" style={styles.title}>
           {TEXTS.screenTitle}
         </Text>
+        <Text accessibilityRole="header" style={styles.section}>
+          {TEXTS.sectionTitle}
+        </Text>
         <TextField
           autoCapitalize="none"
           autoComplete="username"
@@ -169,6 +172,16 @@ export function LoginScreen({
           textContentType="password"
           value={password}
         />
+        <Pressable
+          accessibilityRole="link"
+          accessibilityState={{ disabled: busy }}
+          disabled={busy}
+          onPress={() => onNavigate(ROUTES.passwordRecovery)}
+          style={styles.link}
+          testID="login-forgot-password"
+        >
+          <Text style={styles.linkText}>{TEXTS.links.forgotPassword}</Text>
+        </Pressable>
         {busy && (
           <View style={styles.progress} testID="login-progress">
             <ActivityIndicator color={COLORS.primary} />
@@ -186,16 +199,6 @@ export function LoginScreen({
             variant="primary"
           />
         </View>
-        <Pressable
-          accessibilityRole="link"
-          accessibilityState={{ disabled: busy }}
-          disabled={busy}
-          onPress={() => onNavigate(ROUTES.passwordRecovery)}
-          style={styles.link}
-          testID="login-forgot-password"
-        >
-          <Text style={styles.linkText}>{TEXTS.links.forgotPassword}</Text>
-        </Pressable>
         <View style={styles.buttonRow}>
           <ActionButton
             disabled={busy}
@@ -230,13 +233,26 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  section: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 10,
   },
   helper: { color: COLORS.mutedText, fontSize: 14, marginTop: 4 },
   progress: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   progressText: { color: COLORS.text, fontSize: 16, marginLeft: 10 },
   buttonRow: { flexDirection: 'row', marginTop: 16, marginHorizontal: -4 },
-  link: { alignSelf: 'center', marginTop: 16, minHeight: 48, padding: 12 },
+  // Task 28: the recovery link sits under the password, as in the HU2 prototype.
+  link: {
+    alignSelf: 'flex-end',
+    justifyContent: 'center',
+    marginTop: -6,
+    minHeight: 48,
+    paddingHorizontal: 4,
+  },
   linkText: {
     color: COLORS.primary,
     fontSize: 16,
