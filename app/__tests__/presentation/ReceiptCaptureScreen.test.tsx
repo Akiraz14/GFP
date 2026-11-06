@@ -1,5 +1,10 @@
 // Adaptado de daniela888-li/GFP (6ec6d3c); se añaden las pruebas del borrado de la imagen.
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react-native';
 import type { ReceiptGateway } from '../../src/processing/receiptGateway';
 import { ReceiptCaptureScreen } from '../../src/presentation/receipts/ReceiptCaptureScreen';
 
@@ -50,11 +55,13 @@ describe('HU7 capture', () => {
       pickFromGallery: async () => ({ ...IMAGE, sizeBytes: 6 * 1024 * 1024 }),
     });
     await fireEvent.press(screen.getByTestId('receipt-pick-gallery'));
-    expect(
-      await screen.findByText(
-        'Formato o tamaño de imagen no soportado. Usa una imagen JPG o PNG de máximo 5 MB.',
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByTestId('receipt-notice')).toHaveTextContent(
+      'Formato o tamaño de imagen no soportado',
+    );
+    expect(screen.getByTestId('receipt-notice-box')).toHaveTextContent(
+      'Formato o tamaño de imagen no soportadoUsa una imagen JPG o PNG de máximo 5 MB.',
+    );
+    expect(screen.queryByTestId('receipt-allowed-images')).toBeNull();
     expect(screen.queryByTestId('receipt-preview')).toBeNull();
   });
 
@@ -157,5 +164,26 @@ describe('Task 32: review state of the HU7 prototype', () => {
       borderColor: '#FFC166',
       borderWidth: 2,
     });
+  });
+});
+
+describe('E-COR: HU7 capture fidelity (E1, E2)', () => {
+  test('the initial state shows the camera placeholder, the camera button icon and the allowed formats', async () => {
+    await setup();
+    expect(
+      screen.getAllByTestId('icon-camera', { includeHiddenElements: true }),
+    ).toHaveLength(2);
+    expect(
+      within(screen.getByTestId('receipt-take-photo')).getByTestId(
+        'icon-camera',
+        { includeHiddenElements: true },
+      ),
+    ).toBeTruthy();
+    expect(screen.getByTestId('receipt-preview-placeholder')).toHaveTextContent(
+      'Vista previa',
+    );
+    expect(screen.getByTestId('receipt-allowed-images')).toHaveTextContent(
+      'Usa una imagen JPG o PNG de máximo 5 MB.',
+    );
   });
 });

@@ -20,6 +20,7 @@ import {
   type ReceiptImage,
 } from '../../processing/receiptImage';
 import { ActionButton } from '../components/ActionButton';
+import { Icon } from '../components/Icon';
 import { COLORS } from '../components/theme';
 import type { MovementPrefill } from '../movements/MovementFormScreen';
 import { RECEIPT_TEXTS as TEXTS } from './receiptTexts';
@@ -175,7 +176,15 @@ export function ReceiptCaptureScreen({
           testID="receipt-preview-frame"
         >
           {image === null ? (
-            <Text style={styles.previewText}>{TEXTS.preview}</Text>
+            <View
+              style={styles.placeholder}
+              testID="receipt-preview-placeholder"
+            >
+              <View style={styles.cameraCircle}>
+                <Icon name="camera" size={26} />
+              </View>
+              <Text style={styles.previewText}>{TEXTS.preview}</Text>
+            </View>
           ) : (
             <Image
               resizeMode="cover"
@@ -204,6 +213,7 @@ export function ReceiptCaptureScreen({
           <>
             <View style={styles.row}>
               <ActionButton
+                icon="camera"
                 label={TEXTS.takePhoto}
                 onPress={() => {
                   capture(() => gateway.takePhoto());
@@ -253,10 +263,38 @@ export function ReceiptCaptureScreen({
         )}
 
         {notice !== null && (
-          <View accessibilityRole="alert" style={styles.notice}>
-            <Text style={styles.noticeText} testID="receipt-notice">
-              {notice}
-            </Text>
+          <View
+            accessibilityRole="alert"
+            style={[styles.notice, styles.noticeRow]}
+            testID="receipt-notice-box"
+          >
+            <Icon color={COLORS.warningText} name="alertTriangle" />
+            <View style={styles.noticeBody}>
+              {notice === TEXTS.invalidImage ? (
+                <>
+                  <Text style={styles.noticeTitle} testID="receipt-notice">
+                    {TEXTS.invalidImageTitle}
+                  </Text>
+                  <Text style={styles.noticeText}>{TEXTS.allowedImages}</Text>
+                </>
+              ) : (
+                <Text style={styles.noticeText} testID="receipt-notice">
+                  {notice}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
+        {image === null && notice === null && (
+          <View
+            style={[styles.notice, styles.noticeRow]}
+            testID="receipt-allowed-images"
+          >
+            <Icon color={COLORS.warningText} name="info" />
+            <View style={styles.noticeBody}>
+              <Text style={styles.noticeText}>{TEXTS.allowedImages}</Text>
+            </View>
           </View>
         )}
 
@@ -338,6 +376,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   previewText: { color: COLORS.mutedText, fontSize: 15 },
+  placeholder: { alignItems: 'center' },
+  cameraCircle: {
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: 28,
+    height: 56,
+    justifyContent: 'center',
+    marginBottom: 8,
+    width: 56,
+  },
   image: { height: '100%', width: '100%' },
   badge: {
     borderRadius: 6,
@@ -352,11 +400,15 @@ const styles = StyleSheet.create({
   processingText: { color: COLORS.text, fontSize: 15, marginTop: 8 },
   row: { flexDirection: 'row', marginBottom: 10 },
   notice: {
-    backgroundColor: '#FFF4CE',
+    backgroundColor: COLORS.warningSoft,
+    borderColor: COLORS.warningBorder,
     borderRadius: 8,
+    borderWidth: 1,
     marginTop: 6,
     padding: 12,
   },
+  noticeRow: { alignItems: 'center', flexDirection: 'row' },
+  noticeBody: { flex: 1, marginLeft: 10 },
   noticeTitle: { color: COLORS.text, fontSize: 15, fontWeight: '700' },
   noticeText: { color: COLORS.text, fontSize: 14, marginTop: 2 },
   card: {

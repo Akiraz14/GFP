@@ -13,6 +13,8 @@ export const RECEIPT_TEXTS = {
   processing: 'Procesando imagen con OCR…',
   invalidImage:
     'Formato o tamaño de imagen no soportado. Usa una imagen JPG o PNG de máximo 5 MB.',
+  invalidImageTitle: 'Formato o tamaño de imagen no soportado',
+  allowedImages: 'Usa una imagen JPG o PNG de máximo 5 MB.',
   noData:
     'No se pudo leer la información de la imagen. Por favor, intente con otra imagen o continúe para ingresar los datos manualmente',
   noDataTitle: 'No se pudo procesar',
