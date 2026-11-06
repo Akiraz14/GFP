@@ -34,4 +34,5 @@ export const RECEIPT_TEXTS = {
   date: 'Fecha',
   merchant: 'Comercio / Descripción',
   notIdentified: 'No identificado',
+  identified: 'Identificado',
 } as const;

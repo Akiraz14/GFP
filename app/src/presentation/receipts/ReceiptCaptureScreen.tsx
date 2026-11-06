@@ -166,7 +166,14 @@ export function ReceiptCaptureScreen({
           {reading === null ? TEXTS.subtitle : TEXTS.review[reading]}
         </Text>
 
-        <View style={styles.preview}>
+        <View
+          style={[
+            styles.preview,
+            reading !== null && styles.previewFramed,
+            reading !== null && previewFrames[reading],
+          ]}
+          testID="receipt-preview-frame"
+        >
           {image === null ? (
             <Text style={styles.previewText}>{TEXTS.preview}</Text>
           ) : (
@@ -289,9 +296,23 @@ function ExtractedRow({
 }) {
   return (
     <View style={styles.extracted}>
-      <Text style={styles.extractedLabel}>{label}</Text>
-      <Text style={value === null ? styles.missing : styles.extractedValue}>
-        {value ?? TEXTS.notIdentified}
+      <View style={styles.extractedText}>
+        <Text style={styles.extractedLabel}>{label}</Text>
+        <Text style={value === null ? styles.missing : styles.extractedValue}>
+          {value ?? TEXTS.notIdentified}
+        </Text>
+      </View>
+      <Text
+        accessibilityLabel={
+          value === null ? TEXTS.notIdentified : TEXTS.identified
+        }
+        style={[
+          styles.mark,
+          value === null ? styles.markMissing : styles.markFound,
+        ]}
+        testID={`receipt-mark-${value === null ? 'missing' : 'found'}`}
+      >
+        {value === null ? '!' : '✓'}
       </Text>
     </View>
   );
@@ -346,10 +367,38 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   cardTitle: { color: COLORS.text, fontSize: 16, fontWeight: '700' },
-  extracted: { marginTop: 10 },
+  extracted: {
+    alignItems: 'center',
+    borderTopColor: COLORS.secondary,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    marginTop: 10,
+    paddingTop: 8,
+  },
+  extractedText: { flex: 1 },
+  // Task 32: each extracted value shows whether it was identified, as in the prototype.
+  mark: {
+    borderRadius: 11,
+    fontSize: 13,
+    fontWeight: '700',
+    height: 22,
+    lineHeight: 22,
+    overflow: 'hidden',
+    textAlign: 'center',
+    width: 22,
+  },
+  markFound: { backgroundColor: '#E3F4E8', color: COLORS.success },
+  markMissing: { backgroundColor: '#FBE6E4', color: COLORS.error },
+  previewFramed: { borderWidth: 2 },
   extractedLabel: { color: COLORS.mutedText, fontSize: 13 },
   extractedValue: { color: COLORS.text, fontSize: 16, fontWeight: '700' },
   missing: { color: COLORS.mutedText, fontSize: 15, fontStyle: 'italic' },
+});
+
+const previewFrames = StyleSheet.create({
+  complete: { borderColor: '#7BD8A0' },
+  partial: { borderColor: '#FFC166' },
+  none: { borderColor: '#F28B82' },
 });
 
 const badgeStyles = StyleSheet.create({

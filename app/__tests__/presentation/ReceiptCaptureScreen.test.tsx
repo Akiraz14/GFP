@@ -144,3 +144,18 @@ describe('HU7 capture', () => {
     expect(gateway.discardImage).toHaveBeenCalledWith('file:///f.jpg');
   });
 });
+
+describe('Task 32: review state of the HU7 prototype', () => {
+  test('each extracted value is marked as identified or not', async () => {
+    await setup({ recognizeText: jest.fn(async () => 'TOTAL 45.500') });
+    await fireEvent.press(screen.getByTestId('receipt-take-photo'));
+    await screen.findByTestId('receipt-summary');
+    expect(screen.getAllByTestId('receipt-mark-found')).toHaveLength(1);
+    expect(screen.getAllByTestId('receipt-mark-missing')).toHaveLength(2);
+    expect(screen.getByLabelText('Identificado')).toBeTruthy();
+    expect(screen.getByTestId('receipt-preview-frame')).toHaveStyle({
+      borderColor: '#FFC166',
+      borderWidth: 2,
+    });
+  });
+});
