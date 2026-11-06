@@ -12,6 +12,7 @@ import type { RecommendationGateway } from '../../business/recommendations/recom
 import type { MovementFilters } from '../../infrastructure/database/repositories/movementRepository';
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
+import { Icon } from '../components/Icon';
 import { MessageDialog } from '../components/MessageDialog';
 import { COLORS } from '../components/theme';
 
@@ -125,9 +126,20 @@ export function RecommendationsScreen({
           </View>
         )}
         {items !== null && items.length > 0 && (
-          <Text accessibilityRole="header" style={styles.section}>
-            {TEXTS.section}
-          </Text>
+          <View style={styles.sectionRow}>
+            <Icon
+              color={COLORS.primary}
+              name="sparkles"
+              size={20}
+              testID="recommendations-section-icon"
+            />
+            <Text
+              accessibilityRole="header"
+              style={[styles.section, styles.sectionText]}
+            >
+              {TEXTS.section}
+            </Text>
+          </View>
         )}
         {(items ?? []).map(item => (
           <View
@@ -187,6 +199,13 @@ export function RecommendationsScreen({
 }
 
 const styles = StyleSheet.create({
+  sectionRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 10,
+    marginTop: 16,
+  },
+  sectionText: { marginBottom: 0, marginLeft: 8, marginTop: 0 },
   screen: { backgroundColor: COLORS.background, flex: 1 },
   content: { padding: 20 },
   title: { color: COLORS.text, fontSize: 24, fontWeight: '700' },

@@ -29,12 +29,14 @@ import type {
 } from '../../infrastructure/database/repositories/movementRepository';
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
+import { Icon } from '../components/Icon';
+import { IconTitle, cardStyle } from '../components/SectionCard';
 import { FieldError } from '../components/FieldError';
 import { MessageDialog } from '../components/MessageDialog';
 import { COLORS } from '../components/theme';
 import { DateField } from '../components/DateField';
 import { ANALYSIS_TEXTS as TEXTS } from './analysisTexts';
-import { DonutChart, LineChart, segmentColor } from './charts';
+import { DonutChart, WaveChart, segmentColor } from './charts';
 
 type Period = AnalysisPeriod | 'custom';
 type ChartMode = 'category' | 'evolution';
@@ -174,6 +176,7 @@ export function AnalysisScreen({
   const shares = categoryShares(movements ?? []);
   const points = evolution(movements ?? [], range);
   const empty = movements !== null && movements.length === 0;
+  const incomesAhead = summary.balanceCents >= 0;
 
   return (
     <View style={styles.screen} testID="analysis-screen">
@@ -186,56 +189,60 @@ export function AnalysisScreen({
         </Text>
         <Text style={styles.subtitle}>{TEXTS.subtitle}</Text>
 
-        <Text accessibilityRole="header" style={styles.section}>
-          {TEXTS.period}
-        </Text>
-        <View style={styles.choices}>
-          {PERIODS.map(option => (
-            <Choice
-              key={option}
-              label={TEXTS.periods[option]}
-              onPress={() => choosePeriod(option)}
-              selected={period === option}
-              testID={`analysis-period-${option}`}
-            />
-          ))}
-        </View>
-        {period === 'custom' && (
-          <View>
-            <DateField
-              calendarLabel={TEXTS.openCalendar}
-              error={null}
-              label={TEXTS.from}
-              maximumDate={today}
-              onChange={setCustomFrom}
-              placeholder={TEXTS.datePlaceholder}
-              testID="analysis-from"
-              value={customFrom}
-            />
-            <DateField
-              calendarLabel={TEXTS.openCalendar}
-              error={null}
-              label={TEXTS.to}
-              maximumDate={today}
-              onChange={setCustomTo}
-              placeholder={TEXTS.datePlaceholder}
-              testID="analysis-to"
-              value={customTo}
-            />
-            <FieldError
-              message={rangeError ? TEXTS.invalidRange : null}
-              testID="analysis-range-error"
-            />
-            <View style={styles.row}>
-              <ActionButton
-                label={TEXTS.apply}
-                onPress={applyCustomRange}
-                testID="analysis-apply"
-                variant="primary"
+        <IconTitle
+          icon="calendar"
+          testID="analysis-period-title"
+          title={TEXTS.period}
+        />
+        <View style={styles.group} testID="analysis-period-group">
+          <View style={styles.choices}>
+            {PERIODS.map(option => (
+              <Choice
+                key={option}
+                label={TEXTS.periods[option]}
+                onPress={() => choosePeriod(option)}
+                selected={period === option}
+                testID={`analysis-period-${option}`}
               />
-            </View>
+            ))}
           </View>
-        )}
+          {period === 'custom' && (
+            <View>
+              <DateField
+                calendarLabel={TEXTS.openCalendar}
+                error={null}
+                label={TEXTS.from}
+                maximumDate={today}
+                onChange={setCustomFrom}
+                placeholder={TEXTS.datePlaceholder}
+                testID="analysis-from"
+                value={customFrom}
+              />
+              <DateField
+                calendarLabel={TEXTS.openCalendar}
+                error={null}
+                label={TEXTS.to}
+                maximumDate={today}
+                onChange={setCustomTo}
+                placeholder={TEXTS.datePlaceholder}
+                testID="analysis-to"
+                value={customTo}
+              />
+              <FieldError
+                message={rangeError ? TEXTS.invalidRange : null}
+                testID="analysis-range-error"
+              />
+              <View style={styles.row}>
+                <ActionButton
+                  label={TEXTS.apply}
+                  onPress={applyCustomRange}
+                  testID="analysis-apply"
+                  variant="primary"
+                />
+              </View>
+            </View>
+          )}
+        </View>
 
         {movements === null && (
           <ActivityIndicator color={COLORS.primary} testID="analysis-loading" />
@@ -258,9 +265,11 @@ export function AnalysisScreen({
 
         {movements !== null && !empty && (
           <>
-            <Text accessibilityRole="header" style={styles.section}>
-              {TEXTS.summary}
-            </Text>
+            <IconTitle
+              icon="summary"
+              testID="analysis-summary-title"
+              title={TEXTS.summary}
+            />
             <View style={styles.kpis}>
               <View style={styles.kpi}>
                 <Text style={styles.kpiLabel}>{TEXTS.income}</Text>
@@ -314,9 +323,11 @@ export function AnalysisScreen({
 
             {mode === 'category' && (
               <View testID="analysis-categories">
-                <Text accessibilityRole="header" style={styles.section}>
-                  {TEXTS.categoriesTitle}
-                </Text>
+                <IconTitle
+                  icon="pieChart"
+                  testID="analysis-categories-title"
+                  title={TEXTS.categoriesTitle}
+                />
                 {shares.length === 0 && (
                   <Text style={styles.note}>{TEXTS.noExpenses}</Text>
                 )}
@@ -349,12 +360,27 @@ export function AnalysisScreen({
                 ))}
                 {selected !== null && (
                   <View style={styles.selected} testID="analysis-selected">
-                    <Text style={styles.selectedLabel}>
-                      {`${TEXTS.selected}: ${selected.name} · ${selected.percent}%`}
-                    </Text>
-                    <Text style={styles.selectedAmount}>
-                      {formatMoney(selected.totalCents)}
-                    </Text>
+                    <View style={styles.selectedRow}>
+                      <View style={styles.selectedText}>
+                        <Text style={styles.selectedLabel}>
+                          {TEXTS.selected}
+                        </Text>
+                        <Text
+                          style={styles.selectedName}
+                          testID="analysis-selected-name"
+                        >
+                          {`${selected.name} · ${selected.percent}%`}
+                        </Text>
+                      </View>
+                      <Text
+                        adjustsFontSizeToFit
+                        numberOfLines={1}
+                        style={styles.selectedAmount}
+                        testID="analysis-selected-amount"
+                      >
+                        {formatMoney(selected.totalCents)}
+                      </Text>
+                    </View>
                     <View style={styles.row}>
                       <ActionButton
                         label={TEXTS.viewMovements}
@@ -376,9 +402,11 @@ export function AnalysisScreen({
 
             {mode === 'evolution' && (
               <View testID="analysis-evolution">
-                <Text accessibilityRole="header" style={styles.section}>
-                  {TEXTS.evolutionTitle}
-                </Text>
+                <IconTitle
+                  icon="chart"
+                  testID="analysis-evolution-title"
+                  title={TEXTS.evolutionTitle}
+                />
                 <View style={styles.legend}>
                   {(
                     [
@@ -396,13 +424,35 @@ export function AnalysisScreen({
                   ))}
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <LineChart points={points} />
+                  <WaveChart points={points} />
                 </ScrollView>
-                <Text style={styles.note} testID="analysis-trend">
-                  {summary.balanceCents >= 0
-                    ? TEXTS.incomesAhead(formatMoney(summary.balanceCents))
-                    : TEXTS.expensesAhead(formatMoney(-summary.balanceCents))}
-                </Text>
+                <View
+                  style={[
+                    styles.trend,
+                    incomesAhead ? styles.trendUp : styles.trendDown,
+                  ]}
+                  testID="analysis-trend-box"
+                >
+                  <Icon
+                    color={incomesAhead ? COLORS.success : COLORS.error}
+                    name={incomesAhead ? 'trendingUp' : 'trendingDown'}
+                    size={18}
+                    testID={`analysis-trend-icon-${
+                      incomesAhead ? 'up' : 'down'
+                    }`}
+                  />
+                  <Text
+                    style={[
+                      styles.trendText,
+                      incomesAhead ? styles.income : styles.expense,
+                    ]}
+                    testID="analysis-trend"
+                  >
+                    {incomesAhead
+                      ? TEXTS.incomesAhead(formatMoney(summary.balanceCents))
+                      : TEXTS.expensesAhead(formatMoney(-summary.balanceCents))}
+                  </Text>
+                </View>
               </View>
             )}
           </>
@@ -504,13 +554,33 @@ const styles = StyleSheet.create({
     marginTop: 4,
     padding: 12,
   },
-  selectedLabel: { color: COLORS.text, fontSize: 14 },
+  selectedRow: { alignItems: 'center', flexDirection: 'row' },
+  selectedText: { flex: 1, marginRight: 12 },
+  selectedLabel: { color: COLORS.mutedText, fontSize: 13 },
+  selectedName: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 2,
+  },
   selectedAmount: {
     color: COLORS.primary,
+    flexShrink: 1,
     fontSize: 20,
     fontWeight: '700',
-    marginTop: 4,
+    textAlign: 'right',
   },
+  group: { ...cardStyle, marginBottom: 16, paddingBottom: 6 },
+  trend: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    marginTop: 10,
+    padding: 10,
+  },
+  trendUp: { backgroundColor: COLORS.successSoft },
+  trendDown: { backgroundColor: COLORS.dangerSoft },
+  trendText: { flex: 1, fontSize: 14, fontWeight: '600', marginLeft: 8 },
   legend: { flexDirection: 'row', justifyContent: 'space-around' },
   // Task 34: the legend colour is a swatch, so TalkBack reads only «Ingresos» and «Gastos».
   legendItem: { alignItems: 'center', flexDirection: 'row' },

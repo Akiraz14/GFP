@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, G, Line, Polyline } from 'react-native-svg';
+import Svg, { Circle, G, Line, Path } from 'react-native-svg';
 import type {
   CategoryShare,
   EvolutionPoint,
@@ -97,8 +97,32 @@ function pointsOf(
   }));
 }
 
-// Líneas de HU9: Ingresos frente a Gastos en el tiempo.
-export function LineChart({ points }: { points: readonly EvolutionPoint[] }) {
+// Trazo suave entre los puntos (curvas de Bézier cardinales), sin salirse del área del
+// gráfico: así se dibuja el «gráfico de ondas» del mockup de HU9 con los mismos datos.
+export function wavePath(values: readonly { x: number; y: number }[]): string {
+  if (values.length === 0) {
+    return '';
+  }
+  const top = PADDING;
+  const bottom = CHART_HEIGHT - PADDING;
+  const clamp = (y: number) => Math.min(bottom, Math.max(top, y));
+  let d = `M${values[0].x},${values[0].y}`;
+  for (let index = 1; index < values.length; index += 1) {
+    const before = values[Math.max(index - 2, 0)];
+    const from = values[index - 1];
+    const to = values[index];
+    const after = values[Math.min(index + 1, values.length - 1)];
+    const c1x = from.x + (to.x - before.x) / 6;
+    const c1y = clamp(from.y + (to.y - before.y) / 6);
+    const c2x = to.x - (after.x - from.x) / 6;
+    const c2y = clamp(to.y - (after.y - from.y) / 6);
+    d += ` C${c1x},${c1y} ${c2x},${c2y} ${to.x},${to.y}`;
+  }
+  return d;
+}
+
+// Evolución de HU9: Ingresos frente a Gastos en el tiempo, con curvas suaves (ondas).
+export function WaveChart({ points }: { points: readonly EvolutionPoint[] }) {
   const max = Math.max(
     1,
     ...points.flatMap(point => [point.incomeCents, point.expenseCents]),
@@ -106,6 +130,7 @@ export function LineChart({ points }: { points: readonly EvolutionPoint[] }) {
   const width = PADDING * 2 + Math.max(points.length - 1, 1) * STEP;
   const series = [
     {
+      key: 'income',
       color: COLORS.success,
       values: pointsOf(
         points.map(point => point.incomeCents),
@@ -113,6 +138,7 @@ export function LineChart({ points }: { points: readonly EvolutionPoint[] }) {
       ),
     },
     {
+      key: 'expense',
       color: COLORS.error,
       values: pointsOf(
         points.map(point => point.expenseCents),
@@ -137,19 +163,24 @@ export function LineChart({ points }: { points: readonly EvolutionPoint[] }) {
             />
           );
         })}
-        {series.map(({ color, values }) => (
-          <G key={color}>
-            <Polyline
-              fill="none"
-              points={values.map(({ x, y }) => `${x},${y}`).join(' ')}
-              stroke={color}
-              strokeWidth={3}
-            />
-            {values.map(({ x, y }) => (
-              <Circle cx={x} cy={y} fill={color} key={x} r={4} />
-            ))}
-          </G>
-        ))}
+        {series.map(({ key, color, values }) => {
+          const last = values[values.length - 1];
+          return (
+            <G key={key}>
+              <Path
+                d={wavePath(values)}
+                fill="none"
+                stroke={color}
+                strokeLinecap="round"
+                strokeWidth={3}
+                testID={`analysis-wave-${key}`}
+              />
+              {last !== undefined && (
+                <Circle cx={last.x} cy={last.y} fill={color} r={4} />
+              )}
+            </G>
+          );
+        })}
       </Svg>
       <View style={[styles.labels, { width }]}>
         {points.map((point, index) => (

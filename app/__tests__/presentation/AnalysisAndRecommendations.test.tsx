@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { MovementManagementService } from '../../src/business/movements/movementManagement';
 import { RecommendationService } from '../../src/business/recommendations/recommendationService';
@@ -297,5 +298,77 @@ describe('Tasks 34 and 35: legibility and accessibility', () => {
     expect(dismiss.props.accessibilityLabel).toMatch(
       /^Descartar recomendación: \S/,
     );
+  });
+});
+
+describe('E-COR: HU9 and HU10 fidelity (G1-G7, H1)', () => {
+  async function renderAnalysis(data = DATA) {
+    const context = await setup(data);
+    await render(
+      <AnalysisScreen
+        gateway={context.service}
+        now={() => NOW}
+        onNewMovement={jest.fn()}
+        onOpenHistory={context.onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await screen.findByTestId('analysis-categories');
+    return context;
+  }
+  const hidden = { includeHiddenElements: true };
+
+  test('G1-G4: section icons and the grouped period selector', async () => {
+    await renderAnalysis();
+    expect(screen.getByTestId('icon-calendar', hidden)).toBeTruthy();
+    expect(screen.getByTestId('icon-summary', hidden)).toBeTruthy();
+    expect(screen.getByTestId('icon-pieChart', hidden)).toBeTruthy();
+    expect(
+      within(screen.getByTestId('analysis-period-group')).getByTestId(
+        'analysis-period-month',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('G5: the selected category and its value are two separate elements', async () => {
+    await renderAnalysis();
+    const [first] = screen.getAllByTestId(/^analysis-share-/);
+    await fireEvent.press(first);
+    expect(screen.getByTestId('analysis-selected-name')).toHaveTextContent(
+      /^\S.* · \d+%$/,
+    );
+    expect(screen.getByTestId('analysis-selected-amount')).toHaveTextContent(
+      /^\$[\d.]+,\d{2}$/,
+    );
+  });
+
+  test('G6, G7: smooth waves and a coloured trend with its icon', async () => {
+    await renderAnalysis();
+    await fireEvent.press(screen.getByTestId('analysis-mode-evolution'));
+    await screen.findByTestId('analysis-evolution');
+    const wave = screen.getByTestId('analysis-wave-income', hidden);
+    expect(wave.props.d).toMatch(/^M[\d.,]+( C[\d.,]+ [\d.,]+ [\d.,]+)*$/);
+    const box = screen.getByTestId('analysis-trend-box');
+    const up = screen.queryByTestId('analysis-trend-icon-up', hidden);
+    expect(box).toHaveStyle({
+      backgroundColor: up === null ? '#FDECEA' : '#E6F4EA',
+    });
+  });
+
+  test('H1: «Recomendaciones Automatizadas» starts with the sparkles icon', async () => {
+    const context = await setup([['expense', '100', '03/11/2026', 'food']]);
+    await render(
+      <RecommendationsScreen
+        gateway={context.recommendations}
+        onOpenHistory={context.onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await screen.findByText('Recomendaciones Automatizadas');
+    expect(
+      screen.getByTestId('recommendations-section-icon', hidden),
+    ).toBeTruthy();
   });
 });
