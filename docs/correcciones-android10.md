@@ -8,20 +8,51 @@
 - Capturas de las pruebas manuales en `GFP-evidencias\incidencias` (`GI-HU*.png`).
 - Las historias RQ02v2 y las decisiones anteriores.
 
-**Estado:** implementado y verificado con Jest. **La validación visual en Android 10 y la compilación Debug no se ejecutaron**: no hay emulador ni Android SDK en el entorno de Claude. Ninguna incidencia está cerrada hasta esa validación (sección 5).
+**Estado:** implementado y verificado con Jest. En el entorno de Claude no se ejecutaron la validación visual ni la compilación Debug (sin emulador ni Android SDK).
+
+**Actualización 2026-11-06:** el responsable compiló el APK Debug en Windows (`GFP-evidencias\correcciones\build\`) y validó manualmente las correcciones en el emulador Android 10, con resultado satisfactorio (capturas en `GFP-evidencias\correcciones`). Las decisiones de la sección 1 quedan resueltas, salvo E-COR-D5 y E-COR-D6. La matriz de la sección 2 conserva el estado del 2026-11-06 previo a esa validación.
 
 ## 1. Decisiones
 
-| ID | Decisión | Origen |
-|---|---|---|
-| E-COR-D1 | A13: bajo cada campo del registro se muestra solo el mensaje concreto, sin el prefijo «Error en los campos ingresados». «Verificar correo» se conserva para el correo mal formado (HU1). Cambia la presentación literal del criterio de HU1 | Responsable, 2026-11-06 |
-| E-COR-D2 | Textos del mockup que sustituyen literales de las historias: «Registro de Usuario», «Iniciar Sesión», «¿Olvidaste tu contraseña?», «Crear Cuenta», «Recuperar Contraseña», «Comenzar Recuperación» y los rótulos en mayúsculas iniciales del registro | Encargo del responsable (B6, B8, C6, C7) y mockups |
-| E-COR-D3 | Monto: los dígitos son pesos enteros («45500» → «$45.500») y los decimales solo empiezan con un separador explícito. Tanto «,» como «.» escritos por el usuario abren los decimales («45500,50» y «45500.50» → «45.500,50»). La pantalla siempre usa «.» para los miles y «,» para los decimales (D-01). Admite 12 enteros y 2 decimales. Reemplaza E-INC-D2. El almacenamiento en centavos y `parseAmountInput` (E07-D5) no cambian | Encargo del responsable (D3) |
-| E-COR-D4 | Los íconos se dibujan con `react-native-svg` (D-04, ya instalada) en `components/Icon.tsx`. No se añade ninguna dependencia | Restricción de no incorporar dependencias |
-| E-COR-D5 | Ayuda (?) del registro y de la recuperación: diálogo con instrucciones breves. El mockup muestra el botón, pero no su contenido, así que los textos son propuesta | Propuesta, pendiente de aprobación |
-| E-COR-D6 | Placeholders sin texto en el mockup (propuesta): «Ingresa tu primer nombre», «Ingresa tu primer apellido», «Ej. 3001234567», «Escribe tu respuesta», «Repite la nueva contraseña». El mockup escribe «SQLCypher»; se usa el nombre real, «SQLCipher» | Propuesta |
-| E-COR-D7 | Recuperación: en el paso 2 el identificador ya no se muestra, como en el mockup. El botón de regresar del encabezado vuelve al paso 1, y el botón Atrás de Android sigue llevando al inicio de sesión | Mockup de HU3 |
-| E-COR-D8 | La confirmación del registro muestra las respuestas de seguridad (A12). La contraseña sigue enmascarada | Encargo del responsable |
+Estado actualizado el 2026-11-06. El responsable aprobó E-COR-D1, D2, D3, D4, D7 y D8 tras
+validar manualmente las correcciones en Android 10. E-COR-D5 y E-COR-D6 quedaron primero
+pendientes, porque la validación general no aprobaba sus textos, y el mismo día el responsable
+los aprobó expresamente con la redacción exacta de las tablas siguientes. Todas las decisiones
+E-COR están aprobadas.
+
+| ID | Descripción | Origen | Estado | Fecha de aprobación | Implementación y evidencia |
+|---|---|---|---|---|---|
+| E-COR-D1 | A13: bajo cada campo del registro se muestra solo el mensaje concreto, sin el prefijo «Error en los campos ingresados». «Verificar correo» se conserva para el correo mal formado (HU1). Cambia la presentación literal del criterio de HU1 | Responsable, 2026-11-06 (respuesta a la consulta de A13) | **Aprobada** | 2026-11-06 | `registrationMessages.ts`, commit `06eda43`; `correcciones\A-registro\GC-A2-paso1-vacio-*.png` |
+| E-COR-D2 | Textos del mockup que sustituyen literales de las historias: «Registro de Usuario», «Iniciar Sesión», «¿Olvidaste tu contraseña?», «Crear Cuenta», «Recuperar Contraseña», «Comenzar Recuperación» y los rótulos con mayúscula inicial del registro | Encargo del responsable (B6, B8, C6, C7) y mockups | **Aprobada** | 2026-11-06 | Commit `06eda43`; `correcciones\A-registro`, `B-inicio-sesion`, `C-recuperacion` |
+| E-COR-D3 | Monto: los dígitos son pesos enteros («45500» → «$45.500») y los decimales solo empiezan con un separador explícito. Tanto «,» como «.» escritos por el usuario abren los decimales («45500,50» y «45500.50» → «45.500,50»). La pantalla siempre usa «.» para los miles y «,» para los decimales (D-01). Admite 12 enteros y 2 decimales. Reemplaza E-INC-D2. El almacenamiento en centavos y `parseAmountInput` (E07-D5) no cambian | Encargo del responsable (D3) | **Aprobada** (reemplaza a E-INC-D2) | 2026-11-06 | `money.ts` (`applyAmountEdit`, `maskAmountInput`), `MovementFormScreen.tsx`, commit `06eda43`; `correcciones\D-movimiento\GC-D1-valor-*.png` |
+| E-COR-D4 | Los íconos se dibujan con `react-native-svg` (D-04, ya instalada) en `components/Icon.tsx`. No se añade ninguna dependencia | Restricción de no incorporar dependencias | **Aprobada** | 2026-11-06 | `components/Icon.tsx`, commits `06eda43` a `2b1e43e` |
+| E-COR-D5 | Ayuda (?) del registro y de la recuperación: diálogo con instrucciones breves. El mockup muestra el botón, pero no su contenido. Textos implementados en la tabla E-COR-D5 | Propuesta de Claude; textos aprobados expresamente por el responsable | **Aprobada** (antes pendiente de aprobación del contenido) | 2026-11-06 | `registrationTexts.ts` (`help`), `recoveryTexts.ts` (`help`), commit `06eda43` |
+| E-COR-D6 | Placeholders sin texto en el mockup y la ortografía «SQLCipher» de la nota verde. Textos implementados en la tabla E-COR-D6 | Propuesta de Claude; textos aprobados expresamente por el responsable | **Aprobada** (antes pendiente de aprobación del contenido) | 2026-11-06 | `registrationTexts.ts`, `recoveryTexts.ts`, `SecurityNote.tsx`, commit `06eda43` |
+| E-COR-D7 | Recuperación: en el paso 2 el identificador ya no se muestra, como en el mockup. El botón de regresar del encabezado vuelve al paso 1, y el botón Atrás de Android sigue llevando al inicio de sesión | Mockup de HU3 | **Aprobada** | 2026-11-06 | `PasswordRecoveryScreen.tsx`, commit `06eda43`; `correcciones\C-recuperacion\GC-C1-paso2-*.png` |
+| E-COR-D8 | La confirmación del registro muestra las respuestas de seguridad (A12). La contraseña sigue enmascarada | Encargo del responsable (A12) | **Aprobada** | 2026-11-06 | `RegistrationWizard.tsx`, commit `06eda43`; `correcciones\A-registro\GC-A4-paso3-confirmacion-*.png` |
+
+**E-COR-D5: textos implementados, aprobados el 2026-11-06**
+
+| Pantalla | Texto del diálogo de ayuda |
+|---|---|
+| Registro de Usuario | «Completa los tres pasos: tus datos personales y de acceso, cinco preguntas de seguridad distintas y la confirmación de tus datos. Los campos marcados con (*) son obligatorios.» |
+| Recuperar Contraseña | «Ingresa tu correo, número de documento o número celular. Luego responde dos de tus preguntas de seguridad y define una nueva contraseña.» |
+
+**E-COR-D6: textos implementados, aprobados el 2026-11-06**
+
+| Pantalla y campo | Texto |
+|---|---|
+| Registro, Primer Nombre | «Ingresa tu primer nombre» |
+| Registro, Primer Apellido | «Ingresa tu primer apellido» |
+| Registro, Número Celular | «Ej. 3001234567» |
+| Recuperación, respuesta de cada pregunta | «Escribe tu respuesta» |
+| Recuperación, Confirmar Nueva Contraseña | «Repite la nueva contraseña» |
+| Nota verde de HU1, HU2 y HU3 | «Datos encriptados con SQLCipher» (el mockup escribe «SQLCypher») |
+
+Los demás placeholders del registro y de la recuperación son textos literales de los mockups, por
+ejemplo «Ej. 10203040 o 900.123.456-7», «Ingresa tu segundo nombre (si aplica)»,
+«carlos.mendoza@email.com», «Crea una contraseña segura», «Escribe la respuesta secreta aquí» y
+«Correo, Documento o Celular». No forman parte de E-COR-D6.
 
 ## 2. Matriz de trazabilidad
 
@@ -120,5 +151,5 @@ Las capturas nuevas van en `C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-evidenc
   - la altura del modal de categoría con el teclado abierto;
   - el aspecto de las ondas.
 - Ejecutar `Test-ScriptSyntax.ps1` y los scripts de dispositivo actualizados.
-- Aprobar E-COR-D1 a E-COR-D8.
+- Todas las decisiones E-COR-D1 a E-COR-D8 están aprobadas (2026-11-06, sección 1).
 - No marcar nada en Azure DevOps hasta esa validación.

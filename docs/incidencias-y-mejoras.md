@@ -118,7 +118,7 @@ cursor. La agrupación de miles no se aplicaba mientras se escribía.
   cambios), y el historial, el balance y el análisis lo muestran con `formatMoney` («$4.550,07»).
 - Task 31 añade bajo el campo la ayuda «Escribe solo números: los dos últimos son los centavos.».
 
-**Cambio visible para el usuario (E-INC-D2).** Teclear «45500» ahora da «455,00» (antes,
+**Cambio visible para el usuario (E-INC-D2, reemplazada por E-COR-D3 el 2026-11-06; se conserva como historial).** Teclear «45500» ahora da «455,00» (antes,
 «45.500,00»). Para 45.500 pesos se escribe «4550000». Con el teclado numérico no se pueden
 escribir «-» ni letras, así que los casos «-5» y «abc» de HU4-CA05 ya no pueden ocurrir en el
 formulario. «0» sigue mostrando «Ingrese un monto válido», y el servicio sigue rechazando valores
@@ -211,11 +211,34 @@ Task 36).
 
 ## 5. Decisiones registradas
 
-| ID | Decisión | Estado |
-|---|---|---|
-| E-INC-D1 | La secuencia del registro sigue el prototipo de HU1: datos personales y de acceso, preguntas de seguridad y confirmación. Revisa la distribución de E03-D1 y A-W6, que dejaban esa revisión abierta si el prototipo era distinto | Implementada por encargo del responsable (Bug 38); pendiente su aprobación en la revisión |
-| E-INC-D2 | El monto se escribe con una máscara continua: los dos últimos dígitos son los centavos. Las reglas de E07-D5 y el almacenamiento no cambian | Implementada por encargo del responsable (Bug 40 y Task 37); pendiente su aprobación en la revisión |
-| E-INC-D3 | Textos nuevos propuestos (no literales de las HU): títulos de paso y secciones del registro, «Editar datos», nota de la confirmación, ayuda del monto, estado vacío de «Mis categorías», «Paso n de 2» y secciones de HU3, «Identificado» | Propuesta, pendiente de aprobación |
+Estado actualizado el 2026-11-06 por el responsable, tras la validación manual en Android 10
+(`GFP-evidencias\correcciones`). El historial de estados se conserva en la columna
+«Historial».
+
+| ID | Descripción | Origen | Estado | Fecha de aprobación | Implementación y evidencia | Historial |
+|---|---|---|---|---|---|---|
+| E-INC-D1 | La secuencia del registro sigue el prototipo de HU1: datos personales y de acceso, preguntas de seguridad y confirmación. Revisa la distribución de E03-D1 y A-W6, que dejaban esa revisión abierta si el prototipo era distinto | Encargo del responsable (Bug 38) y prototipo de HU1 | **Aprobada** | 2026-11-06 | Commits `cb39ea3` y `06eda43`; validación manual en Android 10 (`correcciones\A-registro\GC-A1-*`, `GC-A3-*`, `GC-A4-*`) | 2026-11-05: implementada, pendiente de aprobación |
+| E-INC-D2 | El monto se escribe con una máscara continua: los dos últimos dígitos son los centavos. Las reglas de E07-D5 y el almacenamiento no cambian | Encargo del responsable (Bug 40 y Task 37) | **Reemplazada** por E-COR-D3 (no vigente) | — | Commit `8ba1f21`; sustituida por `06eda43` (`correcciones-android10.md`, D3) | 2026-11-05: implementada, pendiente de aprobación; 2026-11-06: reemplazada |
+| E-INC-D3 | Textos nuevos propuestos, no literales de las HU. Se resuelven texto por texto en la tabla siguiente | Propuesta de Claude | **Aprobada**: 7 textos aprobados y 4 reemplazados; ninguno pendiente | 2026-11-06 | Tabla E-INC-D3 | 2026-11-05: propuesta, pendiente de aprobación; 2026-11-06: resuelta en parte (5 aprobados, 2 pendientes); 2026-11-06: los 2 pendientes, aprobados expresamente por el responsable |
+
+**E-INC-D3, texto por texto.** Los cinco primeros se aprobaron con las capturas de la
+validación en Android 10; el estado vacío de «Mis categorías» y «Identificado», por
+aprobación expresa del responsable el 2026-11-06. Los reemplazados ya no están en la aplicación porque
+las correcciones posteriores usaron el texto del mockup o los retiraron.
+
+| Texto | Pantalla | Estado | Evidencia o motivo |
+|---|---|---|---|
+| «Datos personales y de acceso» (título del paso 1) | Registro | **Aprobado**, 2026-11-06 | `correcciones\A-registro\GC-A1-paso1-encabezado.png` |
+| «Preguntas de seguridad» (título del paso 2) | Registro | **Aprobado**, 2026-11-06 | Escenario GC-A3 validado (`GC-A3-paso2-pregunta-2.png`) |
+| «Confirmación de datos» (título del paso 3) | Registro | **Aprobado**, 2026-11-06 | `GC-A4-paso3-confirmacion-1.png` |
+| «Editar datos» | Registro, paso 3 | **Aprobado**, 2026-11-06 | `GC-A4-paso3-confirmacion-2.png` |
+| «Paso 1 de 2» y «Paso 2 de 2» | Recuperación | **Aprobado**, 2026-11-06 | `correcciones\C-recuperacion\GC-C1-paso1-vacio.png` y `GC-C1-paso2-vacio-1.png` |
+| «Identificación oficial», «Información personal», «Credenciales de acceso» (secciones del registro) | Registro | **Reemplazado** por los textos del mockup («Identificación Oficial», «Información Personal», «Credenciales de Acceso»; E-COR-D2) | Commit `06eda43` |
+| «Preguntas de seguridad», «Credenciales de acceso» (secciones de HU3) | Recuperación | **Reemplazado** por los textos del mockup («Preguntas de Seguridad», «Credenciales de Acceso») | Commit `06eda43` |
+| Nota de la confirmación («Revisa tus datos antes de registrarte…») | Registro, paso 3 | **Reemplazado** por el texto del mockup («Revisa tus datos antes de confirmar») | Commit `06eda43` |
+| Ayuda del monto («Escribe solo números: los dos últimos son los centavos.») | Movimiento | **Retirado** junto con E-INC-D2 | Commit `06eda43` |
+| «Aún no tienes categorías propias. Usa «+ Nueva categoría» para crear una.» | Categorías | **Aprobado**, 2026-11-06 | Aprobación expresa del responsable (sin captura de HU8 en `correcciones\F-categorias`). Commit `608472c` |
+| «Identificado» (etiqueta de accesibilidad de la marca ✓ de HU7) | Captura de factura | **Aprobado**, 2026-11-06 | Aprobación expresa del responsable (solo la lee TalkBack). Commit `e552110` |
 
 ## 6. Pendientes
 
@@ -230,5 +253,6 @@ Task 36).
   - el ajuste de montos largos.
 - Repetir `Invoke-Hu2DeviceTests.ps1` e `Invoke-Hu1DeviceRegression.ps1` con el nuevo orden del
   registro.
-- Aprobar E-INC-D1 a E-INC-D3.
+- E-INC-D1 aprobada, E-INC-D2 reemplazada y E-INC-D3 aprobada por completo (2026-11-06,
+  sección 5). No queda ninguna decisión E-INC pendiente.
 - Task 47 (QA integrada HU1–HU10): sin cambios; sigue pendiente.

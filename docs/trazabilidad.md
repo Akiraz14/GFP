@@ -496,7 +496,7 @@ causas, archivos y pruebas están en `incidencias-y-mejoras.md`.
 |---|---|---|
 | Bug 38 + Task 27 | HU1-CA01–CA19 (secuencia del asistente, E-INC-D1) | Corregido; verificado en Jest; validación en dispositivo pendiente (GI-01) |
 | Bug 39 | HU1-CA10, HU3-CA04 (foco de las respuestas) | Corregido; verificado en Jest; pendiente GI-02 y GI-03 |
-| Bug 40 + Task 37 | HU4-CA05, CA07, CA10; HU6; HU7-CA07 (máscara del monto, E-INC-D2) | Corregido; verificado en Jest; pendiente GI-04 |
+| Bug 40 + Task 37 | HU4-CA05, CA07, CA10; HU6; HU7-CA07 (máscara del monto, E-INC-D2, reemplazada por E-COR-D3) | Corregido; verificado en Jest; pendiente GI-04 |
 | Bug 41 | HU7-CA02 | No es un error; comportamiento verificado en Jest; pendiente GI-05 |
 | Tasks 28–35 | HU2, HU3, HU5, HU4, HU7, HU8, HU9, HU10 (presentación) | Implementadas; verificadas en Jest; pendiente GI-07 |
 | Task 36 | HU8 y todos los diálogos y listas | Implementada; verificada en Jest; pendiente GI-06 |
