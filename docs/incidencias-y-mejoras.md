@@ -2,6 +2,9 @@
 
 **Fecha:** 2026-11-05  
 **Rama:** `main`, desde `dec86ff` (merge de la consolidación global)  
+**Actualización 2026-11-06:** la máscara de E-INC-D2 fue sustituida por E-COR-D3 y varias
+presentaciones se corrigieron tras las pruebas en Android 10 (`correcciones-android10.md`).
+
 **Estado:** implementado y verificado en Jest; **sin `push`**. La compilación Android y la
 validación en dispositivo están pendientes (sección 6).
 

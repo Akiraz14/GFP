@@ -17,15 +17,15 @@ Aplicación Android (React Native 0.87.1, TypeScript), sin backend, con base loc
 Desde la raíz del repositorio, con el árbol limpio:
 
 ```powershell
-$Ev = "C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-evidencias\incidencias"
+$Ev = "C:\Users\juanz\Akiraz\Study\GFP Proyecto\GFP-evidencias\correcciones"
 New-Item -ItemType Directory -Force $Ev | Out-Null
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Test-ScriptSyntax.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-07\tests\Test-ApkBadging.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 -ExpectedBranch main -ExpectedTests 633 -EvidenceRoot $Ev
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\stage-04\Invoke-StaticChecks.ps1 -ExpectedBranch main -ExpectedTests 651 -EvidenceRoot $Ev
 ```
 
 `Invoke-StaticChecks.ps1` ejecuta `npm ci`, `typecheck`, `lint`, `format:check` y Jest. Desde las
-incidencias y mejoras de 2026-11-05 (`incidencias-y-mejoras.md`) se esperan 633 pruebas en `main`.
+correcciones de Android 10 de 2026-11-06 (`correcciones-android10.md`) se esperan 651 pruebas en `main`.
 
 ## 3. APK Debug
 

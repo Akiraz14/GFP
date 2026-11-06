@@ -365,7 +365,7 @@ integral posterior a la Etapa 13.
 | HU4-CA02 | El selector "Categoría" debe poblarse con los registros activos del maestro 'categories'. | `listActiveCategories()` sin caché al abrir el formulario, filtrado por tipo con «Otros» para ambos (E07-D1, D-02) | U: `movementRules.test.ts`; C: `MovementFormScreen.test.tsx` (incluye una categoría personalizada recién creada, HU8-CA08) | M02 | Verificado (Jest) |
 | HU4-CA03 | El selector “Fecha” debe inicializarse con la fecha actual del sistema por defecto. | `todayIso()` con la fecha local; campo `DD/MM/AAAA` y calendario nativo (E07-D6) | U: `localDate.test.ts`; C: `MovementFormScreen.test.tsx` | M04 | Verificado (Jest) |
 | HU4-CA04 | La fecha no puede ser posterior a la fecha actual del sistema. De lo contrario, se muestra un mensaje: "La fecha no puede ser futura". | Validación de la fecha frente a hoy; `maximumDate` del calendario (D-03) | U: `movementRules.test.ts`, `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx` | M05, M06 | Verificado (Jest) |
-| HU4-CA05 | El campo monto debe recibir solo valores numéricos positivos mayores a cero. De lo contrario, se muestra un mensaje cerca del campo: “Ingrese un monto válido”. | `parseAmountInput()` (`money.ts`, E07-D5); máscara `maskAmountInput()` con teclado numérico (Bug 40, E-INC-D2); mensaje bajo el campo; `CHECK` de `amount_cents` | U: `money.test.ts`, `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M07 | Verificado (Jest) |
+| HU4-CA05 | El campo monto debe recibir solo valores numéricos positivos mayores a cero. De lo contrario, se muestra un mensaje cerca del campo: “Ingrese un monto válido”. | `parseAmountInput()` (`money.ts`, E07-D5); máscara `applyAmountEdit()`/`maskAmountInput()` con pesos enteros y decimales explícitos (E-COR-D3); mensaje bajo el campo; `CHECK` de `amount_cents` | U: `money.test.ts`, `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M07 | Verificado (Jest) |
 | HU4-CA06 | El campo "Descripción" es opcional y permite una longitud máxima de 250 caracteres. | `normalizeDescription()` y contador `n/250` (E07-D8); `CHECK` de `description` | U: `movementRules.test.ts`; C: `MovementFormScreen.test.tsx`; I: `movementMigration.test.ts` | M08 | Verificado (Jest) |
 | HU4-CA07 | Al presionar el botón "Registrar" (o “Actualizar”), si la información es válida, la transacción se almacena en la base de datos local vinculada al userId del usuario autenticado. | `MovementManagementService.create()` y `update()`; `MovementRepository` toma el usuario de la sesión (E02-D4) | U, I: `movementManagement.test.ts`; C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
 | HU4-CA08 | Al guardar correctamente, el sistema muestra el mensaje de confirmación: "El movimiento fue registrado exitosamente" (o "El movimiento fue actualizado exitosamente" para ediciones). | Pantalla «¡Operación exitosa!» (E07-D4); mensaje de actualización en el formulario | C: `MovementFormScreen.test.tsx`, `App.test.tsx` (edición desde el historial, E08) | M09; edición: H07 | Verificado (Jest); la edición se completó en E08 |
@@ -500,6 +500,15 @@ causas, archivos y pruebas están en `incidencias-y-mejoras.md`.
 | Bug 41 | HU7-CA02 | No es un error; comportamiento verificado en Jest; pendiente GI-05 |
 | Tasks 28–35 | HU2, HU3, HU5, HU4, HU7, HU8, HU9, HU10 (presentación) | Implementadas; verificadas en Jest; pendiente GI-07 |
 | Task 36 | HU8 y todos los diálogos y listas | Implementada; verificada en Jest; pendiente GI-06 |
+
+## Correcciones de Android 10 (2026-11-06)
+
+Fidelidad a los mockups y entrada de montos, sin cambiar reglas de negocio. Detalle por
+incidencia (A1–A13, B1–B9, C1–C8, D1–D7, E1–E2, F1–F6, G1–G7, H1) en
+`correcciones-android10.md`. Verificado en Jest (651 pruebas); validación en Android 10
+pendiente (G-COR). Cambios de presentación de criterios literales: HU1 (mensaje genérico,
+E-COR-D1), HU2 y HU3 (textos de botones y enlace, E-COR-D2); HU4-CA05 conserva su regla con la
+máscara E-COR-D3.
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 
