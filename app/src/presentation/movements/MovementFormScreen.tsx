@@ -461,6 +461,11 @@ export function MovementFormScreen({
             <TextField
               editable={!busy}
               error={messages.amount}
+              helper={
+                <Text style={styles.counter} testID="movement-amount-help">
+                  {TEXTS.amountHelp}
+                </Text>
+              }
               keyboardType="number-pad"
               label={TEXTS.labels.amount}
               onChangeText={amount =>

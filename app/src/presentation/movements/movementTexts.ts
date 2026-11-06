@@ -14,6 +14,8 @@ export const MOVEMENT_TEXTS = {
     expense: 'Gasto',
     income: 'Ingreso',
   } satisfies Record<MovementType, string>,
+  // Task 31 y Bug 40: la máscara llena los centavos primero.
+  amountHelp: 'Escribe solo números: los dos últimos son los centavos.',
   labels: {
     type: 'Tipo de movimiento',
     amount: 'Monto',

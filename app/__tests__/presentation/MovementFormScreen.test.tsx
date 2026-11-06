@@ -481,3 +481,12 @@ describe('HU4 form prefilled from HU7', () => {
     expect(screen.queryByTestId('movement-prefill-note')).toBeNull();
   });
 });
+
+describe('Task 31: amount guidance', () => {
+  test('the amount explains that the last two digits are the cents', async () => {
+    await show(await setup());
+    expect(screen.getByTestId('movement-amount-help')).toHaveTextContent(
+      'Escribe solo números: los dos últimos son los centavos.',
+    );
+  });
+});
