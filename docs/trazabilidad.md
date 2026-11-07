@@ -21,11 +21,16 @@ criterio derivado figura en su columna «Origen».
 | HU8 Administrar categorías de movimientos financieros | CA01–CA08 (CA07 con subcriterios a, b, c) | 06 | Implementada (2026-11-04) e integrada en `main` (`5d515ef`); cerrada con validación parcial (`cierre-etapa-06.md`); CA01–CA06, CA07a y CA07b verificados en Jest; CA07c completada en E07 y CA08 en E08 (verificados en Jest); validación manual final pendiente |
 | HU4 Registrar y editar movimiento financiero | CA01–CA13 | 07 | Integrada en `main` (`7558a3f`, etiqueta `etapa-07-aprobada`); CA01–CA13 verificados en Jest: CA10, CA12 y la edición de CA07 y CA08 completados en E08 (rama `e08/hu5-historial-movimientos`); sin pruebas manuales hasta la validación final (D-07) |
 | HU5 Consultar historia de movimientos financieros | CA01–CA07 | 08 | Integrada en `main` (`5dd2071`, etiqueta `etapa-08-aprobada`); CA01–CA07 verificados en Jest; ampliada en la consolidación con filtros iniciales y el acceso a HU7; sin pruebas manuales hasta la validación final (D-07) |
-| HU6 Visualizar balance financiero | CA01–CA04 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA04 verificados en Jest; adaptada de `daniela888-li/GFP` (E-CONS-D2) |
-| HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA12 verificados en Jest con cámara, galería y OCR simulados; cámara real, ML Kit y borrado nativo sin ejecutar (validación final); calidad del OCR sin evaluar (P-CONS-03) |
-| HU9 Consultar análisis financiero | CA01–CA06 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA06 verificados en Jest (la dona y las líneas se renderizan en Jest; su aspecto requiere validación manual) |
+| HU6 Visualizar balance financiero | CA01–CA04 | Consolidación | Implementada en la consolidación (2026-11-04) e integrada en `main` (`dec86ff`); CA01–CA04 verificados en Jest; adaptada de `daniela888-li/GFP` (E-CONS-D2) |
+| HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | Consolidación | Implementada en la consolidación (2026-11-04) e integrada en `main` (`dec86ff`); CA01–CA12 verificados en Jest con cámara, galería y OCR simulados; cámara real, ML Kit y borrado nativo sin ejecutar (validación final); calidad del OCR sin evaluar (P-CONS-03) |
+| HU9 Consultar análisis financiero | CA01–CA06 | Consolidación | Implementada en la consolidación (2026-11-04) e integrada en `main` (`dec86ff`); CA01–CA06 verificados en Jest (la dona y las líneas se renderizan en Jest; su aspecto requiere validación manual) |
 | HU10 Consultar recomendaciones financieras automáticas | CA01–CA06 (CA02 con subcriterios a, b, c) | Consolidación | Implementada en la consolidación (2026-11-04) e integrada en `main`; CA01–CA06 verificados en Jest; ampliada con el Consejo de Ahorro (E-AJ-D1), el descarte por sesión (E-AJ-D2) y las reglas R4–R8 (E-REC-D1); validada manualmente en Android 10 y aprobada el 2026-11-07 (REC-V1 a REC-V12) |
 | **Total** | **99** | | |
+
+**Estado final (2026-11-07):** las diez historias están integradas en `main` y el responsable
+informó pruebas funcionales manuales satisfactorias en Android 10 (emulador Pixel 4). Las
+menciones «pendiente» de las secciones por etapa registran el estado de cada momento. Cierre del
+MVP en `cierre-proyecto.md`.
 
 ## Criterios parciales previstos
 
@@ -524,6 +529,8 @@ descrito arriba.
 | AJ-04 | HU10 (tarjeta informativa) | Consejo de Ahorro (E-AJ-D1) | `recommendations.test.ts`, `AnalysisAndRecommendations.test.tsx` | AJ-V6, REC-V4 | Finalizado |
 | AJ-05 | HU10 (descartar) | Descarte por sesión (E-AJ-D2) | `recommendationService.test.ts`, `AnalysisAndRecommendations.test.tsx` | AJ-V7, AJ-V8, REC-V11, REC-V12 | Finalizado |
 | E-REC-D1 | HU10-CA02, CA03, CA05 | R1 con gastos ≥ ingresos, R4–R8, períodos equivalentes, íconos por regla y prioridades | `financialAnalysis.test.ts`, `recommendations.test.ts`, `AnalysisAndRecommendations.test.tsx`, `recommendationService.test.ts`, `App.test.tsx` | REC-V1 a REC-V12 | Finalizado; aprobado 2026-11-07 |
+| AJ-06 | HU4-CA08 (confirmación de la edición), HU4-CA12 (regreso al historial) | Mensaje encima de «Volver al historial» y regreso automático a los 2500 ms (E-AJ-D3) | `MovementFormScreen.test.tsx` «after a successful update», `App.test.tsx` | Con el APK definitivo | Implementado; verificado en Jest |
+| E-ICON-D1 | Ninguno (identidad visual) | Ícono adaptable y PNG clásicos (`icono-aplicacion.md`) | — (recursos de Android) | Con el APK definitivo | Implementado |
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

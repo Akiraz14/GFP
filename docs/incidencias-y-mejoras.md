@@ -1,5 +1,8 @@
 # Incidencias y mejoras pendientes (Bugs 38–41, Tasks 27–37)
 
+> **Documento histórico.** Estos cambios están integrados y publicados en `main`. Estado final del
+> MVP: `cierre-proyecto.md`.
+
 **Fecha:** 2026-11-05  
 **Rama:** `main`, desde `dec86ff` (merge de la consolidación global)  
 **Actualización 2026-11-06:** la máscara de E-INC-D2 fue sustituida por E-COR-D3 y varias

@@ -1,5 +1,11 @@
 # Guía de la validación manual integral (HU1–HU10)
 
+> **Documento histórico (2026-11-07).** Guía usada en las validaciones G-INC y G-COR. Sus pasos
+> de preparación desinstalan la app (`adb uninstall`), lo que borra los datos locales, y fijan
+> contadores de pruebas de aquel momento. Para nuevas sesiones use
+> `../testing/guia-pruebas-emulador-android.md` y `../testing/guia-pruebas-automatizadas.md`;
+> los escenarios de esta guía siguen siendo válidos como referencia.
+
 Validación única posterior a la consolidación (D-07), ejecutada por el responsable en **Android 10
 (API 29)** y **Android 14 (API 34)**, con el APK Release firmado (o el Debug con Metro si la firma
 aún no está lista; anótelo). Sustituye las guías parciales de E07 (`etapa-07-verificacion.md`,
