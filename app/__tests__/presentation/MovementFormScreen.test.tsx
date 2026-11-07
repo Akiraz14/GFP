@@ -478,6 +478,151 @@ describe('HU4 form (edit mode; the HU5 entry point arrives in E08)', () => {
     expect((await storedMovements(context))[0].amount_cents).toBe(5_000_000);
   });
 
+  describe('after a successful update', () => {
+    // Temporizadores de Jest; las promesas de la base de datos siguen siendo reales.
+    beforeEach(() => {
+      jest.useFakeTimers({
+        doNotFake: ['setImmediate', 'nextTick', 'queueMicrotask'],
+      });
+    });
+    afterEach(() => {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
+
+    async function update() {
+      const { context, id } = await withMovement();
+      const view = await show(context, { mode: 'edit', movementId: id });
+      await fireEvent.changeText(
+        screen.getByTestId('movement-amount'),
+        '50000',
+      );
+      // El campo de monto programa un temporizador de 0 ms al escribir.
+      await act(() => jest.advanceTimersByTime(0));
+      await fireEvent.press(screen.getByTestId('movement-save'));
+      await screen.findByTestId('movement-form-updated');
+      return { ...view, context };
+    }
+
+    test('the message sits right above «Volver al historial», which replaces «Actualizar» and «Cancelar»', async () => {
+      const { onDone } = await update();
+      expect(screen.queryByTestId('movement-save')).toBeNull();
+      expect(screen.queryByTestId('movement-cancel')).toBeNull();
+      expect(screen.queryByText('Actualizar')).toBeNull();
+      expect(screen.queryByText('Cancelar')).toBeNull();
+      expect(
+        within(screen.getByTestId('movement-updated-back')).getByText(
+          'Volver al historial',
+        ),
+      ).toBeTruthy();
+      const order = testIdsInOrder(screen.toJSON());
+      const message = order.indexOf('movement-form-updated');
+      expect(order.indexOf('movement-description')).toBeLessThan(message);
+      expect(order[message + 1]).toBe('movement-updated-back');
+      expect(order.slice(message + 2)).not.toContain('movement-form-updated');
+      expect(screen.getByTestId('movement-form-updated')).toHaveTextContent(
+        'El movimiento fue actualizado exitosamente',
+      );
+      expect(onDone).not.toHaveBeenCalled();
+    });
+
+    test('returns to the history by itself after 2500 ms', async () => {
+      const { onDone } = await update();
+      await act(() => jest.advanceTimersByTime(2499));
+      expect(onDone).not.toHaveBeenCalled();
+      await act(() => jest.advanceTimersByTime(1));
+      expect(onDone).toHaveBeenCalledTimes(1);
+      await act(() => jest.advanceTimersByTime(5000));
+      expect(onDone).toHaveBeenCalledTimes(1);
+    });
+
+    test('«Volver al historial» returns at once and the timer does not navigate again', async () => {
+      const { onDone } = await update();
+      await act(() => jest.advanceTimersByTime(1000));
+      await fireEvent.press(screen.getByTestId('movement-updated-back'));
+      expect(onDone).toHaveBeenCalledTimes(1);
+      await fireEvent.press(screen.getByTestId('movement-updated-back'));
+      await act(() => jest.advanceTimersByTime(5000));
+      expect(onDone).toHaveBeenCalledTimes(1);
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test('the Android back button also returns only once', async () => {
+      const listeners: Array<
+        Parameters<typeof BackHandler.addEventListener>[1]
+      > = [];
+      const spy = jest
+        .spyOn(BackHandler, 'addEventListener')
+        .mockImplementation((_event, handler) => {
+          listeners.push(handler);
+          return { remove: jest.fn() };
+        });
+      const { onDone } = await update();
+      await act(() => {
+        listeners.at(-1)!({ type: 'hardwareBackPress', timeStamp: 0 });
+      });
+      expect(onDone).toHaveBeenCalledTimes(1);
+      await act(() => jest.advanceTimersByTime(5000));
+      expect(onDone).toHaveBeenCalledTimes(1);
+      spy.mockRestore();
+    });
+
+    test('unmounting clears the pending timer', async () => {
+      const { onDone } = await update();
+      expect(jest.getTimerCount()).toBe(1);
+      await screen.unmount();
+      expect(jest.getTimerCount()).toBe(0);
+      await act(() => jest.advanceTimersByTime(5000));
+      expect(onDone).not.toHaveBeenCalled();
+    });
+
+    test('a failed update keeps «Actualizar» and «Cancelar», starts no timer and allows a retry', async () => {
+      const { context, id } = await withMovement();
+      const { onDone } = await show(context, {
+        mode: 'edit',
+        movementId: id,
+      });
+      await fireEvent.changeText(screen.getByTestId('movement-amount'), '0');
+      await act(() => jest.advanceTimersByTime(0));
+      await fireEvent.press(screen.getByTestId('movement-save'));
+      expect(
+        await screen.findByTestId('movement-form-error-banner'),
+      ).toBeTruthy();
+      expect(screen.queryByTestId('movement-form-updated')).toBeNull();
+      expect(screen.queryByTestId('movement-updated-back')).toBeNull();
+      expect(screen.getByTestId('movement-save')).toBeTruthy();
+      expect(screen.getByTestId('movement-cancel')).toBeTruthy();
+      expect(jest.getTimerCount()).toBe(0);
+      await act(() => jest.advanceTimersByTime(5000));
+      expect(onDone).not.toHaveBeenCalled();
+      await fireEvent.changeText(
+        screen.getByTestId('movement-amount'),
+        '50000',
+      );
+      await fireEvent.press(screen.getByTestId('movement-save'));
+      expect(await screen.findByTestId('movement-form-updated')).toBeTruthy();
+      expect((await storedMovements(context))[0].amount_cents).toBe(5_000_000);
+    });
+
+    test('a storage failure keeps the edit buttons and starts no timer', async () => {
+      const { context, id } = await withMovement();
+      jest
+        .spyOn(context.movements, 'update')
+        .mockResolvedValueOnce({ status: 'failed' });
+      const { onDone } = await show(context, {
+        mode: 'edit',
+        movementId: id,
+      });
+      await fireEvent.press(screen.getByTestId('movement-save'));
+      expect(await screen.findByTestId('movement-dialog')).toBeTruthy();
+      expect(screen.getByTestId('movement-save')).toBeTruthy();
+      expect(screen.getByTestId('movement-cancel')).toBeTruthy();
+      expect(screen.queryByTestId('movement-updated-back')).toBeNull();
+      expect(jest.getTimerCount()).toBe(0);
+      expect(onDone).not.toHaveBeenCalled();
+    });
+  });
+
   test('a missing movement shows a message and returns', async () => {
     const context = await setup();
     const { onDone } = await show(context, {

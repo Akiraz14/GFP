@@ -74,6 +74,8 @@ type MovementFormScreenProps = {
 
 // Tipo preseleccionado del formulario nuevo (E07-D2).
 const DEFAULT_TYPE: MovementType = 'expense';
+// Tras actualizar, el formulario vuelve solo al historial pasado este tiempo.
+export const UPDATED_RETURN_DELAY_MS = 2500;
 
 function emptyInput(today: IsoDate): MovementInput {
   return {
@@ -152,8 +154,11 @@ export function MovementFormScreen({
   const [original, setOriginal] = useState<Movement | null>(null);
   const [options, setOptions] = useState<Category[] | null>(null);
   const [errors, setErrors] = useState<MovementFieldErrors>({});
-  const [banner, setBanner] = useState<'error' | 'updated' | null>(null);
+  const [banner, setBanner] = useState<'error' | null>(null);
   const [busy, setBusy] = useState(false);
+  const [updated, setUpdated] = useState(false);
+  const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const returned = useRef(false);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [amountSelection, setAmountSelection] = useState<
     { start: number; end: number } | undefined
@@ -169,8 +174,25 @@ export function MovementFormScreen({
     mounted.current = true;
     return () => {
       mounted.current = false;
+      if (returnTimer.current !== null) {
+        clearTimeout(returnTimer.current);
+        returnTimer.current = null;
+      }
     };
   }, []);
+
+  // Regreso al historial tras actualizar: una sola vez, por el botón o por el temporizador.
+  const returnToHistory = useCallback(() => {
+    if (returnTimer.current !== null) {
+      clearTimeout(returnTimer.current);
+      returnTimer.current = null;
+    }
+    if (returned.current) {
+      return;
+    }
+    returned.current = true;
+    onDone();
+  }, [onDone]);
 
   // HU4-CA02 y HU8-CA08: las categorías se consultan al abrir el formulario, sin caché.
   const load = useCallback(async () => {
@@ -222,12 +244,16 @@ export function MovementFormScreen({
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
       () => {
-        onDone();
+        if (returnTimer.current !== null) {
+          returnToHistory();
+        } else {
+          onDone();
+        }
         return true;
       },
     );
     return () => subscription.remove();
-  }, [onDone]);
+  }, [onDone, returnToHistory]);
 
   const currentCategoryId = original?.categoryId ?? null;
   const type = input.type as MovementType;
@@ -235,12 +261,12 @@ export function MovementFormScreen({
     () => categoriesForType(options ?? [], type, currentCategoryId),
     [options, type, currentCategoryId],
   );
+  const locked = busy || updated;
   const messages = fieldMessages(errors);
   const descriptionLength = Array.from(input.description.trim()).length;
 
   function change(patch: Partial<MovementInput>) {
     setInput(previous => ({ ...previous, ...patch }));
-    setBanner(previous => (previous === 'updated' ? null : previous));
   }
 
   // D-02: al cambiar el tipo se borra la categoría que deje de ser compatible.
@@ -279,7 +305,7 @@ export function MovementFormScreen({
   }
 
   async function save() {
-    if (busy) {
+    if (busy || updated) {
       return;
     }
     // HU4-CA01, CA04, CA05, CA06 y CA13: se valida antes de escribir.
@@ -305,10 +331,15 @@ export function MovementFormScreen({
     }
     setErrors({});
     if (params.mode === 'edit') {
-      // HU4-CA08 (edición): mensaje de actualización en el mismo formulario.
+      // HU4-CA08 (edición): mensaje sobre «Volver al historial» y regreso automático.
       setOriginal(result.movement);
       setInput(inputFromMovement(result.movement));
-      setBanner('updated');
+      setBanner(null);
+      setUpdated(true);
+      returnTimer.current = setTimeout(
+        returnToHistory,
+        UPDATED_RETURN_DELAY_MS,
+      );
       return;
     }
     // HU4-CA08 y CA09: confirmación y formulario limpio (E07-D4, I-03).
@@ -399,15 +430,6 @@ export function MovementFormScreen({
             {TEXTS.prefill.partial}
           </Text>
         )}
-        {banner === 'updated' && (
-          <Text
-            accessibilityRole="alert"
-            style={[styles.banner, styles.bannerSuccess]}
-            testID="movement-form-updated"
-          >
-            {TEXTS.success.updated}
-          </Text>
-        )}
         {options === null ? (
           <ActivityIndicator
             color={COLORS.primary}
@@ -423,8 +445,8 @@ export function MovementFormScreen({
                 return (
                   <Pressable
                     accessibilityRole="radio"
-                    accessibilityState={{ selected, disabled: busy }}
-                    disabled={busy}
+                    accessibilityState={{ selected, disabled: locked }}
+                    disabled={locked}
                     key={option}
                     onPress={() => changeType(option)}
                     style={[
@@ -456,7 +478,7 @@ export function MovementFormScreen({
               })}
             </View>
             <TextField
-              editable={!busy}
+              editable={!locked}
               error={messages.amount}
               inputColor={type === 'income' ? COLORS.success : COLORS.error}
               keyboardType="decimal-pad"
@@ -475,7 +497,7 @@ export function MovementFormScreen({
             />
             <DateField
               calendarLabel={TEXTS.accessibility.openCalendar}
-              disabled={busy}
+              disabled={locked}
               error={messages.date}
               label={TEXTS.labels.date}
               maximumDate={today}
@@ -485,7 +507,7 @@ export function MovementFormScreen({
               value={input.date}
             />
             <SelectField
-              disabled={busy}
+              disabled={locked}
               error={messages.category}
               label={TEXTS.labels.category}
               onChange={categoryId => change({ categoryId })}
@@ -498,7 +520,7 @@ export function MovementFormScreen({
               value={input.categoryId}
             />
             <TextField
-              editable={!busy}
+              editable={!locked}
               error={messages.description}
               helper={
                 <Text
@@ -537,34 +559,56 @@ export function MovementFormScreen({
                 </Text>
               </View>
             )}
-            <View style={styles.buttons}>
-              <ActionButton
-                disabled={busy}
-                label={editing ? TEXTS.buttons.update : TEXTS.buttons.save}
-                onPress={() => {
-                  save();
-                }}
-                testID="movement-save"
-                variant="primary"
-              />
-            </View>
-            <View style={styles.buttons}>
-              {!editing && (
-                <ActionButton
-                  disabled={busy}
-                  label={TEXTS.buttons.clear}
-                  onPress={clear}
-                  testID="movement-clear"
-                />
-              )}
-              <ActionButton
-                disabled={busy}
-                label={TEXTS.buttons.cancel}
-                onPress={onDone}
-                testID="movement-cancel"
-                variant="danger"
-              />
-            </View>
+            {updated ? (
+              <>
+                <Text
+                  accessibilityRole="alert"
+                  style={[styles.banner, styles.bannerSuccess]}
+                  testID="movement-form-updated"
+                >
+                  {TEXTS.success.updated}
+                </Text>
+                <View style={styles.buttons}>
+                  <ActionButton
+                    label={TEXTS.buttons.backToHistory}
+                    onPress={returnToHistory}
+                    testID="movement-updated-back"
+                    variant="primary"
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.buttons}>
+                  <ActionButton
+                    disabled={busy}
+                    label={editing ? TEXTS.buttons.update : TEXTS.buttons.save}
+                    onPress={() => {
+                      save();
+                    }}
+                    testID="movement-save"
+                    variant="primary"
+                  />
+                </View>
+                <View style={styles.buttons}>
+                  {!editing && (
+                    <ActionButton
+                      disabled={busy}
+                      label={TEXTS.buttons.clear}
+                      onPress={clear}
+                      testID="movement-clear"
+                    />
+                  )}
+                  <ActionButton
+                    disabled={busy}
+                    label={TEXTS.buttons.cancel}
+                    onPress={onDone}
+                    testID="movement-cancel"
+                    variant="danger"
+                  />
+                </View>
+              </>
+            )}
           </>
         )}
       </FormScrollView>

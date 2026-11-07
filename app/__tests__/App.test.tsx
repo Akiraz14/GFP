@@ -401,7 +401,7 @@ describe('HU5 history in the app (E08)', () => {
       [id],
     );
     expect(stored.rows[0]).toEqual({ amount_cents: 5_000_000 });
-    await fireEvent.press(screen.getByTestId('movement-cancel'));
+    await fireEvent.press(screen.getByTestId('movement-updated-back'));
     expect(
       (await screen.findByTestId(`movement-amount-${id}`)).props.children,
     ).toBe('-$50.000,00');
