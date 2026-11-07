@@ -24,7 +24,7 @@ criterio derivado figura en su columna «Origen».
 | HU6 Visualizar balance financiero | CA01–CA04 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA04 verificados en Jest; adaptada de `daniela888-li/GFP` (E-CONS-D2) |
 | HU7 Capturar gasto mediante factura o comprobante | CA01–CA12 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA12 verificados en Jest con cámara, galería y OCR simulados; cámara real, ML Kit y borrado nativo sin ejecutar (validación final); calidad del OCR sin evaluar (P-CONS-03) |
 | HU9 Consultar análisis financiero | CA01–CA06 | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA06 verificados en Jest (la dona y las líneas se renderizan en Jest; su aspecto requiere validación manual) |
-| HU10 Consultar recomendaciones financieras automáticas | CA01–CA06 (CA02 con subcriterios a, b, c) | Consolidación | Implementada en la rama `integracion/consolidacion-global` (2026-11-04), sin integrar en `main`; CA01–CA06 verificados en Jest; descartes por mes (I-27, migración 6) |
+| HU10 Consultar recomendaciones financieras automáticas | CA01–CA06 (CA02 con subcriterios a, b, c) | Consolidación | Implementada en la consolidación (2026-11-04) e integrada en `main`; CA01–CA06 verificados en Jest; ampliada con el Consejo de Ahorro (E-AJ-D1), el descarte por sesión (E-AJ-D2) y las reglas R4–R8 (E-REC-D1); validada manualmente en Android 10 y aprobada el 2026-11-07 (REC-V1 a REC-V12) |
 | **Total** | **99** | | |
 
 ## Criterios parciales previstos
@@ -509,6 +509,21 @@ incidencia (A1–A13, B1–B9, C1–C8, D1–D7, E1–E2, F1–F6, G1–G7, H1) 
 pendiente (G-COR). Cambios de presentación de criterios literales: HU1 (mensaje genérico,
 E-COR-D1), HU2 y HU3 (textos de botones y enlace, E-COR-D2); HU4-CA05 conserva su regla con la
 máscara E-COR-D3.
+
+## Ajustes finales y recomendaciones (2026-11-07)
+
+Detalle en `ajustes-finales.md` y `recomendaciones-ampliadas.md`; cierre en
+`cierre-proyecto.md`. El descarte por sesión (E-AJ-D2) reemplaza el descarte por mes de I-27
+descrito arriba.
+
+| ID | Criterios relacionados | Implementación | Pruebas automatizadas | Validación manual | Estado |
+|---|---|---|---|---|---|
+| AJ-01 | HU5, HU4, HU7 (acceso) | Botones flotantes del historial | `MovementHistoryScreen.test.tsx` | AJ-V1, AJ-V2 | Finalizado |
+| AJ-02 | HU7-CA04–CA07 (OCR) | `receiptExtraction.ts` | `receiptExtraction.test.ts` | AJ-V3, AJ-V4 | Finalizado |
+| AJ-03 | HU2 (presentación) | Placeholder de la contraseña | `LoginScreen.test.tsx` | AJ-V5 | Finalizado |
+| AJ-04 | HU10 (tarjeta informativa) | Consejo de Ahorro (E-AJ-D1) | `recommendations.test.ts`, `AnalysisAndRecommendations.test.tsx` | AJ-V6, REC-V4 | Finalizado |
+| AJ-05 | HU10 (descartar) | Descarte por sesión (E-AJ-D2) | `recommendationService.test.ts`, `AnalysisAndRecommendations.test.tsx` | AJ-V7, AJ-V8, REC-V11, REC-V12 | Finalizado |
+| E-REC-D1 | HU10-CA02, CA03, CA05 | R1 con gastos ≥ ingresos, R4–R8, períodos equivalentes, íconos por regla y prioridades | `financialAnalysis.test.ts`, `recommendations.test.ts`, `AnalysisAndRecommendations.test.tsx`, `recommendationService.test.ts`, `App.test.tsx` | REC-V1 a REC-V12 | Finalizado; aprobado 2026-11-07 |
 
 ## Etapa 01 — criterios de cierre (no son criterios de historias)
 

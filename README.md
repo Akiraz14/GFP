@@ -36,7 +36,7 @@ npm test
 
 Instalación, compilación Debug y Release y validación final: `docs/guia-instalacion-ejecucion.md`
 y `docs/validacion/guia-pruebas-manuales-finales.md`. Estado de la consolidación:
-`docs/informe-consolidacion.md`.
+`docs/informe-consolidacion.md`. Cierre del proyecto y APK final: `docs/cierre-proyecto.md`.
 
 ## Ramas
 

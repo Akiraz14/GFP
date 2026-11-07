@@ -66,16 +66,50 @@ depuración.
 
 ## 6. Instalación en un dispositivo o emulador
 
+El APK Release lleva el bundle JavaScript: se instala y se abre sin Metro, sin servidor y sin USB
+permanente. El APK final de entrega se copia a
+`C:\Users\juanz\Akiraz\Study\GFP Proyecto\entregables\` (`cierre-proyecto.md`, sección 4).
+
+**Actualizar o desinstalar.** Android solo actualiza una app si el APK nuevo tiene el mismo
+paquete y la misma firma, y una `versionCode` igual o mayor. Con el Release firmado con
+`gfp-release`, `adb install -r` (o abrirlo desde el administrador de archivos y elegir
+«Actualizar») conserva la base cifrada y los datos. Si el teléfono tiene un APK Debug (firmado con
+la clave de depuración) o uno firmado con otra clave, la instalación falla con
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE`; solo entonces hay que desinstalar, y desinstalar borra la
+base y su clave: los datos no se pueden recuperar (no hay copia en la nube ni copia de seguridad de
+Android: `allowBackup="false"`).
+
+Con ADB (depuración USB activada en el teléfono):
+
 ```powershell
-$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-& $adb devices
-& $adb install -r "app\android\app\build\outputs\apk\release\app-release.apk"
+$Adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+$Pkg = "co.gfpsas.gestionfinanciera"
+$Apk = "C:\Users\juanz\Akiraz\Study\GFP Proyecto\entregables\GFP-Android-Release-v1.0.apk"
+Test-Path $Apk; Get-FileHash $Apk -Algorithm SHA256
+& $Adb devices                                   # el teléfono debe aparecer como «device»
+& $Adb shell getprop ro.build.version.sdk        # 29 en Android 10
+& $Adb shell pm list packages $Pkg               # vacío si la app no está instalada
+& $Adb install -r $Apk                           # Success; conserva los datos si la firma coincide
+& $Adb shell pm list packages $Pkg               # package:co.gfpsas.gestionfinanciera
+& $Adb shell dumpsys package $Pkg | Select-String "versionName|versionCode|minSdk|targetSdk"
+& $Adb shell monkey -p $Pkg -c android.intent.category.LAUNCHER 1
 ```
 
-En un teléfono: active la depuración USB o copie el APK y permita instalar aplicaciones de
-origen desconocido. La primera apertura crea la base cifrada y su clave en el Android Keystore.
-Desinstalar la app borra la base y la clave: los datos no se pueden recuperar (no hay copia en la
-nube ni copia de seguridad de Android: `allowBackup="false"`).
+Si `install -r` devuelve `INSTALL_FAILED_UPDATE_INCOMPATIBLE` y acepta perder los datos locales:
+`& $Adb uninstall $Pkg` y después `& $Adb install $Apk`.
+
+Registros si algo falla:
+
+```powershell
+& $Adb logcat -c
+& $Adb shell monkey -p $Pkg -c android.intent.category.LAUNCHER 1
+& $Adb logcat -d -v time ReactNativeJS:V ReactNative:V AndroidRuntime:E *:S > "$env:USERPROFILE\Desktop\gfp-logcat.txt"
+```
+
+Sin ADB: copie el APK al teléfono (cable USB en modo «Transferencia de archivos», Google Drive o
+correo), ábralo desde el administrador de archivos (Archivos › Descargas), autorice
+«Instalar apps desconocidas» para esa aplicación cuando Android lo pida y pulse «Instalar» (o
+«Actualizar»). Ábrala desde el ícono «GFP».
 
 ## 7. Validación manual final
 
