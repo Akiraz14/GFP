@@ -6,11 +6,17 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { processColor } from 'react-native';
+import {
+  evaluateRecommendations,
+  type Recommendation,
+} from '../../src/analysis/recommendations';
 import { MovementManagementService } from '../../src/business/movements/movementManagement';
 import { RecommendationService } from '../../src/business/recommendations/recommendationService';
 import { AnalysisScreen } from '../../src/presentation/analysis/AnalysisScreen';
 import { RecommendationsScreen } from '../../src/presentation/recommendations/RecommendationsScreen';
 import { SessionManager } from '../../src/services/session/sessionManager';
+import { item } from '../../testing/movementFixtures';
 import { nodeRandomBytes } from '../../testing/nodeSqliteDatabase';
 import {
   createAccount,
@@ -188,7 +194,7 @@ describe('HU10 screen', () => {
       ['expense', '100', '03/11/2026', 'food'],
     ]);
     await fireEvent.press(
-      await screen.findByTestId('recommendation-open-negative-balance'),
+      await screen.findByTestId('recommendation-open-no-income'),
     );
     expect(onOpenHistory).toHaveBeenCalledWith({
       from: '2026-11-01',
@@ -203,12 +209,10 @@ describe('HU10 screen', () => {
       ['expense', '100', '03/11/2026', 'food'],
     ]);
     await fireEvent.press(
-      await screen.findByTestId('recommendation-dismiss-negative-balance'),
+      await screen.findByTestId('recommendation-dismiss-no-income'),
     );
     await waitFor(() =>
-      expect(
-        screen.queryByTestId('recommendation-negative-balance'),
-      ).toBeNull(),
+      expect(screen.queryByTestId('recommendation-no-income')).toBeNull(),
     );
     await screen.unmount();
     await render(
@@ -222,7 +226,7 @@ describe('HU10 screen', () => {
     expect(
       await screen.findByTestId('recommendation-critical-category-food'),
     ).toBeTruthy();
-    expect(screen.queryByTestId('recommendation-negative-balance')).toBeNull();
+    expect(screen.queryByTestId('recommendation-no-income')).toBeNull();
   });
 
   test('R2 and R3 cards open the history with their category and the expense type', async () => {
@@ -293,7 +297,7 @@ describe('Tasks 34 and 35: legibility and accessibility', () => {
       />,
     );
     const dismiss = await screen.findByTestId(
-      'recommendation-dismiss-negative-balance',
+      'recommendation-dismiss-no-income',
     );
     expect(dismiss.props.accessibilityLabel).toMatch(
       /^Descartar recomendación: \S/,
@@ -370,5 +374,316 @@ describe('E-COR: HU9 and HU10 fidelity (G1-G7, H1)', () => {
     expect(
       screen.getByTestId('recommendations-section-icon', hidden),
     ).toBeTruthy();
+  });
+});
+
+describe('AJ-04 and AJ-05: savings tip and session dismissal on the screen', () => {
+  async function show(context: Awaited<ReturnType<typeof setup>>) {
+    return render(
+      <RecommendationsScreen
+        gateway={context.recommendations}
+        onOpenHistory={context.onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+  }
+
+  test('a positive balance shows the green «Consejo de Ahorro» card', async () => {
+    const context = await setup([
+      ['income', '500000', '01/11/2026', 'salary'],
+      ['expense', '100', '03/11/2026', 'food'],
+      ['expense', '100', '03/11/2026', 'transport'],
+    ]);
+    await show(context);
+    const card = await screen.findByTestId('recommendation-savings-tip');
+    expect(within(card).getByText('Consejo de Ahorro')).toBeTruthy();
+    expect(card).toHaveStyle({ borderLeftColor: '#1B6E3A' });
+  });
+
+  test('a dismissed card stays hidden when the screen opens again in the same session', async () => {
+    const context = await setup([['expense', '100', '03/11/2026', 'food']]);
+    const view = await show(context);
+    await fireEvent.press(
+      await screen.findByTestId('recommendation-dismiss-no-income'),
+    );
+    await waitFor(() =>
+      expect(screen.queryByTestId('recommendation-no-income')).toBeNull(),
+    );
+    await view.unmount();
+    await show(context);
+    await screen.findByTestId('recommendation-critical-category-food');
+    expect(screen.queryByTestId('recommendation-no-income')).toBeNull();
+  });
+});
+
+type Node = { props: Record<string, unknown>; children: unknown[] };
+
+// Colores de trazo de un ícono SVG (react-native-svg los entrega procesados).
+function strokesOf(node: Node): unknown[] {
+  const own = node.props.stroke === undefined ? [] : [node.props.stroke];
+  return [
+    ...own,
+    ...node.children
+      .filter((child): child is Node => typeof child === 'object')
+      .flatMap(strokesOf),
+  ];
+}
+
+describe('Extended recommendations on the screen', () => {
+  const hidden = { includeHiddenElements: true };
+  const session = { sessionId: 's1', userId: 'u1', startedAt: 1 };
+
+  async function show(recommendations: Recommendation[]) {
+    const onOpenHistory = jest.fn();
+    await render(
+      <RecommendationsScreen
+        gateway={{
+          list: async () => ({ status: 'ok', recommendations }),
+          dismiss: async () => ({ status: 'dismissed' }),
+        }}
+        onOpenHistory={onOpenHistory}
+        onSessionExpired={jest.fn()}
+        session={session}
+      />,
+    );
+    await screen.findByText('Recomendaciones Automatizadas');
+    return onOpenHistory;
+  }
+
+  const salary = (date: string, cents: number) =>
+    item(date, 'income', cents, 'salary', 'Salario');
+
+  // Cada escenario activa una de las nueve recomendaciones.
+  const SCENARIOS: [string, string, string, Parameters<typeof item>[]][] = [
+    [
+      'negative-balance',
+      'activity',
+      '#B3261E',
+      [['2026-11-02', 'expense', 2000]],
+    ],
+    [
+      'critical-category-food',
+      'flame',
+      '#B3261E',
+      [['2026-11-02', 'expense', 900]],
+    ],
+    ['savings-tip', 'lightbulb', '#1B6E3A', [['2026-11-02', 'expense', 100]]],
+    [
+      'unusual-increase-food',
+      'trendingUp',
+      '#B3261E',
+      [
+        ['2026-10-20', 'expense', 100],
+        ['2026-11-02', 'expense', 200],
+      ],
+    ],
+    [
+      'spending-reduced',
+      'trendingDown',
+      '#1B6E3A',
+      [
+        ['2026-10-02', 'expense', 1000],
+        ['2026-11-02', 'expense', 100],
+      ],
+    ],
+    [
+      'stable-habit',
+      'award',
+      '#1B6E3A',
+      [
+        ['2026-10-02', 'expense', 100],
+        ['2026-11-02', 'expense', 100],
+      ],
+    ],
+    [
+      'early-spending-alert',
+      'clock',
+      '#E08A1E',
+      [['2026-11-02', 'expense', 900]],
+    ],
+    [
+      'lower-income',
+      'arrowDownLeft',
+      '#E08A1E',
+      [['2026-10-01', 'income', 5000, 'salary', 'Salario']],
+    ],
+  ];
+
+  test.each(SCENARIOS)(
+    '%s shows the %s icon in %s',
+    async (id, icon, color, rows) => {
+      const movements = [
+        salary('2026-11-01', 1000),
+        ...rows.map(row => item(...row)),
+      ];
+      await show(evaluateRecommendations(movements, '2026-11-04'));
+      const card = screen.getByTestId(`recommendation-${id}`);
+      expect(card).toHaveStyle({ borderLeftColor: color });
+      const glyph = screen.getByTestId(`recommendation-icon-${id}`, hidden);
+      expect(within(glyph).getByTestId(`icon-${icon}`, hidden)).toBeTruthy();
+      const strokes = strokesOf(
+        within(glyph).getByTestId(`icon-${icon}`, hidden),
+      );
+      expect(strokes.length).toBeGreaterThan(0);
+      expect(strokes).toEqual(
+        strokes.map(() => ({ type: 0, payload: processColor(color) })),
+      );
+      expect(within(card).queryByText(/[🔺⚠️ℹ️]/u)).toBeNull();
+    },
+  );
+
+  test('no-income shows the info icon in orange and opens the period movements', async () => {
+    const onOpenHistory = await show(
+      evaluateRecommendations(
+        [item('2026-11-02', 'expense', 100)],
+        '2026-11-04',
+      ),
+    );
+    expect(screen.getByTestId('recommendation-no-income')).toHaveStyle({
+      borderLeftColor: '#E08A1E',
+    });
+    const glyph = screen.getByTestId('recommendation-icon-no-income', hidden);
+    expect(within(glyph).getByTestId('icon-info', hidden)).toBeTruthy();
+    expect(screen.queryByTestId('recommendation-negative-balance')).toBeNull();
+    await fireEvent.press(screen.getByTestId('recommendation-open-no-income'));
+    expect(onOpenHistory).toHaveBeenCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-30',
+      type: null,
+      categoryId: null,
+    });
+  });
+
+  test('the early alert opens the expenses of the current month', async () => {
+    const onOpenHistory = await show(
+      evaluateRecommendations(
+        [salary('2026-11-01', 1000), item('2026-11-02', 'expense', 900)],
+        '2026-11-04',
+      ),
+    );
+    await fireEvent.press(
+      screen.getByTestId('recommendation-open-early-spending-alert'),
+    );
+    expect(onOpenHistory).toHaveBeenCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-30',
+      type: 'expense',
+      categoryId: null,
+    });
+  });
+
+  test('lower income opens the incomes of the current and the previous period', async () => {
+    const onOpenHistory = await show(
+      evaluateRecommendations(
+        [salary('2026-10-01', 5000), salary('2026-11-01', 1000)],
+        '2026-11-04',
+      ),
+    );
+    await fireEvent.press(
+      screen.getByTestId('recommendation-open-lower-income'),
+    );
+    expect(onOpenHistory).toHaveBeenLastCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-04',
+      type: 'income',
+      categoryId: null,
+    });
+    await fireEvent.press(
+      screen.getByTestId('recommendation-open-previous-lower-income'),
+    );
+    expect(onOpenHistory).toHaveBeenLastCalledWith({
+      from: '2026-10-01',
+      to: '2026-10-04',
+      type: 'income',
+      categoryId: null,
+    });
+    expect(screen.getByText('Ver ingresos de este mes')).toBeTruthy();
+    expect(screen.getByText('Ver ingresos del mes anterior')).toBeTruthy();
+  });
+
+  test('several categories: one card, the top category and the others on demand', async () => {
+    const onOpenHistory = await show(
+      evaluateRecommendations(
+        [
+          salary('2026-11-01', 100000),
+          item('2026-10-02', 'expense', 1000),
+          item('2026-11-02', 'expense', 500),
+          item('2026-10-02', 'expense', 1000, 'transport', 'Transporte'),
+          item('2026-11-02', 'expense', 100, 'transport', 'Transporte'),
+        ],
+        '2026-11-04',
+      ),
+    );
+    expect(
+      screen.getAllByTestId(/^recommendation-spending-reduced$/),
+    ).toHaveLength(1);
+    await fireEvent.press(
+      screen.getByTestId('recommendation-open-spending-reduced'),
+    );
+    expect(onOpenHistory).toHaveBeenLastCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-04',
+      type: 'expense',
+      categoryId: 'transport',
+    });
+    const toggle = screen.getByTestId('recommendation-others-spending-reduced');
+    expect(toggle).toHaveTextContent('Ver otras categorías (1)');
+    expect(
+      screen.queryByTestId('recommendation-related-spending-reduced-food'),
+    ).toBeNull();
+    await fireEvent.press(toggle);
+    expect(toggle).toHaveTextContent('Ocultar otras categorías');
+    const related = screen.getByTestId(
+      'recommendation-related-spending-reduced-food',
+    );
+    expect(related).toHaveTextContent(/Alimentación.*bajó 50%/);
+    expect(related.props.accessibilityLabel).toBe(
+      'Ver movimientos de Alimentación',
+    );
+    await fireEvent.press(related);
+    expect(onOpenHistory).toHaveBeenLastCalledWith({
+      from: '2026-11-01',
+      to: '2026-11-04',
+      type: 'expense',
+      categoryId: 'food',
+    });
+  });
+
+  test('a new rule is dismissed for the session like the others', async () => {
+    const context = await setup([
+      ['income', '1000', '01/11/2026', 'salary'],
+      ['expense', '900', '02/11/2026', 'food'],
+    ]);
+    const view = await render(
+      <RecommendationsScreen
+        gateway={context.recommendations}
+        onOpenHistory={jest.fn()}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await fireEvent.press(
+      await screen.findByTestId('recommendation-dismiss-early-spending-alert'),
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId('recommendation-early-spending-alert'),
+      ).toBeNull(),
+    );
+    await view.unmount();
+    await render(
+      <RecommendationsScreen
+        gateway={context.recommendations}
+        onOpenHistory={jest.fn()}
+        onSessionExpired={jest.fn()}
+        session={context.session}
+      />,
+    );
+    await screen.findByTestId('recommendation-critical-category-food');
+    expect(
+      screen.queryByTestId('recommendation-early-spending-alert'),
+    ).toBeNull();
+    expect(screen.queryByTestId('recommendation-savings-tip')).toBeNull();
   });
 });

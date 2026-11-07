@@ -31,6 +31,7 @@ import { CategoryIcon } from '../categories/CategoryIcon';
 import { ActionButton } from '../components/ActionButton';
 import { DateField } from '../components/DateField';
 import { FormScrollView } from '../components/FormScrollView';
+import { Icon, type IconName } from '../components/Icon';
 import { MessageDialog } from '../components/MessageDialog';
 import { SelectField } from '../components/SelectField';
 import { COLORS } from '../components/theme';
@@ -144,6 +145,63 @@ function MovementCard({
 }
 
 // Pantalla de HU5: historial de movimientos con filtros y eliminación.
+// AJ-01: las acciones de registro flotan sobre el historial, siempre a la vista al desplazar
+// la lista. Son los mismos botones de HU5 («Nuevo movimiento» y «Movimiento con foto»).
+function FloatingAction({
+  icon,
+  label,
+  onPress,
+  testID,
+  variant,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  testID: string;
+  variant: 'primary' | 'secondary';
+}) {
+  const primary = variant === 'primary';
+  const color = primary ? COLORS.primaryText : COLORS.primary;
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[
+        fabStyles.button,
+        primary ? fabStyles.primary : fabStyles.secondary,
+      ]}
+      testID={testID}
+    >
+      <Icon color={color} name={icon} size={20} />
+      <Text style={[fabStyles.label, { color }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const fabStyles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    borderRadius: 28,
+    elevation: 6,
+    flexDirection: 'row',
+    marginTop: 12,
+    minHeight: 52,
+    paddingHorizontal: 18,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  primary: { backgroundColor: COLORS.primary },
+  secondary: {
+    backgroundColor: COLORS.card,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+  },
+  label: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
+});
+
 export function MovementHistoryScreen({
   movements,
   categories,
@@ -418,22 +476,27 @@ export function MovementHistoryScreen({
             ))}
           </View>
         )}
-        <View style={styles.buttons}>
-          <ActionButton
-            label={TEXTS.buttons.newMovement}
-            onPress={onNewMovement}
-            testID="open-movement-form"
-            variant="primary"
-          />
-        </View>
-        <View style={styles.buttons}>
-          <ActionButton
-            label={TEXTS.buttons.receipt}
-            onPress={onCaptureReceipt}
-            testID="open-receipt-capture"
-          />
-        </View>
       </FormScrollView>
+      <View
+        pointerEvents="box-none"
+        style={styles.floating}
+        testID="history-floating-actions"
+      >
+        <FloatingAction
+          icon="camera"
+          label={TEXTS.buttons.receipt}
+          onPress={onCaptureReceipt}
+          testID="open-receipt-capture"
+          variant="secondary"
+        />
+        <FloatingAction
+          icon="plus"
+          label={TEXTS.buttons.newMovement}
+          onPress={onNewMovement}
+          testID="open-movement-form"
+          variant="primary"
+        />
+      </View>
       {toDelete !== null && (
         <MessageDialog
           actions={[
@@ -476,7 +539,13 @@ export function MovementHistoryScreen({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 20, paddingBottom: 32 },
+  content: { padding: 20, paddingBottom: 150 },
+  floating: {
+    alignItems: 'flex-end',
+    bottom: 16,
+    position: 'absolute',
+    right: 16,
+  },
   header: { alignItems: 'flex-start', flexDirection: 'row', marginBottom: 16 },
   headerText: { flex: 1 },
   title: { color: COLORS.text, fontSize: 26, fontWeight: '700' },

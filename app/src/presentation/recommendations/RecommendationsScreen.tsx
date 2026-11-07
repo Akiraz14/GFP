@@ -7,12 +7,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import type { Recommendation } from '../../analysis/recommendations';
+import type {
+  Recommendation,
+  RecommendationRule,
+} from '../../analysis/recommendations';
 import type { RecommendationGateway } from '../../business/recommendations/recommendationService';
 import type { MovementFilters } from '../../infrastructure/database/repositories/movementRepository';
 import type { UserSession } from '../../services/session/sessionManager';
 import { ActionButton } from '../components/ActionButton';
-import { Icon } from '../components/Icon';
+import { Icon, type IconName } from '../components/Icon';
 import { MessageDialog } from '../components/MessageDialog';
 import { COLORS } from '../components/theme';
 
@@ -22,6 +25,11 @@ const TEXTS = {
   section: 'Recomendaciones Automatizadas',
   empty: '¡Todo en orden! No hay recomendaciones o alertas por el momento.',
   viewMovements: 'Ver movimientos asociados',
+  viewCurrentIncome: 'Ver ingresos de este mes',
+  viewPreviousIncome: 'Ver ingresos del mes anterior',
+  showOthers: (count: number) => `Ver otras categorías (${count})`,
+  hideOthers: 'Ocultar otras categorías',
+  openCategory: (name: string) => `Ver movimientos de ${name}`,
   dismiss: 'Descartar recomendación',
   disclaimer:
     'Las recomendaciones son generadas automáticamente con fines informativos basados en tus registros y no constituyen asesoramiento financiero profesional ni sobre productos de inversión o crédito.',
@@ -30,7 +38,22 @@ const TEXTS = {
   accept: 'Aceptar',
 } as const;
 
-const SEVERITY_GLYPHS = { critical: '🔺', warning: '⚠️' } as const;
+const WARNING_COLOR = '#E08A1E';
+
+// Ícono y color de cada regla: se aplican al ícono y al borde de severidad de la tarjeta.
+export const RULE_APPEARANCE: Readonly<
+  Record<RecommendationRule, { icon: IconName; color: string }>
+> = {
+  R1: { icon: 'activity', color: COLORS.error },
+  R2: { icon: 'flame', color: COLORS.error },
+  R3: { icon: 'trendingUp', color: COLORS.error },
+  R4: { icon: 'trendingDown', color: COLORS.success },
+  R5: { icon: 'award', color: COLORS.success },
+  R6: { icon: 'clock', color: WARNING_COLOR },
+  R7: { icon: 'arrowDownLeft', color: WARNING_COLOR },
+  R8: { icon: 'info', color: WARNING_COLOR },
+  SAVINGS: { icon: 'lightbulb', color: COLORS.success },
+};
 
 type RecommendationsScreenProps = {
   gateway: RecommendationGateway;
@@ -39,20 +62,23 @@ type RecommendationsScreenProps = {
   onSessionExpired: () => void;
 };
 
-// Historial filtrado de una recomendación (HU10): período de la regla y, en R2 y R3, la
-// categoría y el tipo Gasto. R1 no tiene categoría y muestra ingresos y gastos del período.
-export function historyFiltersOf(item: Recommendation): MovementFilters {
+// Historial filtrado de una recomendación (HU10): período, tipo y categoría de la regla. R1 y
+// R8 muestran ingresos y gastos del período; R6 los gastos; R7 los ingresos.
+export function historyFiltersOf(
+  item: Recommendation,
+  range = item.range,
+  categoryId = item.categoryId,
+): MovementFilters {
   return {
-    from: item.range.from,
-    to: item.range.to,
-    type: item.categoryId === null ? null : 'expense',
-    categoryId: item.categoryId,
+    from: range.from,
+    to: range.to,
+    type: item.movementType,
+    categoryId,
   };
 }
 
 // Pantalla de HU10, adaptada de daniela888-li/GFP (4c7cd2f). Las reglas leen el mes actual y el
-// anterior de la base local. «Descartar» guarda el descarte en la base cifrada y la tarjeta no
-// vuelve hasta el mes siguiente (I-27).
+// anterior de la base local. «Descartar» oculta la tarjeta durante la sesión actual (AJ-05).
 export function RecommendationsScreen({
   gateway,
   session,
@@ -61,6 +87,7 @@ export function RecommendationsScreen({
 }: RecommendationsScreenProps) {
   const [items, setItems] = useState<Recommendation[] | null>(null);
   const [dialog, setDialog] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const mounted = useRef(true);
   const sessionExpired = useRef(onSessionExpired);
   sessionExpired.current = onSessionExpired;
@@ -141,48 +168,105 @@ export function RecommendationsScreen({
             </Text>
           </View>
         )}
-        {(items ?? []).map(item => (
-          <View
-            key={item.id}
-            style={[
-              styles.card,
-              item.severity === 'critical' ? styles.critical : styles.warning,
-            ]}
-            testID={`recommendation-${item.id}`}
-          >
-            <View style={styles.cardHeader}>
-              <Text
-                accessible={false}
-                importantForAccessibility="no"
-                style={styles.glyph}
-              >
-                {SEVERITY_GLYPHS[item.severity]}
-              </Text>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Pressable
-                accessibilityLabel={`${TEXTS.dismiss}: ${item.title}`}
-                accessibilityRole="button"
-                onPress={() => {
-                  dismiss(item);
-                }}
-                style={styles.dismiss}
-                testID={`recommendation-dismiss-${item.id}`}
-              >
-                <Text style={styles.dismissText}>✕</Text>
-              </Pressable>
+        {(items ?? []).map(item => {
+          const appearance = RULE_APPEARANCE[item.rule];
+          const open = expanded === item.id;
+          return (
+            <View
+              key={item.id}
+              style={[styles.card, { borderLeftColor: appearance.color }]}
+              testID={`recommendation-${item.id}`}
+            >
+              <View style={styles.cardHeader}>
+                <View
+                  style={styles.glyph}
+                  testID={`recommendation-icon-${item.id}`}
+                >
+                  <Icon
+                    color={appearance.color}
+                    name={appearance.icon}
+                    size={22}
+                  />
+                </View>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Pressable
+                  accessibilityLabel={`${TEXTS.dismiss}: ${item.title}`}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    dismiss(item);
+                  }}
+                  style={styles.dismiss}
+                  testID={`recommendation-dismiss-${item.id}`}
+                >
+                  <Text style={styles.dismissText}>✕</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.source}>{item.source}</Text>
+              <View style={styles.action}>
+                <ActionButton
+                  label={
+                    item.previousRange === null
+                      ? TEXTS.viewMovements
+                      : TEXTS.viewCurrentIncome
+                  }
+                  onPress={() => onOpenHistory(historyFiltersOf(item))}
+                  testID={`recommendation-open-${item.id}`}
+                  variant="primary"
+                />
+              </View>
+              {item.previousRange !== null && (
+                <View style={styles.action}>
+                  <ActionButton
+                    label={TEXTS.viewPreviousIncome}
+                    onPress={() => {
+                      if (item.previousRange !== null) {
+                        onOpenHistory(
+                          historyFiltersOf(item, item.previousRange),
+                        );
+                      }
+                    }}
+                    testID={`recommendation-open-previous-${item.id}`}
+                    variant="secondary"
+                  />
+                </View>
+              )}
+              {item.relatedCategories.length > 0 && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: open }}
+                  onPress={() => setExpanded(open ? null : item.id)}
+                  style={styles.othersToggle}
+                  testID={`recommendation-others-${item.id}`}
+                >
+                  <Text style={styles.othersToggleText}>
+                    {open
+                      ? TEXTS.hideOthers
+                      : TEXTS.showOthers(item.relatedCategories.length)}
+                  </Text>
+                </Pressable>
+              )}
+              {open &&
+                item.relatedCategories.map(related => (
+                  <Pressable
+                    accessibilityLabel={TEXTS.openCategory(related.name)}
+                    accessibilityRole="button"
+                    key={related.categoryId}
+                    onPress={() =>
+                      onOpenHistory(
+                        historyFiltersOf(item, item.range, related.categoryId),
+                      )
+                    }
+                    style={styles.related}
+                    testID={`recommendation-related-${item.id}-${related.categoryId}`}
+                  >
+                    <Text style={styles.relatedName}>{related.name}</Text>
+                    <Text style={styles.relatedDetail}>{related.detail}</Text>
+                  </Pressable>
+                ))}
             </View>
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.source}>{item.source}</Text>
-            <View style={styles.action}>
-              <ActionButton
-                label={TEXTS.viewMovements}
-                onPress={() => onOpenHistory(historyFiltersOf(item))}
-                testID={`recommendation-open-${item.id}`}
-                variant="primary"
-              />
-            </View>
-          </View>
-        ))}
+          );
+        })}
         <Text style={styles.disclaimer} testID="recommendations-disclaimer">
           {TEXTS.disclaimer}
         </Text>
@@ -233,10 +317,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 14,
   },
-  critical: { borderLeftColor: COLORS.error },
-  warning: { borderLeftColor: '#E08A1E' },
   cardHeader: { alignItems: 'center', flexDirection: 'row' },
-  glyph: { fontSize: 18, marginRight: 8 },
+  glyph: { marginRight: 8 },
   cardTitle: { color: COLORS.text, flex: 1, fontSize: 16, fontWeight: '700' },
   dismiss: {
     alignItems: 'center',
@@ -248,6 +330,22 @@ const styles = StyleSheet.create({
   description: { color: COLORS.text, fontSize: 14, marginTop: 4 },
   source: { color: COLORS.text, fontSize: 14, fontWeight: '600', marginTop: 8 },
   action: { flexDirection: 'row', marginTop: 10 },
+  othersToggle: { justifyContent: 'center', marginTop: 6, minHeight: 44 },
+  othersToggleText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  related: {
+    alignItems: 'center',
+    borderColor: COLORS.border,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  relatedName: { color: COLORS.text, flex: 1, fontSize: 14 },
+  relatedDetail: { color: COLORS.mutedText, fontSize: 14 },
   disclaimer: {
     color: COLORS.mutedText,
     fontSize: 13,

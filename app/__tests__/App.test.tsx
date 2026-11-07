@@ -459,9 +459,7 @@ describe('HU5 history in the app (E08)', () => {
       '$45.500,00',
     );
     await fireEvent.press(screen.getByTestId('tab-recommendations'));
-    expect(
-      await screen.findByTestId('recommendation-negative-balance'),
-    ).toBeTruthy();
+    expect(await screen.findByTestId('recommendation-no-income')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('tab-movementHistory'));
     await fireEvent.press(await screen.findByTestId(`movement-delete-${id}`));
     await fireEvent.press(screen.getByTestId('movement-delete-confirm'));

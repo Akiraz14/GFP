@@ -56,6 +56,27 @@ export function monthRange(today: string, offset = 0): DateRange {
   return { from: iso(year, month, 1), to: iso(year, month + 1, 0) };
 }
 
+// Períodos equivalentes de las reglas comparativas de HU10: del día 1 a hoy en el mes actual y
+// del día 1 al mismo día en el mes anterior, o a su último día si ese mes es más corto (febrero,
+// años bisiestos, meses de 30 días).
+export function comparablePeriods(today: string): {
+  current: DateRange;
+  previous: DateRange;
+} {
+  const previousMonth = monthRange(today, -1);
+  const day = Math.min(
+    Number(today.slice(8, 10)),
+    Number(previousMonth.to.slice(8, 10)),
+  );
+  return {
+    current: { from: monthRange(today).from, to: today },
+    previous: {
+      from: previousMonth.from,
+      to: `${previousMonth.to.slice(0, 8)}${pad(day)}`,
+    },
+  };
+}
+
 export function periodRange(period: AnalysisPeriod, today: string): DateRange {
   const year = Number(today.slice(0, 4));
   switch (period) {

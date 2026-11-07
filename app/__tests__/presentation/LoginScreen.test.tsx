@@ -287,3 +287,12 @@ describe('E-COR: login fidelity to the HU2 mockup (B1-B9)', () => {
     ).toBeTruthy();
   });
 });
+
+describe('AJ-03: password placeholder', () => {
+  test('the password shows «Ingrese su contraseña» and keeps its secure entry', async () => {
+    await setup();
+    const password = screen.getByTestId('login-password');
+    expect(password.props.placeholder).toBe('Ingrese su contraseña');
+    expect(password.props.secureTextEntry).toBe(true);
+  });
+});

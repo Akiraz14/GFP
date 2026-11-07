@@ -27,16 +27,70 @@ const MONTHS: Record<string, string> = {
 };
 
 const NOT_MERCHANT =
-  /factura|fecha|total|subtotal|nit\b|hola|detalle|monto|valor|recibo|comprobante|tiquete|ticket|caja|cajero|direcci|tel[eé]f|cliente|iva\b/i;
+  /factura|fecha|total|subtotal|nit\b|hola|detalle|monto|valor|recibo|comprobante|tiquete|ticket|caja|cajero|direcci|tel[eé]f|cliente|iva\b|documento|sint[eé]tic|sin validez|no v[aá]lid|copia\b|original\b/i;
+
+type Point = { x: number; y: number };
 
 export type RecognizedLine = {
   text: string;
   frame?: { top: number; left: number; height: number };
+  // Esquinas de la línea en el orden de lectura (ML Kit): superior izquierda, superior
+  // derecha, inferior derecha e inferior izquierda.
+  cornerPoints?: readonly Point[];
 };
+
+const UPRIGHT_TOLERANCE_RAD = (12 * Math.PI) / 180;
+
+// AJ-02: en una foto girada, ML Kit lee bien cada línea pero sus recuadros quedan de lado, y
+// las filas se mezclan. Se mide la dirección de lectura de las líneas (de la esquina superior
+// izquierda a la superior derecha) y, si el documento no está derecho, se giran las esquinas
+// para que lo esté antes de ordenar las filas. Un documento derecho no cambia.
+export function uprightLines(
+  lines: readonly RecognizedLine[],
+): RecognizedLine[] {
+  let sumX = 0;
+  let sumY = 0;
+  for (const line of lines) {
+    const corners = line.cornerPoints;
+    if (corners !== undefined && corners.length >= 2) {
+      const dx = corners[1].x - corners[0].x;
+      const dy = corners[1].y - corners[0].y;
+      const length = Math.hypot(dx, dy);
+      if (length > 0) {
+        sumX += dx / length;
+        sumY += dy / length;
+      }
+    }
+  }
+  const angle = Math.atan2(sumY, sumX);
+  if ((sumX === 0 && sumY === 0) || Math.abs(angle) < UPRIGHT_TOLERANCE_RAD) {
+    return [...lines];
+  }
+  const cos = Math.cos(-angle);
+  const sin = Math.sin(-angle);
+  return lines.map(line => {
+    const corners = line.cornerPoints;
+    if (corners === undefined || corners.length === 0) {
+      return { text: line.text };
+    }
+    const turned = corners.map(({ x, y }) => ({
+      x: x * cos - y * sin,
+      y: x * sin + y * cos,
+    }));
+    const xs = turned.map(point => point.x);
+    const ys = turned.map(point => point.y);
+    const top = Math.min(...ys);
+    return {
+      text: line.text,
+      frame: { top, left: Math.min(...xs), height: Math.max(...ys) - top },
+    };
+  });
+}
 
 // El OCR entrega las columnas de una factura por separado: «FECHA DOCUMENTO:» en un bloque y su
 // valor en otro. Une las líneas que están a la misma altura y las ordena de izquierda a derecha.
-export function rowsFromLines(lines: readonly RecognizedLine[]): string {
+export function rowsFromLines(recognized: readonly RecognizedLine[]): string {
+  const lines = uprightLines(recognized);
   const placed = lines.filter(line => line.frame !== undefined);
   if (placed.length === 0) {
     return lines.map(line => line.text).join('\n');
@@ -92,10 +146,40 @@ export function parseReceiptNumber(raw: string): number | null {
   return cents > 0 ? cents : null;
 }
 
-function amountIn(line: string): number | null {
-  const matches = line.replace(/%/g, ' ').match(/\d[\d.,]*\d|\d/g) ?? [];
-  const last = matches[matches.length - 1];
-  return last === undefined ? null : parseReceiptNumber(last);
+// AJ-02: solo cuenta como importe un número suelto. Se descartan los que forman parte de un
+// código o una referencia («SINT-0003», «000000000-0», «A12») y los enteros con cero inicial
+// («03», «0003»), que numeran sucursales, documentos o líneas.
+function moneyValues(segment: string): number[] {
+  const values: number[] = [];
+  for (const match of segment
+    .replace(/%/g, ' ')
+    .matchAll(
+      /(?<![\p{L}\d\-/.,])\d[\d.,]*\d(?![\p{L}\d\-/])|(?<![\p{L}\d\-/.,])\d(?![\p{L}\d\-/.,])/gu,
+    )) {
+    const raw = match[0].replace(/[.,]$/, '');
+    if (/^0\d+$/.test(raw)) {
+      continue;
+    }
+    const value = parseReceiptNumber(raw);
+    if (value !== null) {
+      values.push(value);
+    }
+  }
+  return values;
+}
+
+// Con rótulo («TOTAL», «Monto»…), el importe es el primer número después del rótulo; sin él, el
+// último de la línea.
+function amountIn(line: string, label?: RegExp): number | null {
+  const at = label === undefined ? -1 : line.search(label);
+  if (at >= 0) {
+    const [first] = moneyValues(line.slice(at));
+    if (first !== undefined) {
+      return first;
+    }
+  }
+  const values = moneyValues(line);
+  return values.length === 0 ? null : values[values.length - 1];
 }
 
 function isTotalLine(line: string): boolean {
@@ -107,9 +191,16 @@ function isTotalLine(line: string): boolean {
   );
 }
 
+const TOTAL_LABEL = /\btotal\b/i;
+const VALUE_LABEL =
+  /\b(monto|valor|importe|pagaste|pagado|compra por|total)\b/i;
+
 function amountAt(lines: readonly string[], index: number): number | null {
   return (
-    amountIn(lines[index]) ??
+    amountIn(
+      lines[index],
+      TOTAL_LABEL.test(lines[index]) ? TOTAL_LABEL : VALUE_LABEL,
+    ) ??
     (/^[$\s\d.,]+$/.test(lines[index + 1] ?? '')
       ? amountIn(lines[index + 1])
       : null)
@@ -218,6 +309,9 @@ function extractDate(lines: readonly string[], today: string): string | null {
   return all.size === 1 ? [...all][0] : null;
 }
 
+// AJ-02: el comercio es el primer renglón con nombre, sin avisos como «DOCUMENTO SINTÉTICO -
+// SIN VALIDEZ», y sin el número de sucursal o de documento del final («TIENDA FICTICIA 02» →
+// «TIENDA FICTICIA»).
 function extractMerchant(lines: readonly string[]): string | null {
   const line = lines.find(
     candidate =>
@@ -225,7 +319,11 @@ function extractMerchant(lines: readonly string[]): string | null {
       !NOT_MERCHANT.test(candidate) &&
       datesIn(candidate).length === 0,
   );
-  return line === undefined ? null : line.slice(0, 250);
+  if (line === undefined) {
+    return null;
+  }
+  const name = line.replace(/(\s+[#Nº°.]*\s*0\d*)+$/u, '').trim();
+  return (name.length > 0 ? name : line).slice(0, 250);
 }
 
 export function extractReceiptData(text: string, today: string): ReceiptData {
