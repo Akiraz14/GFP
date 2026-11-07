@@ -172,6 +172,7 @@ export function LoginScreen({
             onSubmitEditing={() => {
               handleLogin();
             }}
+            placeholder={TEXTS.passwordPlaceholder}
             ref={passwordRef}
             required
             returnKeyType="go"

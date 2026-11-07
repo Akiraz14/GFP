@@ -12,6 +12,7 @@ export const LOGIN_TEXTS = {
     password: 'Contraseña',
   },
   identifierPlaceholder: 'Correo, Documento o Celular',
+  passwordPlaceholder: 'Ingrese su contraseña',
   buttons: {
     login: 'Ingresar',
     register: 'Crear Cuenta',

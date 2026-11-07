@@ -17,6 +17,7 @@ export type IconName =
   | 'info'
   | 'lock'
   | 'pieChart'
+  | 'plus'
   | 'shield'
   | 'shieldCheck'
   | 'sparkles'
@@ -98,6 +99,7 @@ const GLYPHS: Readonly<Record<IconName, readonly Shape[]>> = {
     { kind: 'path', d: 'M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5v10z' },
     { kind: 'path', d: 'M14 3.2A8 8 0 0 1 20.8 10H14z' },
   ],
+  plus: [{ kind: 'path', d: 'M12 5v14M5 12h14' }],
   shield: [{ kind: 'path', d: SHIELD }],
   shieldCheck: [
     { kind: 'path', d: SHIELD },

@@ -399,3 +399,28 @@ describe('Task 30: card hierarchy of the HU5 prototype', () => {
     expect(amount.props.adjustsFontSizeToFit).toBe(true);
   });
 });
+
+describe('AJ-01: floating registration actions', () => {
+  test('«Nuevo movimiento» and «Movimiento con foto» float over the list with their icons', async () => {
+    const context = await setup();
+    await show(context);
+    const floating = screen.getByTestId('history-floating-actions');
+    expect(floating).toHaveStyle({ position: 'absolute' });
+    expect(
+      within(floating).getByTestId('open-movement-form'),
+    ).toHaveTextContent('Nuevo movimiento');
+    expect(
+      within(floating).getByTestId('open-receipt-capture'),
+    ).toHaveTextContent('Movimiento con foto');
+    expect(
+      within(floating).getByTestId('icon-plus', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+    expect(
+      within(floating).getByTestId('icon-camera', {
+        includeHiddenElements: true,
+      }),
+    ).toBeTruthy();
+  });
+});
