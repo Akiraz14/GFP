@@ -69,48 +69,68 @@ describe('HU10 recommendation service', () => {
     await expect(ids(service, session)).resolves.toEqual([]);
     await add({});
     await expect(ids(service, session)).resolves.toEqual([
-      'negative-balance',
+      'no-income',
       'critical-category-food',
     ]);
   });
 
-  test('I-27: a dismissal hides the card for the rest of the month and is stored', async () => {
+  test('AJ-05: a dismissal hides the card only for the current session and stores nothing', async () => {
     const { database, service, session, add } = await setup();
     await add({});
-    await expect(service.dismiss(session, 'negative-balance')).resolves.toEqual(
-      {
-        status: 'dismissed',
-      },
-    );
-    await expect(service.dismiss(session, 'negative-balance')).resolves.toEqual(
-      {
-        status: 'dismissed',
-      },
-    );
+    await expect(service.dismiss(session, 'no-income')).resolves.toEqual({
+      status: 'dismissed',
+    });
+    await expect(service.dismiss(session, 'no-income')).resolves.toEqual({
+      status: 'dismissed',
+    });
     await expect(ids(service, session)).resolves.toEqual([
       'critical-category-food',
     ]);
     const stored = await database.execute(
-      'SELECT recommendation_id, period FROM recommendation_dismissals',
+      'SELECT count(*) AS total FROM recommendation_dismissals',
     );
-    expect(stored.rows).toEqual([
-      { recommendation_id: 'negative-balance', period: '2026-11' },
+    expect(stored.rows[0]).toEqual({ total: 0 });
+  });
+
+  test('AJ-05: after logging in again the rules show up while they still apply', async () => {
+    const { sessions, service, session, add } = await setup();
+    await add({});
+    await service.dismiss(session, 'no-income');
+    await service.dismiss(session, 'critical-category-food');
+    await expect(ids(service, session)).resolves.toEqual([]);
+    sessions.end();
+    const again = sessions.start(session.userId);
+    await expect(ids(service, again)).resolves.toEqual([
+      'no-income',
+      'critical-category-food',
     ]);
   });
 
-  test('I-27: the next month the rule is evaluated again', async () => {
+  test('AJ-05: a new app start (a new service) shows the rules again', async () => {
+    const { database, sessions, service, session, add } = await setup();
+    await add({});
+    await service.dismiss(session, 'no-income');
+    const restarted = new RecommendationService({
+      database,
+      sessions,
+      now: () => NOVEMBER,
+    });
+    await expect(ids(restarted, session)).resolves.toContain('no-income');
+  });
+
+  test('AJ-05: within the same session the card stays hidden on another day', async () => {
     const { service, session, add, setClock } = await setup();
     await add({ date: '03/11/2026' });
-    await service.dismiss(session, 'negative-balance');
+    await service.dismiss(session, 'no-income');
     setClock(DECEMBER);
     await add({ date: '01/12/2026' });
-    await expect(ids(service, session)).resolves.toContain('negative-balance');
+    await expect(ids(service, session)).resolves.not.toContain('no-income');
   });
 
   test('HU2-CA11: dismissals and movements of another user are not used', async () => {
     const { database, sessions, service, session, add } = await setup();
     await add({});
-    await service.dismiss(session, 'negative-balance');
+    await service.dismiss(session, 'no-income');
     const otherId = await createAccount(
       database,
       profile({
@@ -131,11 +151,9 @@ describe('HU10 recommendation service', () => {
     await expect(service.list(session)).resolves.toEqual({
       status: 'session_expired',
     });
-    await expect(service.dismiss(session, 'negative-balance')).resolves.toEqual(
-      {
-        status: 'session_expired',
-      },
-    );
+    await expect(service.dismiss(session, 'no-income')).resolves.toEqual({
+      status: 'session_expired',
+    });
     const stored = await database.execute(
       'SELECT count(*) AS total FROM recommendation_dismissals',
     );
@@ -146,8 +164,5 @@ describe('HU10 recommendation service', () => {
     const { database, service, session } = await setup();
     database.close();
     await expect(service.list(session)).resolves.toEqual({ status: 'failed' });
-    await expect(service.dismiss(session, 'x')).resolves.toEqual({
-      status: 'failed',
-    });
   });
 });

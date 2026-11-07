@@ -1,6 +1,7 @@
 // Tomado de daniela888-li/GFP (8bfa533).
 import {
   categoryShares,
+  comparablePeriods,
   evolution,
   monthRange,
   periodRange,
@@ -66,5 +67,28 @@ describe('HU9 metrics', () => {
       'Mar 26',
     ]);
     expect(months[2].incomeCents).toBe(300);
+  });
+});
+
+describe('HU10 equivalent periods', () => {
+  test('the same days of the previous month, capped at its last day', () => {
+    expect(comparablePeriods('2026-11-10')).toEqual({
+      current: { from: '2026-11-01', to: '2026-11-10' },
+      previous: { from: '2026-10-01', to: '2026-10-10' },
+    });
+    expect(comparablePeriods('2026-05-31').previous).toEqual({
+      from: '2026-04-01',
+      to: '2026-04-30',
+    });
+    expect(comparablePeriods('2026-03-30').previous.to).toBe('2026-02-28');
+    expect(comparablePeriods('2028-03-30').previous.to).toBe('2028-02-29');
+    expect(comparablePeriods('2028-02-29')).toEqual({
+      current: { from: '2028-02-01', to: '2028-02-29' },
+      previous: { from: '2028-01-01', to: '2028-01-29' },
+    });
+    expect(comparablePeriods('2026-01-01').previous).toEqual({
+      from: '2025-12-01',
+      to: '2025-12-01',
+    });
   });
 });
