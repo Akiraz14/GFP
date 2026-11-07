@@ -1,5 +1,8 @@
 # Informe de la consolidación global de GFP
 
+> **Documento histórico.** La consolidación se integró en `main` con `dec86ff`. Estado final del
+> MVP: `cierre-proyecto.md`.
+
 **Fecha:** 2026-11-04  
 **Rama:** `integracion/consolidacion-global`, desde `main` `5dd2071` (`etapa-08-aprobada`)  
 **Estado:** consolidada y verificada en Jest; **sin integrar en `main`, sin `push` y sin

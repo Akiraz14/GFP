@@ -1,10 +1,11 @@
-# Ajustes finales de cierre (AJ-01 a AJ-05)
+# Ajustes finales de cierre (AJ-01 a AJ-06)
 
 **Fecha:** 2026-11-06  
 **Base:** `main` en `eae3374`, con cambios sin confirmar (sin commits, sin push).  
-**Estado:** finalizado. Verificado con Jest, validado manualmente por el responsable en
-Android 10 y aprobado el 2026-11-07, junto con E-AJ-D1 y E-AJ-D2. Cierre en
-`cierre-proyecto.md`.
+**Estado:** finalizado. AJ-01 a AJ-05 están verificados con Jest, validados manualmente por el
+responsable en Android 10 y aprobados el 2026-11-07, junto con E-AJ-D1 y E-AJ-D2. AJ-06 se
+agregó el 2026-11-07 tras las pruebas del APK Release; está verificado con Jest (E-AJ-D3). Cierre
+en `cierre-proyecto.md`.
 
 ## 1. Ajustes
 
@@ -15,13 +16,14 @@ Android 10 y aprobado el 2026-11-07, junto con E-AJ-D1 y E-AJ-D2. Cierre en
 | AJ-03 | Placeholder «Ingrese su contraseña» en la contraseña del inicio de sesión; seguridad, ojo y validación sin cambios | `LoginScreen.tsx`, `loginTexts.ts` | `LoginScreen.test.tsx` «AJ-03» |
 | AJ-04 | «Consejo de Ahorro» cuando el mes actual tiene ingresos y su balance es positivo (E-AJ-D1) | `recommendations.ts`, `RecommendationsScreen.tsx` | `recommendations.test.ts` «AJ-04» (2), pantalla «AJ-04 and AJ-05» |
 | AJ-05 | «Descartar» oculta la tarjeta solo durante la sesión (E-AJ-D2) | `recommendationService.ts`, `RecommendationsScreen.tsx` | `recommendationService.test.ts` «AJ-05» (4), pantalla |
+| AJ-06 | Edición de un movimiento (HU4): tras «Actualizar» con éxito, el mensaje «El movimiento fue actualizado exitosamente» aparece justo encima del botón «Volver al historial», que reemplaza a «Actualizar» y «Cancelar». A los 2500 ms la app vuelve sola al historial; el botón vuelve de inmediato y cancela el temporizador. El regreso ocurre una sola vez (botón, temporizador o Atrás de Android) y el temporizador se limpia si la pantalla se cierra. Si la actualización falla, siguen «Actualizar» y «Cancelar», se muestra el error de siempre y no hay temporizador. Mientras espera el regreso, los campos quedan bloqueados como durante el guardado (E-AJ-D3) | `MovementFormScreen.tsx` | `MovementFormScreen.test.tsx` «after a successful update» (7); `App.test.tsx` (flujo de edición) |
 
 Los dos documentos de prueba son las fichas 02 y 03 del plan OCR de la Etapa 02
 (`ocrFixtures.ts` de `refs/revision/spike-02-v4`; generador en
 `evidencias/ETAPA-02/archivo-spike-v4/tools/ocr-fixtures/`). Las imágenes no llegaron
 adjuntas a la conversación, así que las pruebas reproducen su texto y su geometría (líneas de
-ML Kit con recuadro y esquinas, giro horario de 90°) a partir de esa definición. La ejecución
-real con ML Kit en el dispositivo queda para la validación manual. En la evidencia de la Etapa
+ML Kit con recuadro y esquinas, giro horario de 90°) a partir de esa definición. La lectura
+real con ML Kit se comprobó en el emulador en AJ-V3 y AJ-V4 (sección 3). En la evidencia de la Etapa
 02 (`V4/p4-batch.txt`), ML Kit reconoció todas las palabras de la ficha 03 (`tokenRecall=1`)
 pero en otro orden (`similarity=0.355`): el defecto estaba en el orden de las filas y en tomar
 el último número de la fila, no en el reconocimiento.
@@ -32,6 +34,7 @@ el último número de la fila, no en el reconocimiento.
 |---|---|---|---|
 | E-AJ-D1 | AJ-04: el consejo no aparecía porque no existía la regla. E-CONS-D6 lo descartó porque los criterios de HU10 solo listan R1, R2 y R3. Sin embargo, HU10 incluye en sus elementos visuales la tarjeta «Informativo / Consejo (Azul/Verde): Comparativas positivas o hábitos estables», y el mockup muestra «Consejo de Ahorro» con «Mantienes un balance positivo este mes…» y «Balance actual». El modelo no tiene metas de ahorro | Se muestra cuando el mes actual tiene ingresos y los ingresos superan a los gastos (lo contrario de R1). Es la condición de E12-D2 de la compañera, con los datos existentes. Usa los textos del mockup, borde verde y «Ver movimientos asociados» (no hay «Ajustar meta de ahorro», por E12-D4). R1, R2 y R3 no cambian | Aprobada (2026-11-07). Desde E-REC-D1 tampoco se muestra con la «Alerta temprana de gasto» (`recomendaciones-ampliadas.md`) |
 | E-AJ-D2 | AJ-05: el descarte se guardaba en la tabla cifrada `recommendation_dismissals` (migración 6) y duraba hasta fin de mes (I-27, E-CONS-D6) | El descarte se guarda en memoria, ligado al `sessionId`: se pierde al cerrar sesión o la aplicación, y la regla no cambia. Ya no se lee ni se escribe la tabla. La migración 6 no se modifica (son inmutables), así que los descartes guardados antes quedan sin efecto. HU10 describe el botón como «cerrar o quitar temporalmente» | Aprobada (2026-11-07); se aplica también a las reglas R4 a R8 |
+| E-AJ-D3 | AJ-06: el mockup de HU4 muestra la confirmación de la edición en la parte superior del formulario y mantiene «Actualizar» y «Cancelar» | Por indicación expresa del responsable, que prevalece sobre el mockup en este punto: el mensaje va encima de «Volver al historial», con regreso automático a los 2500 ms. Criterio de implementación informado al responsable: los campos se bloquean durante la espera para no perder cambios que se empiecen a escribir | Aprobada (2026-11-07) |
 
 `RecommendationDismissalRepository` y su tabla quedan sin uso en producción. Se conservan
 porque la migración 6 ya fue entregada.
